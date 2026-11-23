@@ -1,0 +1,20 @@
+{
+  "name": "ghost-in-the-macro",
+  "version": "0.1.0",
+  "description": "Migrate business logic out of an Excel workbook into plain-English EARS rules and a pure Python module, with a proof report that checks the new code against the original workbook recalculated by headless LibreOffice.",
+  "author": { "name": "Ghost in the Macro" },
+  "license": "MIT",
+  "homepage": "https://github.com/viraj-dhanushka/Ghost-in-the-Macro",
+  "repository": "https://github.com/viraj-dhanushka/Ghost-in-the-Macro",
+  "keywords": [
+    "excel",
+    "xlsx",
+    "xlsm",
+    "vba",
+    "macro",
+    "spreadsheet",
+    "workbook migration"
+  ],
+  "skills": "./skills",
+  "mcpServers": "./mcp.json"
+}

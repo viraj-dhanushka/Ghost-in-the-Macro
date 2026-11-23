@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghost"
+version = "0.1.0"
+description = "Ghost in the Macro: proof-checked migration of Excel business logic"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "openpyxl",
+    "oletools",
+    "defusedxml",
+    "hypothesis",
+    "pydantic>=2",
+    "pyyaml",
+    "jsonschema",
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+    "mcp",
+    "pytest",
+    "httpx",
+    "python-multipart",
+]
+
+[tool.setuptools.packages.find]
+include = ["ghost*", "mcp_server*", "web*"]
+
+[tool.setuptools.package-data]
+"ghost.referee" = ["script/*.py"]
+"ghost.report" = ["schema/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "golden: golden-file tests (run with -m golden)",
+]

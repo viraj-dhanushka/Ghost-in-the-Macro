@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ghost in the Macro</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
+  <script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <h1>&#128123; Ghost in the Macro</h1>
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">Dark mode</button>
+  </header>
+  <main id="main">
+    <p id="privacy-note" role="note">{{ privacy_note }}</p>
+    <form hx-post="/upload" hx-target="#result" hx-encoding="multipart/form-data"
+          action="/upload" method="post" enctype="multipart/form-data">
+      <label for="file">Workbook ({{ accepted }}, up to {{ max_mb }} MB)</label>
+      <input id="file" type="file" name="file" accept=".xlsx,.xlsm" required>
+      <button type="submit">Upload</button>
+    </form>
+    <h2>Try a sample</h2>
+    <ul class="samples">
+    {% for id, label in samples.items() %}
+      <li><button hx-post="/sample/{{ id }}" hx-target="#result">{{ label }}</button></li>
+    {% endfor %}
+    </ul>
+    <div id="result" aria-live="polite"></div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ghost-in-the-macro/schema/proof-report-1.json",
+  "title": "Ghost proof report",
+  "type": "object",
+  "required": ["schema_version", "ghost_version", "seed", "versions", "mode", "cases_tested",
+               "passed", "mismatches", "boundaries", "rule_coverage", "mutation", "sanity",
+               "findings", "decisions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1"},
+    "ghost_version": {"type": "string"},
+    "seed": {"type": "integer"},
+    "versions": {
+      "type": "object",
+      "required": ["libreoffice", "python", "ghost"],
+      "additionalProperties": false,
+      "properties": {
+        "libreoffice": {"type": "string"},
+        "python": {"type": "string"},
+        "ghost": {"type": "string"}
+      }
+    },
+    "mode": {"enum": ["faithful", "intended"]},
+    "cases_tested": {"type": "integer", "minimum": 0},
+    "passed": {"type": "boolean"},
+    "mismatches": {"type": "array", "items": {"$ref": "#/$defs/mismatch"}},
+    "boundaries": {"type": "array", "items": {"$ref": "#/$defs/boundary"}},
+    "rule_coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}},
+    "mutation": {"oneOf": [{"$ref": "#/$defs/mutation"}, {"$ref": "#/$defs/notChecked"}]},
+    "sanity": {"oneOf": [{"$ref": "#/$defs/sanity"}, {"$ref": "#/$defs/notChecked"}]},
+    "findings": {"type": "array", "items": {"type": "object", "required": ["finding_id"]}},
+    "decisions": {"type": "array", "items": {"type": "object", "required": ["decision_id"]}}
+  },
+  "$defs": {
+    "notChecked": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {"status": {"const": "not checked"}}
+    },
+    "mismatch": {
+      "type": "object",
+      "required": ["inputs", "expected", "actual", "class"],
+      "properties": {
+        "inputs": {"type": "object"},
+        "expected": {"type": "object"},
+        "actual": {"type": "object"},
+        "output": {"type": "string"},
+        "cell": {"type": "string"},
+        "rule_id": {"type": ["string", "null"]},
+        "finding_id": {"type": ["string", "null"]},
+        "decision_id": {"type": ["string", "null"]},
+        "minimal": {"type": "boolean"},
+        "class": {"enum": ["translation bug", "original workbook inconsistency", "expected by decision"]}
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "required": ["cell", "input_name", "threshold", "exact_hits"],
+      "properties": {
+        "cell": {"type": "string"},
+        "input_name": {"type": "string"},
+        "threshold": {"type": "string"},
+        "change_point": {"type": ["string", "null"]},
+        "operator_includes": {"enum": ["at", "above", null]},
+        "exact_hits": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "required": ["rule_id", "condition_id", "seen_true", "seen_false"],
+      "properties": {
+        "rule_id": {"type": "string"},
+        "condition_id": {"type": "string"},
+        "seen_true": {"type": "boolean"},
+        "seen_false": {"type": "boolean"}
+      }
+    },
+    "mutation": {
+      "type": "object",
+      "required": ["mutants", "killed", "total"],
+      "properties": {
+        "mutants": {"type": "array", "items": {"type": "object", "required": ["mutant_id", "killed"]}},
+        "killed": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 0}
+      }
+    },
+    "sanity": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["matched", "differences", "not cross-checked against Excel"]},
+        "matched": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 0},
+        "differences": {"type": "array", "items": {"type": "object"}}
+      }
+    }
+  }
+}

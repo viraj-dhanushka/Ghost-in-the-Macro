@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run autopsy when a workbook is added to graveyard",
+      "trigger": "PostFileCreate",
+      "description": "Runs the autopsy on any .xlsx or .xlsm workbook newly added to /graveyard. Macros are never executed.",
+      "matcher": "(^|/)graveyard/[^/]+\\.(xlsx|xlsm)$",
+      "action": {
+        "type": "command",
+        "command": "python3 -c \"import sys,re,subprocess; d=sys.stdin.read(); m=re.search(r'[^\\\"\\s]*graveyard/[^/\\\"\\s]+\\.xls[xm]', d); sys.exit(0) if not m else sys.exit(subprocess.call(['python3','-m','ghost.cli','autopsy',m.group(0)]))\"",
+        "timeout": 120
+      }
+    }
+  ]
+}

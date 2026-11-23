@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ghost": {
+      "command": "python",
+      "args": ["-m", "mcp_server.server"],
+      "toolPrefix": "ghost_",
+      "disabled": false
+    }
+  }
+}

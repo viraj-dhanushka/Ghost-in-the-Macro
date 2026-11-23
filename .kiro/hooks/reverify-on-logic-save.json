@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Re-run verification on logic.py or mapping.yaml save",
+      "trigger": "PostFileSave",
+      "description": "Runs the verifier against the Referee when a migration's generated logic.py or mapping.yaml is saved.",
+      "matcher": "\\.kiro/specs/[^/]+/(logic\\.py|mapping\\.yaml)$",
+      "action": {
+        "type": "command",
+        "command": "python3 -c \"import sys,json,re,subprocess; d=sys.stdin.read(); m=re.search(r'(\\.kiro/specs/[^/\\\"]+)/(?:logic\\.py|mapping\\.yaml)', d); sys.exit(0) if not m else sys.exit(subprocess.call(['python3','-m','ghost.cli','verify',m.group(1)]))\"",
+        "timeout": 300
+      }
+    }
+  ]
+}

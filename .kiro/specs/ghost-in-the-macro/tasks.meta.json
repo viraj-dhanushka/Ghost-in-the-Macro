@@ -1,0 +1,1060 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Scaffold project, licence and CI [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087477
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447097666
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447305397
+      }
+    ],
+    "1.2 Write steering files [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087546
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447308853
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447739566
+      }
+    ],
+    "1.3 Add Kiro hooks [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087597
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447744257
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447879571
+      }
+    ],
+    "1.4 Create docs log and optional custom agents [P1]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087617
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447745049
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447880334
+      }
+    ],
+    "2.1 Define core data models [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087639
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447309475
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447739629
+      }
+    ],
+    "2.2 Implement workbook loader with safety limits [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087658
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447745615
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447886856
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448357807
+      }
+    ],
+    "2.3 Implement VBA extraction [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087683
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448364992
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448646867
+      }
+    ],
+    "2.4 Implement feature scanner [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087706
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448365787
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448647549
+      }
+    ],
+    "3.1 Implement soffice locator and LO profile builder [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087750
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447746495
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447879844
+      }
+    ],
+    "3.2 Implement the referee script running inside LibreOffice [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087774
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448366350
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448648730
+      }
+    ],
+    "3.3 Implement `RefereeClient` [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087797
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448656341
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449092466
+      }
+    ],
+    "3.4 Implement the Excel sanity check [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087819
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449102155
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795453820799
+      }
+    ],
+    "4.1 Sample (a) discount calculator [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087847
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447887091
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448358789
+      }
+    ],
+    "4.2 Sample (b) haunted discount calculator [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087864
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448367159
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448646331
+      }
+    ],
+    "4.3 Sample (c) multi-scenario model [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087885
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448367641
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448648072
+      }
+    ],
+    "4.4 Sample (e) Traps workbook [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087906
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447887166
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448358278
+      }
+    ],
+    "5.1 Implement cell classification [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087929
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448657123
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449093294
+      }
+    ],
+    "5.2 Implement threshold extraction [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087950
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448657673
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449094481
+      }
+    ],
+    "5.3 Implement inconsistency detector and metrics [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087971
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449102754
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795453820762
+      }
+    ],
+    "5.4 Implement rules generator [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447087989
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449103326
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795453821257
+      }
+    ],
+    "5.5 Implement migration spec writer [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088013
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454062802
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454240964
+      }
+    ],
+    "5.6 Implement decisions store [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088031
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454063307
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454239673
+      }
+    ],
+    "6.1 Implement formula tokenizer, parser and AST [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088056
+      },
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447746957
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447879530
+      }
+    ],
+    "6.2 Implement Excel runtime semantics [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088073
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448658295
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449094062
+      }
+    ],
+    "6.3 Implement Python emitter (Faithful mode) [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088096
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449104013
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454056394
+      }
+    ],
+    "6.4 Implement subset check and \"not converted\" listing [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088114
+      },
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795449105188
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795453820858
+      }
+    ],
+    "6.5 Generate `mapping.yaml` [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088140
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454064074
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454240115
+      }
+    ],
+    "6.6 Implement Intended mode [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088165
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454247498
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454356478
+      }
+    ],
+    "7.1 Implement value comparison [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088200
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454064695
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454239752
+      }
+    ],
+    "7.2 Implement input strategies and type inference [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088240
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454248253
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454357084
+      }
+    ],
+    "7.3 Implement boundary probing [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088258
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454248790
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454355780
+      }
+    ],
+    "7.4 Implement verification run [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088279
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454363276
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454651910
+      }
+    ],
+    "7.5 Implement rule coverage [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088298
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454364054
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454651805
+      }
+    ],
+    "7.6 Implement mismatch classification and verdict [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088316
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454658501
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454757072
+      }
+    ],
+    "7.10 Write product tests on samples [P0] [PBT]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088339
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454763858
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455015945
+      }
+    ],
+    "8.1 Define report model and JSON schema [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088358
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454659153
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454757614
+      }
+    ],
+    "8.2 Implement HTML renderer and regeneration [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088379
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454764351
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455015133
+      }
+    ],
+    "9.1 Implement the CLI [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088398
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455022272
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455747352
+      }
+    ],
+    "9.2 Write the demo script for samples (a) and (b) [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088416
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455753564
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455873693
+      }
+    ],
+    "10. DEMO CHECKPOINT 1 - CLI end-to-end on samples (a) and (b)": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088435
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455898239
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456231431
+      }
+    ],
+    "11.1 Implement the MCP server [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088455
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455898303
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456231554
+      }
+    ],
+    "11.2 Package the Power [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088473
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456241287
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456732446
+      }
+    ],
+    "11.3 Write the Power skills and guardrails [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088492
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456748545
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457054621
+      }
+    ],
+    "12.1 Build FastAPI skeleton and session handling [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088514
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455898737
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456232450
+      }
+    ],
+    "12.2 Implement the job runner [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088530
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456241360
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456732580
+      }
+    ],
+    "12.3 Build the single-page flow [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088556
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456748455
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457052422
+      }
+    ],
+    "12.4 Apply the haunted-lab theme and accessibility [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088575
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457061856
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457391621
+      }
+    ],
+    "13.1 Write the Dockerfile [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088594
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456241421
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456732529
+      }
+    ],
+    "13.2 Deploy to a public URL [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088614
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795458086536
+      }
+    ],
+    "14. DEMO CHECKPOINT 2 - public URL": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088636
+      }
+    ],
+    "15.1 Implement mutant generation [P1]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088656
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456749053
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457053347
+      }
+    ],
+    "15.2 Run mutants and report score [P1]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088679
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457062739
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457389949
+      }
+    ],
+    "16.1 Implement the Router [P1]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088699
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795456749660
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457054128
+      }
+    ],
+    "16.2 Add dry-run command and design explanation [P1]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088747
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457063484
+      },
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457390959
+      }
+    ],
+    "17.1 Sample (d) xlsm pair [P2] [STRETCH]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088764
+      }
+    ],
+    "17.2 Map VBA functions and subs to cells [P2] [STRETCH]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088785
+      }
+    ],
+    "17.3 Convert simple VBA to Python [P2] [STRETCH]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088818
+      }
+    ],
+    "18.1 Emit TypeScript module [P2] [STRETCH]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088850
+      }
+    ],
+    "18.2 Verify TypeScript output [P2] [STRETCH]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088871
+      }
+    ],
+    "19.1 Write the README [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088901
+      }
+    ],
+    "19.2 Finalise `docs/KIRO_USAGE.md` [P0]": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088920
+      }
+    ],
+    "19.3 Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447088938
+      }
+    ],
+    "1. Repo setup and steering [P0]": [
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795447880359
+      }
+    ],
+    "2. Core ingestion [P0]": [
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448647597
+      }
+    ],
+    "4. Sample workbooks (generated by committed scripts, labelled generated) [P0]": [
+      {
+        "executionId": "2f693b2e-3624-4964-be5e-1fa303aa44ec",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795448648107
+      }
+    ],
+    "3. Referee (port from prototype findings) [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795453820823
+      }
+    ],
+    "5. Autopsy, rules and decisions [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454241015
+      }
+    ],
+    "6. Converter [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795454356530
+      }
+    ],
+    "8. Proof report [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455015179
+      }
+    ],
+    "7. Verifier with boundary probing [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455015977
+      }
+    ],
+    "9. CLI and end-to-end demo script [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795455873743
+      }
+    ],
+    "11. Kiro Power and MCP server [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457054659
+      }
+    ],
+    "15. Mutation self-check [P1]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457389995
+      }
+    ],
+    "16. Migration routing [P1]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457391009
+      }
+    ],
+    "12. Web application [P0]": [
+      {
+        "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795457391670
+      }
+    ]
+  }
+}

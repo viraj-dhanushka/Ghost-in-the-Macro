@@ -1,0 +1,70 @@
+<section id="autopsy" aria-labelledby="autopsy-h">
+  <h2 id="autopsy-h">1. Autopsy of {{ name }}</h2>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <ul class="facts">
+    <li>Sheets: {{ sheets | join(", ") }}</li>
+    <li>Formulas: {{ metrics.formula_count }}</li>
+    <li>VBA lines: {{ metrics.vba_line_count }} in {{ metrics.module_count }} module(s)</li>
+    <li>Calculator shape: {{ "yes" if metrics.calculator_shape else "no" }}</li>
+    <li>Excel-saved values: {{ "present" if excel_saved else "none (reported as not cross-checked against Excel)" }}</li>
+  </ul>
+
+  <h3>Findings</h3>
+  {% if not findings %}
+    <p>No inconsistencies found.</p>
+  {% endif %}
+  {% for f in findings %}
+  <article class="finding" aria-labelledby="{{ f.id }}-h">
+    <h4 id="{{ f.id }}-h">{{ f.id }}: operator conflict on {{ f.cell }} against {{ f.constant }}</h4>
+    <ul>
+      {% for l in f.locations %}<li>{{ l.where }} uses <code>{{ l.op }}</code></li>{% endfor %}
+    </ul>
+    {% if f.decision %}
+      <p class="decided"><strong>{{ f.decision.decision_id }}</strong> recorded by {{ f.decision.author }}: {{ f.decision.behaviour }}. Reason: {{ f.decision.reason }}</p>
+    {% else %}
+    <form hx-post="/decision" hx-target="#autopsy" hx-swap="outerHTML">
+      <input type="hidden" name="finding_id" value="{{ f.id }}">
+      <fieldset>
+        <legend>What should the new implementation do?</legend>
+        {% for o in f.options %}
+        <label class="choice"><input type="radio" name="choice" value="{{ o.value }}" required {% if loop.first %}checked{% endif %}> {{ o.label }}</label>
+        {% endfor %}
+      </fieldset>
+      <label>Your name <input name="author" required maxlength="100"></label>
+      <label>Reason <input name="reason" required maxlength="500"></label>
+      <button type="submit">Record decision</button>
+    </form>
+    {% endif %}
+  </article>
+  {% endfor %}
+
+  {% if not_converted or not_verifiable %}
+  <h3>Not converted or not verifiable</h3>
+  <ul>
+    {% for e in not_converted %}<li>Not converted: {{ e.cell }}: {{ e.reason }}</li>{% endfor %}
+    {% for e in not_verifiable %}<li>Not verifiable as-is: {{ e.cell }}: {{ e.kind }} {{ e.detail }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <h3>Business rules</h3>
+  {% if not rules %}<p>No rules were generated.</p>{% endif %}
+  <ol class="rules">
+    {% for r in rules %}<li><code>{{ r.id }}</code> {{ r.text }} <small>({{ r.cells | join(", ") }})</small></li>{% endfor %}
+  </ol>
+
+  <h2 id="confirm-h">2. Confirm inputs and outputs</h2>
+  <form hx-post="/verify" hx-target="#job" hx-swap="innerHTML" aria-labelledby="confirm-h">
+    <fieldset>
+      <legend>Inputs (constants the new module accepts)</legend>
+      {% for c in inputs %}<label class="cell"><input type="checkbox" name="inputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.cell }}</label>{% endfor %}
+    </fieldset>
+    <fieldset>
+      <legend>Outputs (results to compare)</legend>
+      {% for c in outputs %}<label class="cell"><input type="checkbox" name="outputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.cell }}</label>{% endfor %}
+    </fieldset>
+    {% if decisions %}<p>Verification will run in Faithful and Intended mode ({{ decisions | length }} decision(s) recorded).</p>{% else %}<p>No decisions recorded: verification runs in Faithful mode.</p>{% endif %}
+    {% if unanswered %}<p class="note">{{ unanswered }} finding(s) still unanswered. They are reported as mismatches, not silently resolved.</p>{% endif %}
+    <button type="submit">3. Run verification</button>
+  </form>
+  <div id="job" aria-live="polite"></div>
+</section>

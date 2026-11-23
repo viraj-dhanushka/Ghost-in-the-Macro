@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run golden semantics tests when converter changes",
+      "trigger": "PostFileSave",
+      "description": "Runs the golden Excel-semantics tests whenever a file under ghost/converter/ is saved.",
+      "matcher": "(^|/)ghost/converter/.*\\.py$",
+      "action": {
+        "type": "command",
+        "command": "python3 -m pytest tests -m golden -q",
+        "timeout": 180
+      }
+    }
+  ]
+}
