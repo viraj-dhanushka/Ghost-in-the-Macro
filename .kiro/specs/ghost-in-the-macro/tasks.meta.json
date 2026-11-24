@@ -832,6 +832,16 @@
         "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
         "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
         "timestamp": 1795458086536
+      },
+      {
+        "executionId": "859c7545-613b-4b96-8005-25ff4b29a28b",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795486435038
+      },
+      {
+        "executionId": "c4c19f10-35b0-471a-9b3f-f32dab670d9e",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795492127664
       }
     ],
     "14. DEMO CHECKPOINT 2 - public URL": [
@@ -839,6 +849,11 @@
         "executionId": "209eabda-1e4d-4ea6-989b-0bf6a450bb12",
         "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
         "timestamp": 1795447088636
+      },
+      {
+        "executionId": "c4c19f10-35b0-471a-9b3f-f32dab670d9e",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795492127778
       }
     ],
     "15.1 Implement mutant generation [P1]": [
@@ -1054,6 +1069,13 @@
         "executionId": "ff3f030b-d31f-4569-b1c7-650a70df6adc",
         "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
         "timestamp": 1795457391670
+      }
+    ],
+    "13. Docker deployment [P0]": [
+      {
+        "executionId": "c4c19f10-35b0-471a-9b3f-f32dab670d9e",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795492127736
       }
     ]
   }

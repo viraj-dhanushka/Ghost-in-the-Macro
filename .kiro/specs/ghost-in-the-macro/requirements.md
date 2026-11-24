@@ -284,7 +284,7 @@ Prototype findings (verified in a feasibility spike, `reference/testbench/`, whi
 1. THE Ghost repository SHALL provide a Dockerfile based on Debian slim with `libreoffice-calc-nogui`, `libreoffice-script-provider-python` and the application installed.
 2. THE container SHALL run as a non-root user.
 3. THE container SHALL run on any Docker host with at least 1 GB RAM.
-4. THE Web_App SHALL be deployed to a public URL on a Docker host (App Runner, Fly.io or Render).
+4. THE Web_App SHALL be deployed to a public URL on a Docker host (Amazon ECS Express Mode, Fly.io or Render).
 5. WHEN the container starts, THE Web_App SHALL expose a health endpoint that reports Referee availability.
 6. THE repository SHALL contain no secrets.
 

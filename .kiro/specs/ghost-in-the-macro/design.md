@@ -363,7 +363,7 @@ HEALTHCHECK CMD python -c "import urllib.request;urllib.request.urlopen('http://
 CMD ["uvicorn","web.app:app","--host","0.0.0.0","--port","8080"]
 ```
 
-Notes: bundled sample `.xlsx` files are generated at image build time by the committed scripts. Target hosts (Fly.io, Render, App Runner) need at least 1 GB RAM; `GHOST_MAX_JOBS` defaults to 2 so peak memory stays within that. `/healthz` runs a one-shot Referee start-up check, cached for 60 s.
+Notes: bundled sample `.xlsx` files are generated at image build time by the committed scripts. Target hosts (ECS Express Mode, Fly.io, Render) need at least 1 GB RAM; `GHOST_MAX_JOBS` defaults to 2 so peak memory stays within that. `/healthz` runs a one-shot Referee start-up check, cached for 60 s.
 
 ## Correctness Properties
 

@@ -331,20 +331,20 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - httpx tests for upload rejection, sample flow, decision recording, concurrency queueing, session deletion, macros never enabled for uploads
     - _Requirements: 13.2, 13.5, 13.6, 13.10, 13.12, 13.14, 20.8_
 
-- [ ] 13. Docker deployment [P0]
+- [x] 13. Docker deployment [P0]
   - [x] 13.1 Write the Dockerfile [P0]
     - Debian slim, `libreoffice-calc-nogui`, `libreoffice-script-provider-python`, non-root user, health check, samples generated at build time
     - _Requirements: 14.1, 14.2, 14.3, 14.6_
 
-  - [ ] 13.2 Deploy to a public URL [P0]
-    - Add deploy config (`fly.toml` or `render.yaml`) with at least 1 GB RAM and `GHOST_MAX_JOBS`; no secrets; health endpoint reports Referee availability
+  - [x] 13.2 Deploy to a public URL [P0]
+    - Add `scripts/deploy_ecs_express.sh` and `docs/DEPLOY_ECS_EXPRESS.md` (Amazon ECS Express Mode, 1 vCPU / 2 GB, one pinned task, `GHOST_MAX_JOBS`); no secrets; health endpoint reports Referee availability
     - _Requirements: 14.4, 14.5, 14.6_
 
   - [ ]* 13.3 Write Playwright smoke test [P1]
     - Load page, try sample, run verification, see report link
     - _Requirements: 20.8_
 
-- [ ] 14. DEMO CHECKPOINT 2 - public URL
+- [-] 14. DEMO CHECKPOINT 2 - public URL
   - Ensure all tests pass, ask the user if questions arise.
   - Confirm the public URL runs the haunted sample flow end to end.
 
