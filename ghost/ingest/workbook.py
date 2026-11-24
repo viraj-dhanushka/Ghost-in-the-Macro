@@ -23,6 +23,7 @@ from ghost.ingest.limits import (
     Limits,
     ProcessingTimeout,
     TooLarge,
+    TooManyCells,
     TooManyFormulas,
     UnsupportedFormat,
 )
@@ -115,6 +116,34 @@ def extract_references(
     return refs
 
 
+_NAME_TARGET_RE = re.compile(
+    r"^(?:'((?:[^']|'')+)'|([^'!:()\s,\[\]]+))!"
+    r"\$?([A-Za-z]{1,3})\$?(\d+)(?::\$?([A-Za-z]{1,3})\$?(\d+))?$"
+)
+
+
+def classify_name_target(text: str, sheets: list[str]) -> tuple[str | None, str | None]:
+    """(target, None) for a name that is one cell or one rectangle on an existing
+    sheet, else (None, reason). Target looks like ``Sheet!A1`` or ``Sheet!A1:B3``."""
+    t = text.strip()
+    if "[" in t:
+        return None, "external reference"
+    if "(" in t:
+        return None, "dynamic name (formula such as OFFSET or INDIRECT)"
+    if "," in t:
+        return None, "multi-area name"
+    m = _NAME_TARGET_RE.match(t)
+    if not m:
+        return None, "not a single cell or rectangular range on one sheet"
+    sheet = (m.group(1).replace("''", "'") if m.group(1) is not None else m.group(2))
+    if sheet not in sheets:
+        return None, f"unknown sheet {sheet!r}"
+    first = f"{m.group(3).upper()}{m.group(4)}"
+    if m.group(5) is None:
+        return f"{sheet}!{first}", None
+    return f"{sheet}!{first}:{m.group(5).upper()}{m.group(6)}", None
+
+
 def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
     """Reject non-zip, zip bombs and XML with entities (billion laughs, XXE)."""
     if not zipfile.is_zipfile(path):
@@ -131,13 +160,32 @@ def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
                 raise UnsupportedFormat(
                     "Not an Excel workbook. Accepted formats: .xlsx and .xlsm."
                 )
+            cells = 0
             for info in infos:
                 deadline.check()
                 if not info.filename.lower().endswith((".xml", ".rels", ".vml")):
                     continue
+                is_sheet = info.filename.startswith("xl/worksheets/") and info.filename.endswith(".xml")
                 with zf.open(info) as fh:
-                    for _ in DET.iterparse(fh):
-                        pass
+                    if not is_sheet:
+                        for _ in DET.iterparse(fh):
+                            pass
+                        continue
+                    # Stream the sheet: count <c> elements and free each one as it
+                    # closes, so memory stays flat whatever the sheet size.
+                    for _, elem in DET.iterparse(fh, events=("end",)):
+                        tag = elem.tag
+                        if tag == "c" or tag.endswith("}c"):
+                            cells += 1
+                            if cells > limits.max_cells:
+                                raise TooManyCells(
+                                    f"Workbook has more than {limits.max_cells:,} cells; "
+                                    f"the limit is {limits.max_cells:,} cells."
+                                )
+                            if cells % 5000 == 0:
+                                deadline.check()
+                        if tag == "c" or tag.endswith(("}c", "}row")) or tag == "row":
+                            elem.clear()
     except DefusedXmlException as exc:
         raise UnsupportedFormat(f"Workbook XML rejected as unsafe: {exc}") from exc
     except (zipfile.BadZipFile, DET.ParseError) as exc:
@@ -230,10 +278,25 @@ def load_workbook(
     for name, dn in wb_f.defined_names.items():
         if dn.attr_text:
             result.named_ranges[name] = dn.attr_text.replace("$", "")
+    for name, dn in wb_f.defined_names.items():
+        if not dn.attr_text:
+            continue
+        target, reason = classify_name_target(dn.attr_text, result.sheets)
+        if target:
+            result.name_targets[name] = target
+        else:
+            result.name_issues[name] = reason or "not supported"
+    scoped = set()
     for ws in wb_f.worksheets:
         for name, dn in ws.defined_names.items():
             if dn.attr_text:
                 result.named_ranges.setdefault(name, dn.attr_text.replace("$", ""))
+                scoped.add(name)
+    for name in sorted(scoped):
+        # A sheet-scoped name is never resolved (which sheet's value wins depends
+        # on the formula's sheet); a workbook name it shadows is unsafe too.
+        result.name_targets.pop(name, None)
+        result.name_issues[name] = "sheet-scoped name is not resolved"
 
     n = 0
     for ws in wb_f.worksheets:
@@ -289,4 +352,14 @@ def load_workbook(
         result.deps[ref] = extract_references(
             cell.formula, sheet, result.named_ranges, existing
         )
+    # VBA is detected by content (xl/vbaProject.bin), never by extension, and read
+    # statically. Every front end gets the same result from here.
+    from ghost.ingest.vba import extract_vba, has_vba_project
+
+    result.vba_present = has_vba_project(path)
+    try:
+        result.vba_modules = extract_vba(path)
+    except Exception as exc:  # unreadable container: keep the upload, say so, never invent modules
+        result.vba_modules = []
+        result.vba_error = f"{type(exc).__name__}: {exc}".strip()[:200] or "unknown error"
     return result

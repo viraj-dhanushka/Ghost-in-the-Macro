@@ -1,0 +1,11 @@
+#!/bin/sh
+# Run Python from the repo's virtualenv, whatever the caller's cwd or PATH.
+# Usage: scripts/ghost-py [python args...]   e.g. scripts/ghost-py -m ghost.cli autopsy file.xlsx
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PY="$ROOT/.venv/bin/python"
+if [ ! -x "$PY" ]; then
+  echo "ghost-py: $PY not found. Create the venv first: python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'" >&2
+  exit 127
+fi
+cd "$ROOT" || exit 1
+exec "$PY" "$@"

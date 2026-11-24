@@ -28,6 +28,7 @@ from ghost.referee.locate import RefereeUnavailable, locate_soffice
 
 from .flow import build_flow_router, reset_state
 from .jobs import JobRunner, build_router as build_jobs_router
+from .paths import scrub_paths
 from .sessions import (
     COOKIE_NAME,
     DEFAULT_IDLE_TIMEOUT_S,
@@ -73,7 +74,10 @@ def _summary(wb, name: str, source: str) -> dict:
         "sheets": list(wb.sheets),
         "cells": len(wb.cells),
         "formulas": formulas,
-        "has_vba": bool(wb.vba_modules),
+        "has_vba": bool(wb.vba_modules) or wb.vba_present,
+        "vba_error": (
+            f"VBA present but could not be read: {wb.vba_error}" if wb.vba_error else ""
+        ),
     }
 
 
@@ -85,14 +89,14 @@ def _referee_check() -> dict:
     try:
         soffice = locate_soffice()
     except RefereeUnavailable as exc:
-        return {"available": False, "reason": str(exc)}
+        return {"available": False, "reason": scrub_paths(str(exc))}
     try:
         with tempfile.TemporaryDirectory(prefix="ghost-health-") as tmp:
             xlsx = _build_sample("discount", Path(tmp) / "health.xlsx")
             with RefereeClient(soffice, xlsx, job_dir=Path(tmp) / "job"):
                 pass
     except (RefereeError, OSError, RuntimeError) as exc:
-        return {"available": False, "reason": f"Referee failed to start: {exc}"}
+        return {"available": False, "reason": scrub_paths(f"Referee failed to start: {exc}")}
     return {"available": True}
 
 
@@ -108,6 +112,7 @@ def create_app(
         secret = os.environ["GHOST_SESSION_SECRET"].encode()
     store = SessionStore(root=session_root, secret=secret, idle_timeout_s=idle_timeout_s)
     runner = JobRunner()
+    store.on_delete.append(runner.forget_session)  # delete, sweep and close
     health: dict = {"at": None, "result": None}
     health_lock = threading.Lock()
 
@@ -116,8 +121,7 @@ def create_app(
         async def sweeper() -> None:
             while True:
                 await asyncio.sleep(sweep_interval_s)
-                for sid in await asyncio.to_thread(store.sweep):
-                    runner.forget_session(sid)
+                await asyncio.to_thread(store.sweep)
 
         task = asyncio.create_task(sweeper())
         try:
@@ -162,6 +166,8 @@ def create_app(
         return response
 
     def respond(request: Request, session: Session, is_new: bool, ok: bool, payload: dict, status: int) -> Response:
+        if isinstance(payload.get("error"), str):
+            payload = {**payload, "error": scrub_paths(payload["error"])}
         if request.headers.get("hx-request"):
             resp: Response = templates.TemplateResponse(
                 request, "_upload_result.html", {"ok": ok, **payload}, status_code=status
@@ -254,7 +260,6 @@ def create_app(
     async def end_session(request: Request) -> Response:
         session = store.get(request.cookies.get(COOKIE_NAME))
         if session is not None:
-            runner.forget_session(session.sid)
             store.delete(session.sid)
         resp = JSONResponse({"ok": True})
         resp.delete_cookie(COOKIE_NAME)

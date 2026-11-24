@@ -34,14 +34,17 @@ from ghost.autopsy.metrics import metrics as compute_metrics
 from ghost.autopsy.thresholds import extract_thresholds
 from ghost.cli import (
     CliError,
+    patch_validator,
     _accepts_trace,
     _analyse,
     _load,
     _probe_boundaries,
+    _probe_flips_with_summary,
     _roles_from_mapping,
     _soffice_version,
     run_verification,
 )
+from ghost.converter.emit_python import emit_module
 from ghost.converter.mapping import generate_mapping
 from ghost.converter.subset import find_not_converted
 from ghost.decisions.store import InvalidDecision, load_decisions, record
@@ -55,6 +58,7 @@ from ghost.referee.sanity import run_sanity
 from ghost.rules.ears import generate_rules
 from ghost.verifier.classify import make_classifier
 from ghost.verifier.coverage import CoverageTracker, candidate_inputs, close_gaps
+from ghost.verifier.flip import flip_cases
 from ghost.verifier.run import DEFAULT_CASES, DEFAULT_SEED, VerifyConfig, load_compute, verify
 
 SERVER_NAME = "ghost-in-the-macro"
@@ -296,6 +300,13 @@ def evaluate_original(a: EvaluateOriginalArgs) -> dict[str, Any]:
     wb = _load_workbook(a.workbook)
     _require_cells(wb, list(a.inputs), "inputs")
     _require_cells(wb, a.outputs, "outputs")
+    for cell, value in a.inputs.items():
+        if value is not None and not isinstance(value, (str, int, float, bool, Decimal)):
+            raise _bad(
+                f"inputs.{cell}",
+                f"invalid inputs.{cell}: expected a number, text, boolean or null, "
+                f"got {type(value).__name__}",
+            )
     inputs = {k: _wire(v) for k, v in a.inputs.items()}
     with RefereeClient(locate_soffice(), Path(a.workbook), run_macros=False) as ref:
         values = ref.eval(inputs, list(a.outputs))
@@ -358,19 +369,33 @@ def verify_implementation(a: VerifyImplementationArgs) -> dict[str, Any]:
     if a.migration_dir and not Path(a.migration_dir).is_dir():
         raise _bad("migration_dir", f"migration directory not found: {a.migration_dir}")
     decisions = load_decisions(a.migration_dir) if a.migration_dir else []
-    thresholds = extract_thresholds(wb)
+    thresholds = extract_thresholds(wb, roles=_roles_from_mapping(mapping))
     findings = detect_inconsistencies(thresholds)
     rules = generate_rules(wb, _roles_from_mapping(mapping), thresholds)  # type: ignore[arg-type]
     soffice = locate_soffice()
     tracker = CoverageTracker(rules)
     traced = _accepts_trace(compute)
+    # Intended mode: the same three-condition test as the CLI. The comparison module is the
+    # transpiled Faithful module; if the workbook is not fully convertible there is none, and
+    # every mismatch is then classified as a translation bug (never excused by a Decision).
+    faithful = None
+    if a.mode == "intended" and decisions:
+        try:
+            built = emit_module(wb, mapping)
+            faithful = None if built.not_converted else load_compute(built.code)
+        except Exception:  # noqa: BLE001 - unconvertible means "cannot explain"
+            faithful = None
+    flips, flip_summary = _probe_flips_with_summary(wb, mapping, a.seed)
+    flip_extra = flip_cases(flips, mapping, summary=flip_summary)  # R-04, as the CLI
     cfg = VerifyConfig(
         seed=a.seed,
         max_examples=a.cases,
         mode=a.mode,
         thresholds=thresholds,
         trace=tracker.trace if traced else None,
+        faithful=faithful,
         classifier=make_classifier(a.mode, findings, decisions, rules, wb.deps),  # type: ignore[arg-type]
+        extra_cases=flip_extra,
     )
     with RefereeClient(soffice, Path(a.workbook), run_macros=False) as ref:
         res = verify(compute, mapping, ref, cfg)
@@ -386,8 +411,13 @@ def verify_implementation(a: VerifyImplementationArgs) -> dict[str, Any]:
         "mode": res.mode,
         "seed": res.seed,
         "cases_tested": res.cases_tested,
+        "cases_generated": res.cases_generated,
+        "cases_targeted": res.cases_targeted,
+        "distinct_cases": res.distinct_cases,
         "passed": res.passed,
         "mismatches": res.mismatches,
+        "decisions_cannot_explain": res.explain_unavailable,
+        "boundary_notes": flip_summary.notes(),
         "uncovered_conditions": uncovered if traced else "not checked",
         "libreoffice": _soffice_version(soffice) or "not checked",
     }
@@ -426,7 +456,7 @@ def record_decision(a: RecordDecisionArgs) -> dict[str, Any]:
 
         raw["date"] = _date.today().isoformat()
     try:
-        d = record(mdir, raw)
+        d = record(mdir, raw, validate=patch_validator(mdir))
     except InvalidDecision as exc:
         missing = list(getattr(exc, "missing", []) or [])
         arg = missing[0] if missing else "decision"

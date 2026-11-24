@@ -26,3 +26,11 @@ def test_explanation_is_deterministic_and_replaced_in_place(tmp_path):
     text = (tmp_path / "design.md").read_text()
     assert text.startswith("# Design\n\nIntro") and text.count("ghost:route:begin") == 1
     assert "never executed" in text and route.atx_command in text
+
+
+def test_atx_command_uses_trust_flag_portable_build_and_names_prerequisite():
+    route = with_atx_command(recommend_route(Metrics(userform_count=9)), "/w/a.xlsx")
+    assert " -x -t" in route.atx_command
+    assert "compileall" in route.atx_command and "**" not in route.atx_command
+    text = explain_route(route)
+    assert "atx custom def list" in text and "exact" not in text.lower()

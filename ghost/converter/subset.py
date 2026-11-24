@@ -17,6 +17,7 @@ from ghost.converter.ast import (
     RangeRef,
     walk,
 )
+from ghost.converter.names import name_reason, substitute_names
 from ghost.converter.parser import FormulaSyntaxError, parse_formula
 from ghost.models import Workbook
 
@@ -49,8 +50,15 @@ class NotConverted:
     dependent: bool = False
 
 
-def check_subset(ast: Ast, cell: str | None = None) -> list[NotConverted]:
-    """Return one entry per distinct out-of-subset construct in ``ast``."""
+def check_subset(
+    ast: Ast, cell: str | None = None, workbook: Workbook | None = None
+) -> list[NotConverted]:
+    """Return one entry per distinct out-of-subset construct in ``ast``.
+
+    With ``workbook``, resolvable defined names are substituted first (R-27) and
+    only the unresolvable ones are listed, each with its reason."""
+    if workbook is not None:
+        ast = substitute_names(ast, workbook)
     out: list[NotConverted] = []
     seen: set[str] = set()
 
@@ -63,7 +71,8 @@ def check_subset(ast: Ast, cell: str | None = None) -> list[NotConverted]:
         if isinstance(node, FuncCall) and node.name not in SUPPORTED_FUNCTIONS:
             add(f"function {node.name} is outside the P0 subset")
         elif isinstance(node, NameRef):
-            add(f"named reference {node.name} is not supported")
+            why = f": {name_reason(workbook, node.name)}" if workbook is not None else ""
+            add(f"named reference {node.name} is not supported{why}")
         elif isinstance(node, BinaryOp) and node.op not in _OPERATORS:
             add(f"operator {node.op} is outside the P0 subset")
         elif isinstance(node, ErrorLiteral):
@@ -90,7 +99,7 @@ def find_not_converted(workbook: Workbook) -> list[NotConverted]:
         except FormulaSyntaxError as exc:
             direct[ref] = [NotConverted(cell=ref, reason=f"formula not parsed: {exc}")]
             continue
-        found = check_subset(ast, ref)
+        found = check_subset(ast, ref, workbook)
         if found:
             direct[ref] = found
 

@@ -150,3 +150,35 @@ def test_evaluate_original_returns_referee_values(haunted):
         "evaluate_original", {"workbook": str(haunted), "inputs": {}, "outputs": out}
     )
     assert not is_error and set(payload["values"]) == set(out)
+# Review fix 6.6 (Requirement 12.11): argument errors name the argument, never "referee_error".
+@pytest.mark.parametrize("bad", [{"x": 1}, [1, 2], (1, 2)])
+def test_evaluate_original_non_scalar_input_names_the_cell(haunted, monkeypatch, bad):
+    def _no_referee(*a, **k):
+        raise AssertionError("the Referee must not start for an invalid argument")
+    monkeypatch.setattr(srv, "RefereeClient", _no_referee)
+    from ghost.cli import _analyse
+    an = _analyse(haunted)
+    cell = sorted(r for r, v in an.roles.items() if v == "INPUT")[0]
+    out = sorted(r for r, v in an.roles.items() if v == "OUTPUT")[:1]
+    payload, is_error = srv.call_tool_sync(
+        "evaluate_original", {"workbook": str(haunted), "inputs": {cell: bad}, "outputs": out}
+    )
+    assert is_error
+    assert payload["error"]["type"] == "invalid_argument"
+    assert payload["error"]["argument"] == f"inputs.{cell}"
+    assert f"inputs.{cell}" in payload["error"]["message"]
+def test_boundary_cases_and_verify_name_bad_arguments(haunted, monkeypatch):
+    monkeypatch.setattr(srv, "RefereeClient", lambda *a, **k: (_ for _ in ()).throw(
+        AssertionError("the Referee must not start for an invalid argument")))
+    payload, is_error = srv.call_tool_sync(
+        "boundary_cases", {"workbook": str(haunted), "inputs": [{"a": 1}]}
+    )
+    assert is_error and payload["error"]["type"] == "invalid_argument"
+    assert payload["error"]["argument"].startswith("inputs")
+    payload, is_error = srv.call_tool_sync(
+        "verify_implementation",
+        {"workbook": str(haunted), "module": "x", "mapping": {"inputs": {}, "outputs": {}},
+         "cases": "many"},
+    )
+    assert is_error and payload["error"]["type"] == "invalid_argument"
+    assert payload["error"]["argument"] == "cases"

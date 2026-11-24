@@ -23,9 +23,26 @@
     },
     "mode": {"enum": ["faithful", "intended"]},
     "cases_tested": {"type": "integer", "minimum": 0},
+    "cases_generated": {"type": "integer", "minimum": 0},
+    "cases_targeted": {"type": "integer", "minimum": 0},
+    "distinct_cases": {"type": "integer", "minimum": 0},
     "passed": {"type": "boolean"},
     "mismatches": {"type": "array", "items": {"$ref": "#/$defs/mismatch"}},
     "boundaries": {"type": "array", "items": {"$ref": "#/$defs/boundary"}},
+    "boundary_notes": {"type": "array", "items": {"type": "string"}},
+    "tested_domains": {"type": "array", "items": {
+      "type": "object",
+      "required": ["input", "type"],
+      "properties": {
+        "input": {"type": "string"},
+        "type": {"type": "string"},
+        "min": {"type": "string"},
+        "max": {"type": "string"},
+        "decimal_places": {"type": "integer", "minimum": 0},
+        "distinct_values": {"type": "integer", "minimum": 0},
+        "not_tested": {"type": "boolean"}
+      }
+    }},
     "rule_coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}},
     "mutation": {"oneOf": [{"$ref": "#/$defs/mutation"}, {"$ref": "#/$defs/notChecked"}]},
     "sanity": {"oneOf": [{"$ref": "#/$defs/sanity"}, {"$ref": "#/$defs/notChecked"}]},
@@ -52,6 +69,7 @@
         "finding_id": {"type": ["string", "null"]},
         "decision_id": {"type": ["string", "null"]},
         "minimal": {"type": "boolean"},
+        "cases": {"type": "integer", "minimum": 1},
         "class": {"enum": ["translation bug", "original workbook inconsistency", "expected by decision"]}
       }
     },
@@ -64,7 +82,12 @@
         "threshold": {"type": "string"},
         "change_point": {"type": ["string", "null"]},
         "operator_includes": {"enum": ["at", "above", null]},
-        "exact_hits": {"type": "array", "items": {"type": "object"}}
+        "exact_hits": {"type": "array", "items": {"type": "object"}},
+        "kind": {"enum": ["condition flip", null]},
+        "condition_id": {"type": ["string", "null"]},
+        "below": {"type": ["string", "null"]},
+        "above": {"type": ["string", "null"]},
+        "exact": {"type": ["string", "null"]}
       }
     },
     "coverage": {

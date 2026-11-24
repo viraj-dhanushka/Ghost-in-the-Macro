@@ -81,10 +81,17 @@ class Workbook:
     sheets: list[str] = field(default_factory=list)
     cells: dict[CellRef, Cell] = field(default_factory=dict)
     named_ranges: dict[str, str] = field(default_factory=dict)
+    # R-27: workbook-scoped names that resolve to one cell or one rectangle,
+    # as "Sheet!A1" or "Sheet!A1:B3", and the reason every other name is not resolved.
+    name_targets: dict[str, str] = field(default_factory=dict)
+    name_issues: dict[str, str] = field(default_factory=dict)
     deps: dict[CellRef, set[CellRef]] = field(default_factory=dict)
     vba_modules: list[VbaModule] = field(default_factory=list)
     features: list[FeatureFlag] = field(default_factory=list)
     excel_saved: bool = False
+    # True when xl/vbaProject.bin exists. vba_error is set when it could not be read.
+    vba_present: bool = False
+    vba_error: str = ""
 
 
 # --------------------------------------------------------------------------
@@ -182,6 +189,8 @@ class Mismatch(_Model):
     finding_id: str | None = None
     decision_id: str | None = None
     minimal: bool = False
+    # Expected-by-decision entries: distinct generated cases this Decision explained.
+    cases: int | None = None
 
 
 class BoundaryResult(_Model):
@@ -191,6 +200,12 @@ class BoundaryResult(_Model):
     change_point: Decimal | None = None
     operator_includes: Literal["at", "above"] | None = None  # which side owns t
     exact_hits: list[dict[str, object]] = Field(default_factory=list)
+    # Condition-flip boundaries only (R-04); all optional so older reports stay valid.
+    kind: Literal["condition flip"] | None = None
+    condition_id: str | None = None  # trace id, e.g. "Calculator!B12#1"
+    below: Decimal | None = None
+    above: Decimal | None = None
+    exact: Decimal | None = None
 
 
 class RuleCoverage(_Model):
@@ -247,9 +262,17 @@ class Report(_Model):
     versions: Versions
     mode: Mode
     cases_tested: int
+    # R-28, optional: cases_tested = generated + targeted (every case checked, repeats included).
+    cases_generated: int | None = None
+    cases_targeted: int | None = None
+    distinct_cases: int | None = None
     passed: bool
     mismatches: list[Mismatch] = Field(default_factory=list)
     boundaries: list[BoundaryResult] = Field(default_factory=list)
+    # R-04, optional: what flip probing did not check (cap reached, not convertible, ...).
+    boundary_notes: list[str] = Field(default_factory=list)
+    # R-21, optional: per input type, min, max, decimal places over the cases actually run.
+    tested_domains: list[dict[str, object]] = Field(default_factory=list)
     rule_coverage: list[RuleCoverage] = Field(default_factory=list)
     mutation: Union[MutationResult, NotChecked] = Field(default_factory=NotChecked)
     sanity: Union[SanityResult, NotChecked] = Field(default_factory=NotChecked)

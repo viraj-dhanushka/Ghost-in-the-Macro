@@ -43,6 +43,8 @@ class Session:
     # Upload/sample records: {"path": str, "name": str}. Internal only.
     workbook: dict | None = None
     data: dict = field(default_factory=dict)
+    # One cached analysis per session: (key, Analysis). See web/flow.py.
+    analysis_cache: tuple | None = None
 
 
 class SessionStore:
@@ -60,6 +62,8 @@ class SessionStore:
         self._clock = clock
         self._lock = threading.Lock()
         self._sessions: dict[str, Session] = {}
+        # Called with the session id whenever a session is deleted, swept or closed.
+        self.on_delete: list[Callable[[str], None]] = []
 
     def create(self) -> Session:
         sid = secrets.token_urlsafe(24)
@@ -86,6 +90,13 @@ class SessionStore:
     def delete(self, sid: str) -> None:
         with self._lock:
             s = self._sessions.pop(sid, None)
+        if s is not None:
+            s.analysis_cache = None
+        for hook in list(self.on_delete):
+            try:
+                hook(sid)
+            except Exception:  # noqa: BLE001 - cleanup must not block deletion
+                pass
         folder = s.folder if s else self.root / sid
         shutil.rmtree(folder, ignore_errors=True)
 

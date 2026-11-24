@@ -20,7 +20,7 @@ __all__ = ["classify", "input_score"]
 # A label containing one of these words marks the constant as a rate/fixed value.
 _RATE_WORDS = re.compile(
     r"\b(rate|vat|tax|gst|percent|percentage|pct|fee|rebate|margin|markup|"
-    r"threshold|limit|factor|multiplier|constant)\b|%",
+    r"threshold|limit|factor|multiplier|constant|allowance|within|free)\b|%",
     re.IGNORECASE,
 )
 
@@ -53,6 +53,130 @@ def _left_label(wb: Workbook, ref: CellRef) -> str | None:
     return None
 
 
+def _above_below_ref(ref: CellRef, step: int) -> CellRef | None:
+    sheet, _, addr = ref.rpartition("!")
+    m = _ADDR_RE.match(addr)
+    if not m:
+        return None
+    row = int(m.group(2)) + step
+    if row < 1:
+        return None
+    return f"{sheet}!{m.group(1)}{row}"
+
+
+def _in_parameter_block(workbook: Workbook, ref: CellRef) -> bool:
+    """True when an unmarked, labelled constant is sandwiched between two
+    constants whose own labels name a rate or fixed value (a block of parameters).
+
+    Cells with a fill or validation are never pulled into a block: the author
+    marked them as inputs.
+    """
+    cell = workbook.cells[ref]
+    if cell.fill or cell.validation or not _left_label(workbook, ref):
+        return False
+    for step in (-1, 1):
+        nb = _above_below_ref(ref, step)
+        other = workbook.cells.get(nb) if nb else None
+        if other is None or other.formula is not None or other.fill or other.validation:
+            return False
+        label = _left_label(workbook, nb)
+        if not (label and _RATE_WORDS.search(label)):
+            return False
+    return True
+
+
+_LOOKUP_RE = re.compile(r"\b(INDEX|MATCH|VLOOKUP|HLOOKUP|LOOKUP|XLOOKUP)\s*\(", re.IGNORECASE)
+_SPLIT_RE = re.compile(r"^(.*)!([A-Z]+)(\d+)$")
+
+# A table block spans at least this many columns and rows of unmarked constants.
+# Two columns is a label/value list, which is not a table.
+_TABLE_MIN_COLS = 3
+_TABLE_MIN_ROWS = 3
+
+
+def _table_block_cells(workbook: Workbook) -> set[CellRef]:
+    """Cells that belong to a table block of constants (R-05).
+
+    A table block is a 4-connected group of constant cells (numbers or text)
+    with no fill and no validation, at least 3 columns by 3 rows in extent.
+    Filled or validated cells are marked as inputs by the author and never join.
+    """
+    from openpyxl.utils import column_index_from_string
+
+    pos: dict[tuple[str, int, int], CellRef] = {}
+    for ref, cell in workbook.cells.items():
+        if cell.formula is not None or cell.fill or cell.validation:
+            continue
+        if cell.value is None or isinstance(cell.value, bool):
+            continue
+        m = _SPLIT_RE.match(ref)
+        if m:
+            pos[(m.group(1), column_index_from_string(m.group(2)), int(m.group(3)))] = ref
+
+    block: set[CellRef] = set()
+    seen: set[tuple[str, int, int]] = set()
+    for start in sorted(pos):
+        if start in seen:
+            continue
+        group = []
+        stack = [start]
+        seen.add(start)
+        while stack:
+            key = stack.pop()
+            group.append(key)
+            sheet, col, row = key
+            for nb in ((sheet, col - 1, row), (sheet, col + 1, row), (sheet, col, row - 1), (sheet, col, row + 1)):
+                if nb in pos and nb not in seen:
+                    seen.add(nb)
+                    stack.append(nb)
+        cols = {k[1] for k in group}
+        rows = {k[2] for k in group}
+        if (max(cols) - min(cols) + 1 >= _TABLE_MIN_COLS and max(rows) - min(rows) + 1 >= _TABLE_MIN_ROWS):
+            block.update(pos[k] for k in group)
+    return block
+
+
+def _is_lookup_text(workbook: Workbook, cell: Cell, users: set[CellRef]) -> bool:
+    """Text constant read by a formula that uses INDEX/MATCH/LOOKUP (R-05)."""
+    if not isinstance(cell.value, str) or cell.fill or cell.validation:
+        return False
+    return any(
+        (f := workbook.cells.get(u)) is not None and f.formula and _LOOKUP_RE.search(f.formula)
+        for u in users
+    )
+
+
+def _compared_with_literal(workbook: Workbook) -> set[CellRef]:
+    """Cells that some formula compares directly with a numeric literal (R-11).
+
+    Read from the formula ASTs, not from computed thresholds, so classification
+    does not depend on thresholds that are themselves computed from the roles.
+    ``A1>=50`` and ``50<A1`` both count A1. A comparison between two cells
+    (``B2>=E2``) does not.
+    """
+    from ghost.autopsy.thresholds import _literal, _qualify
+    from ghost.converter import ast as A
+    from ghost.converter.names import substitute_names
+    from ghost.converter.parser import FormulaSyntaxError, parse_formula
+
+    found: set[CellRef] = set()
+    for ref in sorted(workbook.cells):
+        formula = workbook.cells[ref].formula
+        if not formula:
+            continue
+        try:
+            tree = substitute_names(parse_formula(formula), workbook)
+        except FormulaSyntaxError:
+            continue
+        for node in A.walk(tree):
+            if not isinstance(node, A.BinaryOp) or node.op not in ("=", "<>", "<", "<=", ">", ">="):
+                continue
+            for side, other in ((node.left, node.right), (node.right, node.left)):
+                if isinstance(side, A.CellRef) and _literal(other) is not None:
+                    found.add(_qualify(side, ref))
+    return found
+
+
 def input_score(cell: Cell, label: str | None) -> int:
     """INPUT score: referenced constant (+1) plus fill, validation and label (+1 each)."""
     score = 1  # the caller only scores constants that a formula references
@@ -77,6 +201,9 @@ def classify(
         for src in reads:
             dependents.setdefault(src, set()).add(formula_ref)
 
+    table_cells = _table_block_cells(workbook)
+    compared = _compared_with_literal(workbook)
+
     roles: dict[CellRef, CellRoleName] = {}
     for ref in sorted(workbook.cells):
         cell = workbook.cells[ref]
@@ -95,9 +222,12 @@ def classify(
         label = _left_label(workbook, ref)
         score = input_score(cell, label)
         rate_labelled = bool(label and _RATE_WORDS.search(label))
+        in_block = _in_parameter_block(workbook, ref)
         # Fixed value shared by several formulas with no input-style signal.
-        shared_fixed = len(users) >= 2 and score == 1
-        if rate_labelled or shared_fixed:
+        # A constant compared with a threshold is an input (R-11).
+        shared_fixed = len(users) >= 2 and score == 1 and ref not in compared
+        in_table = ref in table_cells or _is_lookup_text(workbook, cell, users)
+        if rate_labelled or in_block or in_table or shared_fixed:
             roles[ref] = "PARAMETER"
         else:
             roles[ref] = "INPUT"

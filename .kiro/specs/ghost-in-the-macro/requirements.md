@@ -171,6 +171,7 @@ Prototype findings (verified in a feasibility spike, `reference/testbench/`, whi
 2. THE Converter SHALL support the operators `+ - * / ^ &`, unary minus, comparisons and percent.
 3. THE Converter SHALL support IF, AND, OR, NOT, IFERROR, ROUND, ROUNDUP, ROUNDDOWN, INT, MOD, ABS, MIN, MAX, SUM, AVERAGE, CHOOSE, INDEX and exact-match MATCH.
 4. THE Converter SHALL support named ranges, cross-sheet references and ranges inside aggregate functions.
+   - Note (R-27, 2026-11-24): named ranges are supported when workbook-scoped and pointing at one cell or one rectangle on one sheet. Dynamic, sheet-scoped, multi-area and external names are listed as not converted with a reason.
 5. THE Converter SHALL use Python Decimal arithmetic and SHALL convert floats with `Decimal(repr(x))`.
 6. THE Converter SHALL apply Excel rounding semantics per the Excel_Semantics_Table.
 7. IF a formula uses a construct outside the P0 subset, THEN THE Converter SHALL list the formula as "not converted" with its cell and reason, and SHALL NOT generate a guess.

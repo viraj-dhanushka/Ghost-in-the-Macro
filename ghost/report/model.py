@@ -85,6 +85,7 @@ def _mismatch_json(m: Mismatch) -> dict[str, Any]:
         "decision_id": m.decision_id,
         "minimal": m.minimal,
         "class": m.mismatch_class,
+        **({"cases": m.cases} if m.cases is not None else {}),
     }
 
 
@@ -102,7 +103,7 @@ def _sanity_json(s: SanityResult | NotChecked) -> dict[str, Any]:
 
 def report_to_dict(report: ProofReport) -> dict[str, Any]:
     """Serialise a report to the JSON shape defined by proof-report-1.json."""
-    return {
+    data = {
         "schema_version": report.schema_version,
         "ghost_version": report.ghost_version,
         "seed": report.seed,
@@ -118,6 +119,16 @@ def report_to_dict(report: ProofReport) -> dict[str, Any]:
         "findings": [_jsonable(f.model_dump(mode="python")) for f in report.findings],
         "decisions": [_jsonable(d.model_dump(mode="python")) for d in report.decisions],
     }
+    if report.boundary_notes:  # R-04: optional, omitted when flip probing left nothing unchecked
+        data["boundary_notes"] = list(report.boundary_notes)
+    if report.tested_domains:  # R-21: optional, omitted when the cases were not recorded
+        data["tested_domains"] = _jsonable(report.tested_domains)
+    # R-28: optional fields, omitted when the engine did not count them.
+    for key in ("cases_generated", "cases_targeted", "distinct_cases"):
+        value = getattr(report, key)
+        if value is not None:
+            data[key] = value
+    return data
 
 
 def validate_report_dict(data: dict[str, Any]) -> None:

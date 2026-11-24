@@ -24,7 +24,7 @@ inclusion: always
 - Verifier tolerance: absolute 1e-6 for numbers, exact strings, Excel errors compared by error type.
 - One long-lived Referee per job. The uploaded file is copied and never modified.
 - Macros are off (`NEVER_EXECUTE`) by default and only enabled for a trusted source (bundled sample, or local CLI with `--trust-macros`). Never for web uploads.
-- Limits: 5 MB file size, 20,000 formulas, a processing timeout.
+- Limits: 5 MB file size, 20,000 formulas, 200,000 cells (`MAX_CELLS`, counted while streaming the sheet XML in the defusedxml pre-scan, before openpyxl loads anything), a processing timeout.
 - Environment variables: `GHOST_SOFFICE` (path to soffice), `GHOST_MAX_JOBS` (default 2).
 - Tests co-located under `tests/`. Property tests use Hypothesis and cite the property number and requirements they validate.
 - Everything in a proof report comes from engine output. Missing checks are written as "not checked".

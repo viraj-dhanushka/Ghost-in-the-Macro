@@ -11,7 +11,7 @@
     {% if report %}
       <p class="verdict {{ 'pass' if report.passed else 'fail' }}" role="status">
         {{ "Passed" if report.passed else "Not passed: mismatches not explained by a Decision" }}
-        ({{ report.mode }} mode, {{ report.cases_tested }} cases, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).
+        ({{ report.mode }} mode, {{ report.cases_text }} cases, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).
         Excel cross-check: {{ report.excel_check }}.
       </p>
       {% if report.mutation %}
@@ -26,6 +26,8 @@
       <ul>
         <li><a href="/run/{{ job.id }}/report.html">Proof report (HTML)</a></li>
         <li><a href="/run/{{ job.id }}/report.json">Proof report (JSON)</a></li>
+        {% if has_faithful_report %}<li><a href="/run/{{ job.id }}/report.html?mode=faithful">Faithful mode proof report (HTML)</a></li>
+        <li><a href="/run/{{ job.id }}/report.json?mode=faithful">Faithful mode proof report (JSON)</a></li>{% endif %}
         {% if has_module %}<li><a href="/run/{{ job.id }}/module.py">Generated module (logic.py)</a></li>
         <li><a href="/run/{{ job.id }}/module.zip">Module with runtime, mapping, rules and decisions (zip)</a></li>{% endif %}
       </ul>

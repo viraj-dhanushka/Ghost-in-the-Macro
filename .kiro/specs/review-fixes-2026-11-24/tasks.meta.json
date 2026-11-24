@@ -1,0 +1,1122 @@
+{
+  "pbtResults": {
+    "1. Write bug condition exploration baseline": {
+      "status": "passed",
+      "failingExample": "19/19 review tests fail under --runxfail for their stated reasons, e.g. R-01: Intended run passes after 1 case, mismatch at {quantity:0, unit_price:0, delivery_distance_km:0} classed 'expected by decision'; R-05: best_scenario referee 0.0 vs actual '' at case 1; R-03: 300 cases all integer distances pass",
+      "lastRunTimestamp": 1795499553994
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration baseline": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388123
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499399593
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499572418
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing any fix)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388150
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499573076
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499760844
+      }
+    ],
+    "3.1 Write the web test for every bundled sample (R-05)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388184
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499769290
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499974778
+      }
+    ],
+    "3.2 Fix R-12: treat `Calculator!E5` as a PARAMETER": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388234
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499975726
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795500303225
+      }
+    ],
+    "3.3 Fix R-05: table blocks and INDEX/MATCH text are PARAMETER": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388259
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795500303423
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795500589420
+      }
+    ],
+    "3.4 Fix R-05: `_inp(\"\")` means an empty cell": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388285
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795500590206
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795500839963
+      }
+    ],
+    "3.5 Align the demo defaults with the autopsy defaults (R-05)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388308
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795500840573
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501055199
+      }
+    ],
+    "3.6 Write the README (R-19)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388360
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501054148
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501222392
+      }
+    ],
+    "3.7 Fix the four hooks (R-29)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388383
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501055856
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501223159
+      }
+    ],
+    "3.8 Checkpoint: Phase 1": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388399
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501223739
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501482441
+      }
+    ],
+    "4.1 **Property 3: Intended-mode classification soundness (PBT)** - write the test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388421
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501482540
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501759976
+      }
+    ],
+    "4.2 Fix R-01: classify Intended mismatches by the three-condition test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388442
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501760030
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795502707568
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795506264899
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795506787682
+      }
+    ],
+    "4.3 Fix R-01 on the MCP path": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388492
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795502709046
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503004238
+      }
+    ],
+    "4.4 Fix R-02: label Faithful translation bugs correctly": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388515
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795502709301
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503005534
+      }
+    ],
+    "4.5 **Property 5: Type inference (PBT)** - write the test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388533
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503006147
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503219571
+      }
+    ],
+    "4.6 Fix R-03: one shared type-inference function": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388553
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503220094
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503558337
+      }
+    ],
+    "4.7 **Property 6: Condition-flip probing finds the boundary (PBT)** - write the test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388572
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503558381
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503820674
+      }
+    ],
+    "4.8 Implement condition-flip probing (R-04, R-10 expressions)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388619
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795503821485
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795504117221
+      }
+    ],
+    "4.9 Wire flip probing into verification, mutation and boundaries (R-04)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388641
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795504117569
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795504605262
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795506265188
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795506787734
+      }
+    ],
+    "4.10 Fix R-06: honest survivor wording": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388662
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795504605375
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795504986508
+      }
+    ],
+    "4.11 Fix R-28: generated versus distinct cases": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388684
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795504985937
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795505396874
+      }
+    ],
+    "4.12 Checkpoint: Phase 2": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388728
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795505397114
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507428340
+      }
+    ],
+    "5.1 **Property 4: Operator consistency (PBT)** - write the test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388750
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507438916
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507661741
+      }
+    ],
+    "5.2 Fix R-09: truth-set comparison in findings": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388770
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507677332
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507964872
+      }
+    ],
+    "5.3 Fix R-10: threshold extraction rules": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388792
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507965043
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795508306366
+      }
+    ],
+    "5.4 Fix R-11: a compared constant is an INPUT": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388836
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795508306979
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795508543943
+      }
+    ],
+    "5.5 **Property 8: Decision uniqueness (PBT)** - write the test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388858
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795508544740
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795508761729
+      }
+    ],
+    "5.6 Fix R-14: reject duplicate Decisions": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388876
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795508761115
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795509325377
+      }
+    ],
+    "5.7 Add the generated macro sample (R-13)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388895
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795509326069
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795509631083
+      }
+    ],
+    "5.8 Fix R-13: detect VBA by content": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388918
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795509630744
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510063457
+      }
+    ],
+    "5.9 Fix R-26: text outputs typed `string`": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388965
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510063544
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510387931
+      }
+    ],
+    "5.10 Checkpoint: Phase 3": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499388983
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510387688
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510975285
+      }
+    ],
+    "6.1 Write the R-17 test, then add `MAX_CELLS`": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389008
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510975394
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795511274201
+      }
+    ],
+    "6.2 Cache the analysis per session and workbook (R-17)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389025
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795511274840
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795511627310
+      }
+    ],
+    "6.3 Fix R-18: per-session job cap": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389050
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795511627524
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512033268
+      }
+    ],
+    "6.4 Fix R-18: drop jobs and artifacts at session end": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389070
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512034331
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512523326
+      }
+    ],
+    "6.5 Fix R-21 (paths): no absolute server paths in job events": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389092
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512035506
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512865589
+      }
+    ],
+    "6.6 Fix MCP error naming (Requirement 12.11)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389112
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512036518
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512524342
+      }
+    ],
+    "6.7 Checkpoint: Phase 4": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389161
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795512865903
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513541354
+      }
+    ],
+    "7.1 **Property 7: Comparison normalisation (PBT)** - write the test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389183
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513541494
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513921327
+      }
+    ],
+    "7.2 Fix R-07: compare at 15 significant digits": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389201
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513922536
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795514422961
+      }
+    ],
+    "7.3 Fix R-08: INDEX 0 and number-to-text": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389232
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795514423906
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795514794499
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516359982
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516802911
+      }
+    ],
+    "7.4 Fix R-27: named ranges": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389253
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795514794080
+      }
+    ],
+    "7.5 Document R-24: where LibreOffice differs from Excel": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389278
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513541853
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513922135
+      }
+    ],
+    "7.6 Document R-25: ROUND over 15 significant digits (document only)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389300
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513923408
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795514422085
+      }
+    ],
+    "7.7 Checkpoint: Phase 5": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389324
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795515445306
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516803905
+      }
+    ],
+    "8.1 Fix R-15: Power packaging": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389348
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516819798
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795517573940
+      }
+    ],
+    "8.2 Fix R-16: `atx` dry-run command": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389374
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516819846
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795517574449
+      }
+    ],
+    "8.3 Fix R-21 (rest): report column, tested domains, Faithful download": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389398
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516820897
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795517575434
+      }
+    ],
+    "8.4 Fix R-22: autopsy page text": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389426
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516821306
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795517576628
+      }
+    ],
+    "8.5 Fix R-23: dark border contrast and toggle label": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389452
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516822124
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795517577168
+      }
+    ],
+    "8.6 Checkpoint: Phase 6": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389484
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795517609543
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518107029
+      }
+    ],
+    "9.1 Golden semantics tests": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389516
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518107267
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518656784
+      }
+    ],
+    "9.2 Re-check the golden hook (R-29)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389534
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518661089
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518863200
+      }
+    ],
+    "9.3 Excel-saved fixtures folder": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389559
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518107347
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518656877
+      }
+    ],
+    "9.4 **Property 9: Formula fuzzing agrees with the Referee (PBT)**": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389584
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518108697
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518658112
+      }
+    ],
+    "9.5 CLI end-to-end test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389603
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518109151
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518659034
+      }
+    ],
+    "9.6 Performance test": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389626
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518110086
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518660070
+      }
+    ],
+    "9.7 Update the README": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389650
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518661898
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518864224
+      }
+    ],
+    "9.8 Checkpoint: Phase 7": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389676
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518864758
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795519534364
+      }
+    ],
+    "10. Final checkpoint: before telling the owner it is done": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795499389700
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795519534745
+      },
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795520469969
+      }
+    ],
+    "3. Phase 1: demo and submission blockers (R-05, R-12, R-19, R-29)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795501482492
+      }
+    ],
+    "4. Phase 2: integrity of the proof (R-01, R-02, R-03, R-04, R-10 expressions, R-06, R-28)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795507428397
+      }
+    ],
+    "5. Phase 3: autopsy, decisions and VBA (R-09, R-10, R-11, R-14, R-13, R-26)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795510975320
+      }
+    ],
+    "6. Phase 4: security and robustness (R-17, R-18, R-21 paths, MCP error naming)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795513541413
+      }
+    ],
+    "7. Phase 5: transpiler and Referee semantics (R-07, R-08, R-27, R-24, R-25)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795516803934
+      }
+    ],
+    "8. Phase 6: Power, routing, report and UI polish (R-15, R-16, R-21 rest, R-22, R-23)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795518107177
+      }
+    ],
+    "9. Phase 7: the tests the requirements promise (R-20)": [
+      {
+        "executionId": "64cce6c5-4714-4026-b141-48214f96f14c",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795519534417
+      }
+    ]
+  }
+}

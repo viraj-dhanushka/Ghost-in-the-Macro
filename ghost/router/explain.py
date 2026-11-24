@@ -24,14 +24,30 @@ __all__ = [
 ROUTE_BEGIN = "<!-- ghost:route:begin -->"
 ROUTE_END = "<!-- ghost:route:end -->"
 TRANSFORMATION_NAME = "excel-vba-to-python"
-BUILD_COMMAND = "python -m pytest"
+# AWS Transform custom CLI reference (checked 2026-11-24):
+# https://docs.aws.amazon.com/transform/latest/userguide/custom-command-reference.html
+# `atx custom def exec` takes -n, -p, -c, -x (--non-interactive) and -t
+# (--trust-all-tools); the full-automation usage is `-x -t`:
+# https://docs.aws.amazon.com/transform/latest/userguide/custom-workflows.html
+#
+# Build command: `python3 -m compileall -q .` instead of `py_compile **/*.py`.
+# The command is run by a shell that may not enable `**` (without globstar, `**`
+# behaves like `*` and only reaches one directory level), and the glob is not
+# expanded at all if the CLI runs the string without a shell. compileall walks the
+# tree itself, is in the standard library, and exits non-zero on a syntax error,
+# which is what a build check needs. It is a syntax check only, not a test run.
+BUILD_COMMAND = "python3 -m compileall -q ."
 DESIGN_FILE = "design.md"
 
 _AWS_ROUTES = ("AWS Transform custom", "Split")
 
 
 def atx_dry_run_command(workbook: str | Path | None = None) -> str:
-    """The exact ``atx custom def exec`` command to run, as a string only."""
+    """An ``atx custom def exec`` command to review, as a string only (never run).
+
+    The transformation definition ``excel-vba-to-python`` must already exist in the
+    user's AWS Transform registry (check with ``atx custom def list``).
+    """
     path = str(workbook) if workbook else "<workbook-directory>"
     if workbook:
         path = str(Path(workbook).parent) or "."
@@ -42,6 +58,7 @@ def atx_dry_run_command(workbook: str | Path | None = None) -> str:
             "-p", shlex.quote(path),
             "-c", shlex.quote(BUILD_COMMAND),
             "-x",
+            "-t",
         ]
     )
 
@@ -59,7 +76,7 @@ def explain_route(route: Route) -> str:
     lines = ["## Migration route", "", f"**Recommended route: {route.route}.**", ""]
     if route.route == "Ghost converts":
         lines.append(
-            "Ghost converts this workbook itself and proves the result against the "
+            "Ghost converts this workbook itself and checks the result against the "
             "original workbook."
         )
     elif route.route == "AWS Transform custom":
@@ -89,6 +106,10 @@ def explain_route(route: Route) -> str:
             "```",
             route.atx_command,
             "```",
+            "",
+            f"The transformation definition `{TRANSFORMATION_NAME}` must exist in your "
+            "AWS Transform registry before this works. Check with "
+            "`atx custom def list`. `-t` is required with `-x` (non-interactive).",
             "",
             "If AWS credentials exist and the official AWS Transform Kiro power is "
             "installed, hand this command to that power. Run Ghost verification "

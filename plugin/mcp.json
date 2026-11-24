@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "ghost": {
-      "command": "python",
-      "args": ["-m", "mcp_server.server"],
-      "toolPrefix": "ghost_",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/viraj-dhanushka/Ghost-in-the-Macro",
+        "ghost-mcp"
+      ],
       "disabled": false
     }
   }

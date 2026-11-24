@@ -113,3 +113,47 @@ def test_haunted_end_to_end_through_web(tmp_path):
     # Another session cannot read the job.
     other, _ = _client(tmp_path / "other")
     assert other.get(f"/run/{job_id}/report.json").status_code == 404
+
+
+# -- R-18: per-session job cap over HTTP --------------------------------------
+def _slow_command(seconds):
+    import sys
+    code = f"import time; time.sleep({seconds})"
+    return lambda mdir, mode, seed, cases: [sys.executable, "-c", code]
+
+
+_VERIFY_FORM = {"inputs": ["Calculator!B2", "Calculator!B3", "Calculator!B4"],
+                "outputs": ["Calculator!B11"]}
+
+
+def test_second_verify_while_job_active_returns_429_with_message(tmp_path):
+    c, app = _client(tmp_path)
+    app.state.runner._command = _slow_command(1.5)
+    c.post("/sample/haunted")
+    first = c.post("/verify", data=_VERIFY_FORM, headers={"hx-request": "true"})
+    assert first.status_code == 200
+    second = c.post("/verify", data=_VERIFY_FORM, headers={"hx-request": "true"})
+    assert second.status_code == 429
+    assert "already has a verification" in second.text
+    # The panel keeps polling the running job, so the user is not left without it.
+    job_id = first.text.split("/run/")[1].split("/")[0]
+    assert f"/run/{job_id}/panel" in second.text
+    app.state.runner.wait(job_id, 15)
+
+
+def test_verify_after_finished_job_is_accepted(tmp_path):
+    c, app = _client(tmp_path)
+    app.state.runner._command = _slow_command(0)
+    c.post("/sample/haunted")
+    first = c.post("/verify", data=_VERIFY_FORM)
+    assert first.status_code == 200
+    app.state.runner.wait(first.text.split("/run/")[1].split("/")[0], 15)
+    assert c.post("/verify", data=_VERIFY_FORM).status_code == 200
+
+
+def test_htmx_swaps_error_responses_so_the_message_is_visible():
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / "web"
+    js = (root / "static" / "htmx-errors.js").read_text()
+    assert "htmx:beforeSwap" in js and "429" in js
+    assert "/static/htmx-errors.js" in (root / "templates" / "index.html").read_text()

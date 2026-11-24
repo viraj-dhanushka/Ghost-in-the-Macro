@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import contextlib
+import hashlib
 import io
 import json
 import shutil
@@ -35,8 +36,10 @@ from ghost.converter.mapping import read_mapping
 from ghost.converter.subset import find_not_converted
 from ghost.decisions.store import DECISIONS_FILE, InvalidDecision, load_decisions, record
 from ghost.ingest.limits import IngestError
+from ghost.report.html import describe_cases
 
-from .jobs import DONE, FAILED, TERMINAL, Job, JobRunner
+from .jobs import DONE, FAILED, SESSION_BUSY_MESSAGE, TERMINAL, Job, JobRunner, SessionBusy
+from .paths import scrub_paths
 from .sessions import Session
 
 SPEC_DIR = "spec"  # per-session Decisions live here; each run gets a fresh copy
@@ -47,7 +50,38 @@ MAX_TEXT = 500
 def reset_state(session: Session) -> None:
     """Forget analysis choices and Decisions when a different workbook is loaded."""
     session.data.clear()
+    session.analysis_cache = None
     shutil.rmtree(session.folder / SPEC_DIR, ignore_errors=True)
+
+
+def _sha256(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _analysis(session: Session):
+    """Parsed workbook and analysis, cached once per session (R-17).
+
+    The key is the workbook path, its sha256 and the confirmed inputs and
+    outputs (thresholds are recomputed when those change). Decisions are not
+    part of the analysis: they are read from the session's spec folder on each
+    call, so their state is never stale.
+    """
+    path = session.workbook["path"]
+    if not Path(path).is_file():
+        session.analysis_cache = None
+        return _analyse(path)  # raises the engine's "workbook not found"
+    key = (path, _sha256(path), session.data.get("inputs") or "",
+           session.data.get("outputs") or "")
+    cached = session.analysis_cache
+    if cached is not None and cached[0] == key:
+        return cached[1]
+    a = _analyse(path, key[2] or None, key[3] or None)
+    session.analysis_cache = (key, a)  # replaces any older entry: one per session
+    return a
 
 
 def _spec_dir(session: Session) -> Path:
@@ -81,9 +115,7 @@ def _finding_options(finding) -> list[dict]:
 
 def _describe(session: Session) -> dict:
     wb_info = session.workbook
-    inputs = session.data.get("inputs") or ""
-    outputs = session.data.get("outputs") or ""
-    a = _analyse(wb_info["path"], inputs or None, outputs or None)
+    a = _analysis(session)
     m = compute_metrics(a.wb)
     decisions = load_decisions(_spec_dir(session))
     by_finding = {d.finding_id: d for d in decisions if d.finding_id}
@@ -105,6 +137,7 @@ def _describe(session: Session) -> dict:
         "sheets": list(a.wb.sheets),
         "metrics": m,
         "excel_saved": a.wb.excel_saved,
+        "vba_error": f"VBA present but could not be read: {a.wb.vba_error}" if a.wb.vba_error else "",
         "inputs": [{"cell": r, "checked": a.roles[r] == "INPUT"} for r in in_cells],
         "outputs": [{"cell": r, "checked": a.roles[r] == "OUTPUT"} for r in out_cells],
         "findings": findings,
@@ -185,6 +218,7 @@ def _report_summary(job: Job) -> dict | None:
         "mode": d.get("mode"),
         "seed": d.get("seed"),
         "cases_tested": d.get("cases_tested"),
+        "cases_text": describe_cases(d) if d.get("cases_tested") is not None else "not checked",
         "mismatches": len(d.get("mismatches") or []),
         "excel_check": sanity.get("status", "not checked"),
         "libreoffice": (d.get("versions") or {}).get("libreoffice", "not checked"),
@@ -199,6 +233,10 @@ def build_flow_router(
     router = APIRouter()
 
     def page(request: Request, name: str, ctx: dict, status: int = 200) -> Response:
+        # R-21: no server paths in text shown to the browser.
+        for key in ("error", "vba_error"):
+            if isinstance(ctx.get(key), str):
+                ctx = {**ctx, key: scrub_paths(ctx[key])}
         return templates.TemplateResponse(request, name, ctx, status_code=status)
 
     def need_workbook(request: Request) -> tuple[Session | None, Response | None]:
@@ -277,6 +315,9 @@ def build_flow_router(
         if not ins or not outs:
             return page(request, "_message.html", {
                 "error": "Confirm at least one input and one output cell before verifying."}, 422)
+        active = runner.active_job(s.sid)
+        if active is not None:
+            return _busy(request, active)
         # Cell names are validated against the workbook by the engine.
         s.data["inputs"] = ",".join(ins)
         s.data["outputs"] = ",".join(outs)
@@ -286,8 +327,17 @@ def build_flow_router(
             mdir = await asyncio.to_thread(prepare_run, s, run_no)
         except (CliError, IngestError, InvalidPatch) as exc:
             return page(request, "_message.html", {"error": str(exc)}, 422)
-        job = runner.submit(s.sid, mdir, mode="auto")
+        try:
+            job = runner.submit(s.sid, mdir, mode="auto")
+        except SessionBusy as busy:  # lost a race with another request
+            shutil.rmtree(mdir, ignore_errors=True)
+            return _busy(request, busy.job)
         return page(request, "_job.html", _job_ctx(job))
+
+    def _busy(request: Request, active: Job) -> Response:
+        """429: say why, and keep showing the job that is already active."""
+        return page(request, "_busy.html",
+                    {"error": SESSION_BUSY_MESSAGE, **_job_ctx(active)}, 429)
 
     def _job_ctx(job: Job) -> dict:
         snap = job.snapshot()
@@ -301,7 +351,14 @@ def build_flow_router(
             "report": report,
             "has_module": "logic.py" in job.artifacts,
             "has_intended": "logic_intended.py" in job.artifacts,
+            "has_faithful_report": "faithful/proof-report.html" in job.artifacts,
         }
+
+    def _report_key(mode: str, name: str) -> str | None:
+        """Artifact name for ``?mode=``: none/"" is the main report, "faithful" the Faithful one."""
+        if mode == "":
+            return name
+        return f"faithful/{name}" if mode == "faithful" else None
 
     def _owned(request: Request, job_id: str) -> Job | None:
         s = session_of(request)
@@ -326,18 +383,22 @@ def build_flow_router(
         return Response(data, media_type=media, headers=headers)
 
     @router.get("/run/{job_id}/report.html")
-    async def report_html(request: Request, job_id: str, inline: int = 0) -> Response:
-        _, data = _artifact(request, job_id, "proof-report.html")
+    async def report_html(request: Request, job_id: str, inline: int = 0, mode: str = "") -> Response:
+        key = _report_key(mode, "proof-report.html")
+        _, data = _artifact(request, job_id, key) if key else (None, None)
         if data is None:
             return Response("Report not available.", status_code=404)
-        return _download(data, "text/html; charset=utf-8", "proof-report.html", bool(inline))
+        fname = "proof-report-faithful.html" if mode == "faithful" else "proof-report.html"
+        return _download(data, "text/html; charset=utf-8", fname, bool(inline))
 
     @router.get("/run/{job_id}/report.json")
-    async def report_json(request: Request, job_id: str) -> Response:
-        _, data = _artifact(request, job_id, "proof-report.json")
+    async def report_json(request: Request, job_id: str, mode: str = "") -> Response:
+        key = _report_key(mode, "proof-report.json")
+        _, data = _artifact(request, job_id, key) if key else (None, None)
         if data is None:
             return Response("Report not available.", status_code=404)
-        return _download(data, "application/json", "proof-report.json")
+        fname = "proof-report-faithful.json" if mode == "faithful" else "proof-report.json"
+        return _download(data, "application/json", fname)
 
     @router.get("/run/{job_id}/module.py")
     async def module_py(request: Request, job_id: str) -> Response:

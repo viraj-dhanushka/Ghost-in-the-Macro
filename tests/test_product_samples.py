@@ -13,7 +13,6 @@ from decimal import Decimal
 import pytest
 from openpyxl import Workbook as XlWorkbook
 
-from ghost.autopsy.classify import classify
 from ghost.autopsy.findings import detect_inconsistencies
 from ghost.autopsy.thresholds import extract_thresholds
 from ghost.converter.emit_python import emit_python
@@ -44,13 +43,8 @@ CASES = 300
 def test_clean_samples_zero_mismatches_faithful(module, tmp_path):
     path = module.build(tmp_path / "clean.xlsx")
     wb = load_workbook(str(path))
-    # Confirmed mapping: the heuristic also proposes the scenario table's
-    # constants as inputs; only highlighted input cells are real inputs.
-    roles = {
-        ref: ("PARAMETER" if role == "INPUT" and not wb.cells[ref].fill else role)
-        for ref, role in classify(wb).items()
-    }
-    mapping = generate_mapping(wb, roles)
+    # Autopsy defaults, the same mapping the web app pre-checks.
+    mapping = generate_mapping(wb)
     thresholds = extract_thresholds(wb)
     with RefereeClient(None, path) as ref:
         r = verify(
@@ -158,3 +152,17 @@ def test_boundary_probe_lands_exactly_on_threshold(threshold, tmp_path):
     assert res.exact_hits == [
         {"last_unchanged": threshold - 0.01, "first_changed": threshold}
     ]
+
+
+@pytest.mark.parametrize("module", [make_discount, make_haunted], ids=["a-discount", "b-haunted"])
+def test_autopsy_defaults_equal_demo_inputs_and_outputs(module, tmp_path):
+    """The demo hard-codes no mapping; the autopsy defaults are the demo's mapping.
+
+    **Validates: Requirements 2.1, 3.6**
+    """
+    wb = load_workbook(str(module.build(tmp_path / "s.xlsx")))
+    mapping = generate_mapping(wb)
+    assert [s.cell for s in mapping.inputs.values()] == [
+        "Calculator!B2", "Calculator!B3", "Calculator!B4",
+    ]
+    assert [s.cell for s in mapping.outputs.values()] == ["Calculator!B11"]

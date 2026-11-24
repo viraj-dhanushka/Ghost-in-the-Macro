@@ -26,6 +26,9 @@ dependencies = [
     "python-multipart",
 ]
 
+[project.scripts]
+ghost-mcp = "mcp_server.server:main"
+
 [tool.setuptools.packages.find]
 include = ["ghost*", "mcp_server*", "web*"]
 
@@ -37,4 +40,5 @@ include = ["ghost*", "mcp_server*", "web*"]
 testpaths = ["tests"]
 markers = [
     "golden: golden-file tests (run with -m golden)",
+    "slow: performance tests that take about a minute (deselect with -m \"not slow\")",
 ]

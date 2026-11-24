@@ -7,9 +7,12 @@ workbook: sorted iteration, no timestamps.
 Inference rules (all deterministic):
 - name: slug of the left-adjacent text label, else ``<sheet>_<address>``;
   duplicates get ``_2``, ``_3`` ... in cell order.
-- type: ``whole`` validation or an int value -> integer; str -> string;
-  bool -> boolean; anything else -> decimal. Outputs use the Excel-saved
-  value when present, else decimal.
+- type: shared with the verifier (ghost/converter/typeinfer.py): ``decimal``
+  validation -> decimal, ``whole`` -> integer, else the sample value (int ->
+  integer, float -> decimal, str -> string, bool -> boolean). Outputs use the Excel-saved
+  value when present; else ``string`` when the formula AST decides the result is text
+  (R-26: string literals in every IF branch, ``&``, text functions, INDEX into a text
+  range); else decimal (undecided, default kept).
 - min: 0 when the sample value is a non-negative number (inputs only).
   No max is inferred. Validation operators are not retained by ingestion,
   so validation bounds are not used.
@@ -25,6 +28,7 @@ import yaml
 from openpyxl.utils import column_index_from_string
 
 from ghost.autopsy.classify import classify
+from ghost.converter.typeinfer import infer_formula_kind, infer_input_type
 from ghost.models import Cell, CellRef, IOSpec, Mapping, Workbook
 
 __all__ = ["generate_mapping", "mapping_to_yaml", "write_mapping", "read_mapping"]
@@ -58,15 +62,8 @@ def _label(wb: Workbook, ref: CellRef) -> str | None:
 
 
 def _type_of(value: object, validation: str | None = None) -> str:
-    if isinstance(value, bool):
-        return "boolean"
-    if isinstance(value, int):
-        return "integer"
-    if isinstance(value, str):
-        return "string"
-    if validation and validation.startswith("whole"):
-        return "integer"
-    return "decimal"
+    """Shared with the verifier: validation first, then the sample value."""
+    return infer_input_type([value], validation)
 
 
 def _non_negative(value: object) -> bool:
@@ -85,6 +82,40 @@ def _name(wb: Workbook, ref: CellRef, used: set[str]) -> str:
         n += 1
     used.add(name)
     return name
+
+
+def _static_kind(wb: Workbook, cell: Cell, seen: frozenset[str] = frozenset()) -> str | None:
+    """Result kind of ``cell`` from its formula AST (shared typeinfer rules)."""
+    if cell.formula is None:
+        v = cell.value
+        if isinstance(v, bool):
+            return "boolean"
+        if isinstance(v, str):
+            return "text" if v != "" else None
+        return "number" if isinstance(v, (int, float)) else None
+    if cell.ref in seen:
+        return None  # circular reference: undecided
+    seen = seen | {cell.ref}
+
+    def cell_kind(sheet: str, addr: str) -> str | None:
+        other = wb.cells.get(f"{sheet}!{addr}")
+        return None if other is None else _static_kind(wb, other, seen)
+
+    sheet = cell.ref.rpartition("!")[0]
+    return infer_formula_kind(cell.formula, cell_kind, sheet)
+
+
+def _output_type(wb: Workbook, cell: Cell) -> str:
+    """Excel-saved value first; else the formula AST decides text; else decimal.
+
+    When neither decides (mixed branches, unknown functions, no saved value) the
+    historical default ``decimal`` is kept.
+    """
+    if cell.saved_value is not None:
+        return _type_of(cell.saved_value)
+    if _static_kind(wb, cell) == "text":
+        return "string"
+    return "decimal"  # undecided: keep the default
 
 
 def generate_mapping(
@@ -108,7 +139,7 @@ def generate_mapping(
             lo = Decimal(0) if kind in ("integer", "decimal") and _non_negative(cell.value) else None
             inputs[_name(workbook, ref, used_in)] = IOSpec(cell=ref, type=kind, min=lo)
         elif roles[ref] == "OUTPUT":
-            kind = _type_of(cell.saved_value) if cell.saved_value is not None else "decimal"
+            kind = _output_type(workbook, cell)
             outputs[_name(workbook, ref, used_out)] = IOSpec(cell=ref, type=kind)
     return Mapping(inputs=inputs, outputs=outputs)
 

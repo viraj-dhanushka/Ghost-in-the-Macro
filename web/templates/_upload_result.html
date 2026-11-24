@@ -2,6 +2,7 @@
 <section class="loaded" aria-labelledby="loaded-h">
   <h2 id="loaded-h">Loaded {{ workbook.name }}</h2>
   <p>{{ workbook.sheets | length }} sheet(s), {{ workbook.formulas }} formula(s){% if workbook.has_vba %}, VBA present (read only, never run){% endif %}.</p>
+  {% if workbook.vba_error %}<p class="error" role="alert">{{ workbook.vba_error }}</p>{% endif %}
 </section>
 <div id="autopsy" hx-get="/autopsy" hx-trigger="load" hx-swap="outerHTML" aria-live="polite">Reading the workbook...</div>
 {% else %}

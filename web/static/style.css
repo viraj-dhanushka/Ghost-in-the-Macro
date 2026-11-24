@@ -2,7 +2,7 @@
 :root {
   color-scheme: dark;
   --bg: #14101c; --surface: #1e1829; --text: #ece8f4; --muted: #b9b0c9;
-  --border: #5b4f73; --accent: #9be08a; --on-accent: #10200c;
+  --border: #7a6d94; --accent: #9be08a; --on-accent: #10200c;
   --link: #8fd0ff; --error: #ff9a94; --pass: #9be08a; --fail: #ff9a94;
   --focus: #ffd25e; --glow: 0 0 .75rem rgba(155, 224, 138, .25);
 }

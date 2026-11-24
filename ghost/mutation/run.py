@@ -7,16 +7,18 @@ every Threshold constant). A Mutant is *killed* when verification produces at
 least one Mismatch in Faithful mode, and the first counterexample is kept.
 The score is killed over total (Requirement 9.3).
 
-Every survivor carries one of three reasons (Requirement 9.4), decided from
+Every survivor carries one of three kinds of reason (Requirement 9.4), decided from
 what was observed, not guessed:
 
 * ``branch not reachable``: the mutated cell's IF condition was never
   evaluated on any tested input.
 * ``not exercised by cases``: the condition was evaluated but only one
   outcome was seen, so the mutated branch never ran.
-* ``equivalent on tested domain``: the condition was seen both ways (or the
-  cell has no IF) and the Mutant produced the same outputs as the original
-  on every tested input.
+* ``no difference found on N distinct cases``: the condition was seen both
+  ways (or the cell has no IF) and the Mutant produced the same outputs as the
+  original on every tested input. The reason lists each input's tested domain
+  (type, min, max, decimal places). It is a statement about the cases tried,
+  never a claim that the Mutant is equivalent.
 
 The Referee is shared across Mutants through a cache, so each distinct input
 is recalculated by LibreOffice once.
@@ -27,25 +29,26 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from dataclasses import replace
+from decimal import Decimal
 from typing import Any
 
 from ghost.models import Case, Mapping, Mutant, MutationResult
 from ghost.mutation.mutants import GeneratedMutant, generate_mutants
-from ghost.verifier.compare import values_equal
+from ghost.verifier.compare import case_key, values_equal
 from ghost.verifier.run import Evaluator, VerifyConfig, load_compute, verify
 
 __all__ = [
     "MutationBaselineFailed",
-    "REASON_EQUIVALENT",
     "REASON_NOT_EXERCISED",
     "REASON_UNREACHABLE",
+    "no_difference_reason",
     "run_mutation",
     "score",
+    "tested_domains",
 ]
 
 DEFAULT_MUTANT_CASES = 100
 
-REASON_EQUIVALENT = "equivalent on tested domain"
 REASON_UNREACHABLE = "branch not reachable"
 REASON_NOT_EXERCISED = "not exercised by cases"
 
@@ -95,6 +98,7 @@ def _hook_outcomes(compute: Callable[..., dict], inputs: Iterable[dict[str, Any]
 
 def _survivor_reason(
     m: GeneratedMutant,
+    mapping: Mapping,
     seen: dict[str, set[bool]],
     base_outs: list[dict[str, Any]],
     mutant_compute: Callable[..., dict],
@@ -115,7 +119,54 @@ def _survivor_reason(
     for a, b in zip(base_outs, mut_outs):
         if a.keys() != b.keys() or any(not values_equal(a[k], b[k], tol) for k in a):
             return REASON_NOT_EXERCISED  # differs on a case the verifier did not flag
-    return REASON_EQUIVALENT
+    return no_difference_reason(mapping, tested)
+
+
+def _case_key(case: dict[str, Any]) -> tuple:
+    return case_key(case)
+
+
+def _numeric(value: Any) -> Decimal | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, Decimal):
+        return value
+    if isinstance(value, int):
+        return Decimal(value)
+    if isinstance(value, float):
+        return Decimal(repr(value))
+    return None
+
+
+def _fmt(d: Decimal) -> str:
+    return format(d.normalize(), "f")
+
+
+def tested_domains(mapping: Mapping, cases: Iterable[dict[str, Any]]) -> dict[str, str]:
+    """Per input: type, min, max and decimal places over the cases actually run."""
+    cases = list(cases)
+    out: dict[str, str] = {}
+    for name, spec in sorted(mapping.inputs.items()):
+        values = [c[name] for c in cases if name in c and c[name] is not None]
+        if not values:
+            out[name] = f"{spec.type}, not tested"
+            continue
+        nums = [n for n in (_numeric(v) for v in values) if n is not None]
+        if spec.type in ("integer", "decimal") and nums:
+            places = max(max(0, -n.normalize().as_tuple().exponent) for n in nums)  # type: ignore[operator]
+            dp = f"{places} decimal places" if spec.type == "integer" else f"up to {places} decimal places"
+            out[name] = f"{spec.type}, min {_fmt(min(nums))}, max {_fmt(max(nums))}, {dp}"
+        else:
+            out[name] = f"{spec.type}, {len({str(v) for v in values})} distinct values"
+    return out
+
+
+def no_difference_reason(mapping: Mapping, cases: Iterable[dict[str, Any]]) -> str:
+    """Survivor reason: what was tried, not a claim that the Mutant is equivalent."""
+    cases = list(cases)
+    distinct = len({_case_key(c) for c in cases})
+    domain = "; ".join(f"{n}: {d}" for n, d in tested_domains(mapping, cases).items())
+    return f"no difference found on {distinct} distinct cases; tested domain: {domain}"
 
 
 def run_mutation(
@@ -179,7 +230,7 @@ def run_mutation(
                 )
             )
         else:
-            reason = _survivor_reason(gm, seen, base_outs, mutant_compute, tested, cfg.tol)
+            reason = _survivor_reason(gm, mapping, seen, base_outs, mutant_compute, tested, cfg.tol)
             records.append(
                 Mutant(
                     mutant_id=gm.mutant_id,

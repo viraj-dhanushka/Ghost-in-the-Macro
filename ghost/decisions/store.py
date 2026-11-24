@@ -11,7 +11,7 @@ import os
 import re
 from datetime import date
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 import yaml
 
@@ -151,17 +151,42 @@ def _next_id(existing: list[Decision]) -> str:
     return f"D-{(max(nums) + 1 if nums else 1):03d}"
 
 
-def record(migration_dir: str | Path, decision: Decision | Mapping[str, Any]) -> Decision:
+def _reject_duplicate(existing: list[Decision], fields: dict[str, Any]) -> None:
+    for key, label in (("finding_id", "Finding"), ("rule_id", "rule")):
+        value = fields.get(key)
+        if not value:
+            continue
+        for d in existing:
+            if getattr(d, key) == value:
+                raise InvalidDecision(
+                    [],
+                    f"{label} {value} already has Decision {d.decision_id}; "
+                    "a second Decision for the same target is not accepted",
+                )
+
+
+def record(
+    migration_dir: str | Path,
+    decision: Decision | Mapping[str, Any],
+    *,
+    validate: Callable[[list[Decision]], None] | None = None,
+) -> Decision:
     """Validate, assign ``D-NNN``, append to ``decisions.yaml``, update ``design.md``.
 
-    Raises ``InvalidDecision`` (naming missing fields) and leaves files unchanged.
-    Any ``decision_id`` supplied by the caller is ignored.
+    Raises ``InvalidDecision`` (naming missing fields, or the existing
+    ``decision_id`` when the finding or rule already has a Decision) and leaves
+    files unchanged. Any ``decision_id`` supplied by the caller is ignored.
+    ``validate`` receives the full Decision list including the new one and may
+    raise ``InvalidDecision`` (used to check the patch against the workbook).
     """
     fields = _validate(_as_dict(decision))
     mdir = Path(migration_dir)
     existing = load_decisions(mdir)
+    _reject_duplicate(existing, fields)
     new = Decision(decision_id=_next_id(existing), **fields)
     allowed = existing + [new]
+    if validate is not None:
+        validate(allowed)
     _atomic_write(mdir / DECISIONS_FILE, _dump(allowed))
     write_summary(mdir, allowed)
     return new

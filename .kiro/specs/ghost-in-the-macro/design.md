@@ -151,7 +151,7 @@ Dockerfile
 ### Mutation checker (`ghost.mutation`)
 
 - `generate_mutants(module_ast)`: operators `>=`<->`>`, constant ±1, `ROUND_HALF_UP`<->`ROUND_HALF_EVEN`, drop IF branch. Each Mutant is compiled in memory and verified with a reduced case budget plus boundary probing.
-- Survivors get a reason: "equivalent on tested domain", "branch not reachable", or "not exercised by cases".
+- Survivors get a reason: "no difference found on N distinct cases" plus each input's tested domain (never a claim of equivalence), "branch not reachable", or "not exercised by cases".
 
 ### Decisions (`ghost.decisions`)
 

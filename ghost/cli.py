@@ -23,6 +23,7 @@ import argparse
 import importlib.util
 import inspect
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -46,7 +47,6 @@ from ghost.decisions.store import InvalidDecision, load_decisions, record
 from ghost.decisions.store import write_summary as write_decision_summary
 from ghost.ingest.features import scan_features
 from ghost.ingest.limits import IngestError
-from ghost.ingest.vba import extract_vba
 from ghost.ingest.workbook import load_workbook
 from ghost.models import (
     BoundaryResult,
@@ -65,13 +65,17 @@ from ghost.mutation.run import (
 from ghost.referee.client import RefereeClient, RefereeError
 from ghost.referee.locate import RefereeUnavailable, locate_soffice
 from ghost.referee.sanity import run_sanity
-from ghost.report.html import REPORT_HTML, REPORT_JSON, build_report, write_report
+from ghost.report.domains import tested_domain_rows
+from ghost.report.html import REPORT_HTML, REPORT_JSON, build_report, describe_cases, write_report
 from ghost.report.model import ReportValidationError
 from ghost.rules.ears import generate_rules
 from ghost.rules.spec_writer import write_spec
 from ghost.verifier import boundary as boundary_mod
 from ghost.verifier.classify import make_classifier
 from ghost.verifier.coverage import CoverageTracker, candidate_inputs, close_gaps
+from ghost.verifier.flip import (
+    Flip, FlipSummary, find_flips, flip_boundaries, flip_cases, literals_from_workbook,
+)
 from ghost.verifier.run import (
     DEFAULT_CASES,
     DEFAULT_SEED,
@@ -104,8 +108,7 @@ def _load(path: str | Path) -> Workbook:
         raise CliError(f"workbook not found: {p}")
     wb = load_workbook(str(p))
     wb.features = scan_features(wb)
-    if p.suffix.lower() == ".xlsm":
-        wb.vba_modules = extract_vba(p)  # static read, nothing is executed
+    # wb.vba_modules is filled by ghost.ingest.load_workbook (by content, static read)
     return wb
 
 
@@ -164,7 +167,7 @@ def _analyse(path: str | Path, inputs: str | None = None, outputs: str | None = 
     outs = _qualify_cells(wb, outputs, "--outputs")
     ins = _qualify_cells(wb, inputs, "--inputs")
     roles = _apply_overrides(wb, dict(classify(wb, outs)), ins, outs)
-    thresholds = extract_thresholds(wb)
+    thresholds = extract_thresholds(wb, roles=roles)
     findings = detect_inconsistencies(thresholds)
     rules = generate_rules(wb, roles, thresholds)
     return Analysis(wb, roles, thresholds, findings, rules)  # type: ignore[arg-type]
@@ -238,6 +241,8 @@ def cmd_autopsy(args: argparse.Namespace) -> int:
         f"  formulas: {m.formula_count}  VBA lines: {m.vba_line_count}  "
         f"modules: {m.module_count}  calculator shape: {'yes' if m.calculator_shape else 'no'}"
     )
+    if wb.vba_error:
+        print(f"  VBA present but could not be read: {wb.vba_error} (VBA: not checked)")
     print(
         "  Excel-saved values: "
         + ("present" if wb.excel_saved else "none (will report 'not cross-checked against Excel')")
@@ -322,6 +327,31 @@ def _emit_logic(wb: Workbook, mapping: Mapping, mode: str, decisions: list) -> t
     return res.code, list(res.not_converted)
 
 
+def patch_validator(mdir: Path, workbook: str | None = None):
+    """Return a ``record(validate=...)`` callback that emits the Intended module.
+
+    Returns ``None`` when the workbook or mapping is not known (nothing to check
+    against). An ``InvalidPatch`` becomes an ``InvalidDecision``.
+    """
+    mapping_file = mdir / MAPPING_FILE
+    try:
+        wb_path = _read_source(mdir, workbook)
+    except CliError:
+        return None
+    if not wb_path.is_file() or not mapping_file.is_file():
+        return None
+
+    def _check(decisions: list) -> None:
+        if not decisions[-1].patch:
+            return
+        try:
+            emit_module(_load(wb_path), read_mapping(mapping_file), "intended", decisions)
+        except InvalidPatch as exc:
+            raise InvalidDecision([], f"Decision patch cannot be applied: {exc}") from exc
+
+    return _check
+
+
 def _copy_runtime(mdir: Path) -> None:
     import ghost.runtime.excel as rt
 
@@ -382,7 +412,55 @@ def _base_inputs(wb: Workbook, mapping: Mapping) -> dict[str, Any]:
     return base
 
 
+_log = logging.getLogger("ghost.cli")
+_MAX_PRINTED_NOTES = 10
+
+
+def _probe_flips_with_summary(
+    wb: Workbook, mapping: Mapping, seed: int = DEFAULT_SEED
+) -> tuple[list[Flip], FlipSummary]:
+    """Condition-flip probing on the transpiled Faithful module (R-04). Local, no Referee.
+
+    The summary says what was not checked: a cap reached, no flip found, text inputs, or
+    the whole probe when the workbook cannot be converted or probing fails.
+    """
+    summary = FlipSummary()
+    base = {n: v for n, v in _base_inputs(wb, mapping).items() if v is not None}
+    try:
+        code, not_converted = _emit_logic(wb, mapping, "faithful", [])
+        if not_converted:
+            cells = ", ".join(sorted(str(e.cell) for e in not_converted))
+            summary.partial_reason = (
+                f"conditions in not-converted cells are not checked ({cells})"
+            )
+        flips = find_flips(
+            load_compute(code), mapping, base, seed=seed,
+            literals=literals_from_workbook(wb), summary=summary,
+        )
+        return flips, summary
+    except CliError as exc:
+        summary.not_checked_reason = str(exc)
+    except Exception as exc:  # noqa: BLE001 - reported below, with the traceback logged
+        _log.warning("flip probing failed", exc_info=True)
+        summary.not_checked_reason = f"{type(exc).__name__}: {exc}"
+    return [], summary
+
+
+def _probe_flips(wb: Workbook, mapping: Mapping, seed: int = DEFAULT_SEED) -> list[Flip]:
+    """``_probe_flips_with_summary`` without the summary (kept for existing callers)."""
+    return _probe_flips_with_summary(wb, mapping, seed)[0]
+
+
 def _probe_boundaries(
+    referee: RefereeClient, wb: Workbook, mapping: Mapping, thresholds: list[Threshold],
+    flips: list[Flip] | None = None,
+) -> list[BoundaryResult]:
+    """Input-threshold boundaries (Referee binary search) plus condition-flip boundaries."""
+    results = _probe_threshold_boundaries(referee, wb, mapping, thresholds)
+    return results + flip_boundaries(_probe_flips(wb, mapping) if flips is None else flips)
+
+
+def _probe_threshold_boundaries(
     referee: RefereeClient, wb: Workbook, mapping: Mapping, thresholds: list[Threshold]
 ) -> list[BoundaryResult]:
     cell_to_name = {s.cell: n for n, s in mapping.inputs.items()}
@@ -436,9 +514,18 @@ def _module_source(
     return code, str(path)
 
 
+def _case_counts(res) -> dict:
+    return {
+        "cases_tested": res.cases_tested,
+        "cases_generated": res.cases_generated,
+        "cases_targeted": res.cases_targeted,
+        "distinct_cases": res.distinct_cases,
+    }
+
+
 def _print_result(mode: str, res, report) -> None:
     status = "PASS" if res.passed else "FAIL"
-    print(f"[{mode}] {status}: {res.cases_tested} cases, {len(res.mismatches)} mismatch(es), seed {res.seed}")
+    print(f"[{mode}] {status}: {describe_cases(_case_counts(res))} cases, {len(res.mismatches)} mismatch(es), seed {res.seed}")
     for m in res.mismatches:
         ins = ", ".join(f"{k}={v}" for k, v in sorted(m.case.inputs.items()))
         extra = f" {m.finding_id or ''} {m.decision_id or ''}".rstrip()
@@ -447,12 +534,17 @@ def _print_result(mode: str, res, report) -> None:
             f"actual={m.case.actual.get(m.output)!r}  inputs: {ins}"
         )
         print(f"    class: {m.mismatch_class}{(' ' + extra) if extra.strip() else ''}")
+        if m.cases is not None:
+            print(f"    explains {m.cases} distinct generated case(s); minimal example shown")
     for b in report.boundaries:
         if b.change_point is not None:
             print(
                 f"    boundary {b.cell}: {b.input_name} changes at {b.change_point}"
                 f" (threshold {b.threshold}, {b.operator_includes or 'off-threshold'})"
             )
+    why = getattr(res, "explain_unavailable", None)
+    if why and res.mismatches:
+        print(f"    note: {why}")
     unc = [c for c in report.rule_coverage if c.uncovered]
     if unc:
         print(f"    uncovered conditions: {', '.join(c.condition_id for c in unc)}")
@@ -483,7 +575,7 @@ def run_verification(
     mapping = read_mapping(mapping_file)
     if not mapping.outputs:
         raise CliError(f"{mapping_file} has no outputs to verify")
-    thresholds = extract_thresholds(wb)
+    thresholds = extract_thresholds(wb, roles=_roles_from_mapping(mapping))
     findings = detect_inconsistencies(thresholds)
     rules = generate_rules(wb, _roles_from_mapping(mapping), thresholds)  # type: ignore[arg-type]
     decisions = load_decisions(mdir)
@@ -500,7 +592,14 @@ def run_verification(
         soffice, wb_path, run_macros=trust_macros, trusted_source=trust_macros
     ) as referee:
         sanity = run_sanity(wb, referee)
-        boundaries = _probe_boundaries(referee, wb, mapping, thresholds)
+        flips, flip_summary = _probe_flips_with_summary(wb, mapping, seed)
+        flip_extra = flip_cases(flips, mapping, summary=flip_summary)
+        flip_notes = flip_summary.notes()
+        for line in flip_notes[:_MAX_PRINTED_NOTES]:
+            print(f"  {line}")
+        if len(flip_notes) > _MAX_PRINTED_NOTES:
+            print(f"  ... {len(flip_notes) - _MAX_PRINTED_NOTES} more boundary notes in the report")
+        boundaries = _probe_boundaries(referee, wb, mapping, thresholds, flips)
         # The mutation self-check judges the Faithful module, where the
         # unmutated baseline must have zero Mismatches; the result is shared
         # by every mode's report.
@@ -511,7 +610,7 @@ def run_verification(
             try:
                 mutation = run_mutation(
                     fsource, mapping, referee, fcfg, cases=mutation_cases,
-                    targeted=list(candidate_inputs(base, constants)),
+                    targeted=list(candidate_inputs(base, constants)) + flip_extra,
                     progress=lambda i, n: print(f"mutation check: mutant {i}/{n}", flush=True),
                 )
             except MutationBaselineFailed as exc:
@@ -528,6 +627,7 @@ def run_verification(
                 thresholds=thresholds,
                 trace=tracker.trace if traced else None,
                 classifier=make_classifier(m, findings, decisions, rules, wb.deps),  # type: ignore[arg-type]
+                extra_cases=list(flip_extra),
             )
             res = verify(compute, mapping, referee, cfg)
             if traced:
@@ -536,9 +636,14 @@ def run_verification(
                 seed=res.seed,
                 mode=m,
                 cases_tested=res.cases_tested,
+                cases_generated=res.cases_generated,
+                cases_targeted=res.cases_targeted,
+                distinct_cases=res.distinct_cases,
                 passed=res.passed,
                 mismatches=res.mismatches,
                 boundaries=boundaries,
+                boundary_notes=flip_notes,
+                tested_domains=tested_domain_rows(mapping, res.cases),
                 rule_coverage=tracker.report() if traced else [],
                 mutation=mutation,
                 sanity=sanity,
@@ -605,6 +710,7 @@ def cmd_decide(args: argparse.Namespace) -> int:
             "date": args.date or date.today().isoformat(),
             "patch": patch,
         },
+        validate=patch_validator(mdir),
     )
     print(f"Recorded {d.decision_id} in {mdir / 'decisions.yaml'}")
     return 0
@@ -673,10 +779,10 @@ def _load_sample_builder(module: str):
 
 def cmd_demo(args: argparse.Namespace) -> int:
     out = Path(args.out)
-    # Explicit mapping: the bulk threshold and delivery parameters (E2:E7) are
-    # fixed parameters, so the counterexample varies only the three user inputs.
-    demo_inputs = "Calculator!B2,Calculator!B3,Calculator!B4"
-    demo_outputs = "Calculator!B11"
+    # No override: the demo uses the inputs and outputs the autopsy proposes
+    # (the same defaults the web app pre-checks), so it exercises what users get.
+    demo_inputs = None
+    demo_outputs = None
     samples = [("discount", "make_discount"), ("haunted", "make_haunted")]
     all_ok = True
     for name, module in samples:

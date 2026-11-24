@@ -5,6 +5,8 @@ description: Examine an Excel workbook (.xlsx/.xlsm) before migration. Reports m
 
 # Autopsy a workbook
 
+Setup: LibreOffice Calc and `uv` must be installed (see the Setup section of the `guardrails` skill).
+
 Follow the `guardrails` skill throughout. Every tool here is read-only; none modifies the workbook.
 
 ## Steps

@@ -192,7 +192,18 @@ def _decimal_text(d: Decimal) -> str:
         d = _sig15(d)
         if d == 0:
             return "0"
-        s = format(d.normalize(), "f")
+        d = d.normalize()
+        exp = d.adjusted()
+        # Scientific notation for very large and very small magnitudes, as in
+        # the Excel General format: "1E+20", "1.23456789012346E+17", "1E-20".
+        # The switch points (>= 1E16, < 1E-14) are the ones measured on the
+        # Referee; they are not verified against Excel.
+        if exp >= 16 or exp <= -15:
+            sign, digits, _ = d.as_tuple()
+            mant = "".join(str(x) for x in digits)
+            mant = mant[0] + ("." + mant[1:] if len(mant) > 1 else "")
+            return f"{'-' if sign else ''}{mant}E{'+' if exp >= 0 else '-'}{abs(exp):02d}"
+        s = format(d, "f")
     return s
 
 
@@ -397,6 +408,8 @@ def xl_compare(a: Any, b: Any) -> int | ExcelError:
         da, db = to_decimal(a), to_decimal(b)
     except (TypeError, ValueError):
         return VALUE
+    # Excel compares numbers after normalising to 15 significant digits.
+    da, db = _sig15(da), _sig15(db)
     return (da > db) - (da < db)
 
 

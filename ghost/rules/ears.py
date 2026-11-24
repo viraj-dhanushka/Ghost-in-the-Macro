@@ -22,6 +22,7 @@ from ghost.models import (
     Threshold,
     Workbook,
 )
+from ghost.converter.names import resolved_name_cells, substitute_names
 from ghost.rules.ids import rule_id
 
 __all__ = ["generate_rules"]
@@ -67,6 +68,7 @@ class _Namer:
         self.wb = wb
         self.home = home_sheet
         self.multi = multi_sheet
+        self.names = resolved_name_cells(wb)
 
     def _text_of(self, ref: CellRef | None) -> str | None:
         if ref is None:
@@ -79,6 +81,8 @@ class _Namer:
         return None
 
     def label(self, ref: CellRef) -> str | None:
+        if ref in self.names:
+            return self.names[ref]  # a defined name is the author's own label
         cell: Cell | None = self.wb.cells.get(ref)
         if cell is not None and cell.label and cell.label.strip():
             return cell.label.strip()
@@ -132,6 +136,9 @@ class _Renderer:
             s, e = _qualify(node.start, self.home), _qualify(node.end, self.home)
             self._note_cell(s)
             self._note_cell(e)
+            named = self.namer.names.get(f"{s}:{_split(e)[1]}")
+            if named:
+                return f"range {named} [{self.namer.display_addr(s)}:{_split(e)[1]}]"
             return f"range {self.namer.display_addr(s)}:{_split(e)[1]}"
         if isinstance(node, A.NameRef):
             return node.name
@@ -239,7 +246,7 @@ def generate_rules(
         if cell.formula is None:
             continue
         try:
-            tree = parse_formula(cell.formula)
+            tree = substitute_names(parse_formula(cell.formula), workbook)
         except FormulaSyntaxError:
             continue
         home = _split(ref)[0]

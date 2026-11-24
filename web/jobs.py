@@ -30,6 +30,8 @@ from typing import Callable, Iterable
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
+from .paths import scrub_paths
+
 DEFAULT_MAX_JOBS = 2
 DEFAULT_TIMEOUT_S = 300.0
 MAX_EVENTS = 500
@@ -42,6 +44,21 @@ ARTIFACT_FILES = (
     "proof-report.html", "proof-report.json", "logic.py", "logic_intended.py",
     "excel.py", "mapping.yaml", "rules.md", "decisions.yaml",
 )
+FAITHFUL_REPORT_FILES = ("proof-report.html", "proof-report.json")
+
+
+SESSION_BUSY_MESSAGE = (
+    "This session already has a verification queued or running. "
+    "Wait for it to finish, then start a new run."
+)
+
+
+class SessionBusy(Exception):
+    """Raised by `JobRunner.submit` when the session already has an active job."""
+
+    def __init__(self, job: "Job") -> None:
+        super().__init__(SESSION_BUSY_MESSAGE)
+        self.job = job
 
 
 def max_jobs_from_env() -> int:
@@ -88,6 +105,7 @@ class Job:
     _runner: "JobRunner | None" = field(default=None, repr=False)
     _proc: subprocess.Popen | None = field(default=None, repr=False)
     _timed_out: bool = field(default=False, repr=False)
+    _forgotten: bool = field(default=False, repr=False)
 
     def snapshot(self, since: int = 0) -> dict:
         """Polling view: status, queue position, new events from index `since`."""
@@ -138,10 +156,19 @@ class JobRunner:
                   migration_dir=Path(migration_dir), mode=mode, _runner=self)
         job._args = (seed, cases)  # type: ignore[attr-defined]
         with self._lock:
+            active = self.active_job(session_id)
+            if active is not None:
+                raise SessionBusy(active)
             self._jobs[job.id] = job
             self._queue.append(job.id)
         self._pump()
         return job
+
+    def active_job(self, session_id: str) -> Job | None:
+        """The session's queued or running job, if any (at most one exists)."""
+        with self._lock:
+            return next((j for j in self._jobs.values()
+                         if j.session_id == session_id and j.status not in TERMINAL), None)
 
     def get(self, job_id: str, session_id: str | None = None) -> Job | None:
         job = self._jobs.get(job_id)
@@ -166,17 +193,25 @@ class JobRunner:
         return job
 
     def forget_session(self, session_id: str) -> None:
-        """Drop queued jobs and kill running ones for an ended session."""
+        """Remove every job of an ended session and free its artifacts.
+
+        Queued jobs leave the queue, running jobs have their process group
+        killed. The jobs are then dropped from the runner, so `/jobs/{id}`
+        returns 404 and the artifact bytes can be garbage collected.
+        """
         with self._lock:
-            for job in self._jobs.values():
-                if job.session_id != session_id or job.status in TERMINAL:
-                    continue
+            mine = [j for j in self._jobs.values() if j.session_id == session_id]
+            for job in mine:
                 if job.status == QUEUED:
                     self._queue.remove(job.id)
                     job.status, job.error = FAILED, "Session ended."
-                else:
+                elif job.status not in TERMINAL:
                     job.error = "Session ended."
                     self._kill(job)
+                del self._jobs[job.id]
+                job._forgotten = True
+                job.artifacts.clear()
+                job.events.clear()
 
     # -- internals ----------------------------------------------------------
     def _pump(self) -> None:
@@ -188,6 +223,7 @@ class JobRunner:
                 threading.Thread(target=self._run, args=(job,), daemon=True).start()
 
     def _emit(self, job: Job, line: str) -> None:
+        line = scrub_paths(line, job.migration_dir)
         with self._lock:
             job.events.append(line)
             if len(job.events) > MAX_EVENTS:
@@ -216,6 +252,9 @@ class JobRunner:
                 env={**os.environ, "PYTHONUNBUFFERED": "1"},
             )
 
+            if job._forgotten:  # session ended between start and Popen
+                self._kill(job)
+
             def on_timeout() -> None:
                 job._timed_out = True
                 self._kill(job)
@@ -242,7 +281,8 @@ class JobRunner:
             else:
                 status, error = FAILED, f"Verification stopped with exit code {code}."
         except Exception as exc:  # noqa: BLE001
-            status, error = FAILED, f"Could not run verification: {exc}"
+            status, error = FAILED, scrub_paths(
+                f"Could not run verification: {exc}", job.migration_dir)
         finally:
             if timer is not None:
                 timer.cancel()
@@ -257,6 +297,8 @@ class JobRunner:
             self._pump()
 
     def _collect(self, job: Job) -> None:
+        if job._forgotten:
+            return
         for name in ARTIFACT_FILES:
             p = job.migration_dir / name
             try:
@@ -264,6 +306,17 @@ class JobRunner:
                     job.artifacts[name] = p.read_bytes()
             except OSError:
                 pass
+        # R-21: when both modes ran, the top-level report is the Intended one;
+        # keep the Faithful report too, under "faithful/<name>".
+        reports = job.migration_dir / "reports"
+        if (reports / "intended").is_dir() and (reports / "faithful").is_dir():
+            for name in FAITHFUL_REPORT_FILES:
+                p = reports / "faithful" / name
+                try:
+                    if p.is_file():
+                        job.artifacts[f"faithful/{name}"] = p.read_bytes()
+                except OSError:
+                    pass
 
     def _do_cleanup(self, job: Job) -> None:
         """Delete the migration directory (inside the Session_Folder) at job end."""

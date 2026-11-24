@@ -13,6 +13,12 @@ from decimal import Decimal
 
 from hypothesis import strategies as st
 
+from ghost.converter.typeinfer import (
+    infer_input_type,
+    infer_type,  # noqa: F401
+    is_integral,
+    to_decimal,
+)
 from ghost.models import IOSpec, Mapping, Threshold
 
 LARGE = Decimal(1_000_000)
@@ -20,49 +26,8 @@ _ONE = Decimal(1)
 _TENTH = Decimal("0.1")
 
 
-def _to_decimal(x: object) -> Decimal | None:
-    if isinstance(x, bool) or x is None:
-        return None
-    if isinstance(x, Decimal):
-        return x
-    if isinstance(x, int):
-        return Decimal(x)
-    if isinstance(x, float):
-        return Decimal(repr(x))
-    if isinstance(x, str):
-        try:
-            return Decimal(x.strip())
-        except Exception:
-            return None
-    return None
-
-
-def _is_integral(d: Decimal) -> bool:
-    return d.is_finite() and d == d.to_integral_value()
-
-
-def infer_type(samples: Iterable[object]) -> str:
-    """Return "integer" iff all sample values are integers, else "decimal".
-
-    Booleans give "boolean" and non-numeric strings give "string". With no
-    usable samples the type defaults to "decimal".
-    """
-    vals = [s for s in samples if s is not None]
-    if not vals:
-        return "decimal"
-    if all(isinstance(v, bool) for v in vals):
-        return "boolean"
-    nums = [_to_decimal(v) for v in vals]
-    if any(n is None for n in nums):
-        return "string"
-    return "integer" if all(_is_integral(n) for n in nums if n is not None) else "decimal"
-
-
-def _validation_type(validation: str | None) -> str | None:
-    if not validation:
-        return None
-    kind = validation.split(":", 1)[0]
-    return {"whole": "integer", "decimal": "decimal"}.get(kind)
+_to_decimal = to_decimal
+_is_integral = is_integral
 
 
 def infer_spec(
@@ -75,8 +40,7 @@ def infer_spec(
     if override is not None:
         return override
     samples = list(samples)
-    vtype = _validation_type(validation)
-    typ = vtype or infer_type(samples)
+    typ = infer_input_type(samples, validation)
     nums = [d for d in (_to_decimal(s) for s in samples) if d is not None]
     lo = min(nums) if nums and typ in ("integer", "decimal") else None
     hi = max(nums) if nums and typ in ("integer", "decimal") else None

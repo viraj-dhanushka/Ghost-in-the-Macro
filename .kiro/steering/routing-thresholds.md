@@ -25,4 +25,4 @@ routing_thresholds:
 2. VBA lines above `vba_line_threshold`, or UserForms above `userform_threshold`, or Declares above `declare_threshold`, or a batch of at least `batch_size_threshold` workbooks: **AWS Transform custom**.
 3. A workbook that mixes convertible formulas with VBA above the threshold: **Split** (Ghost converts the formulas, AWS Transform custom handles the VBA).
 
-Routes involving AWS Transform custom produce an `atx custom def exec ...` command as a dry run. Ghost never executes it. The Kiro Power hands the command to the official AWS Transform power only when AWS credentials exist and that power is installed. The Verifier can check the result of either path.
+Routes involving AWS Transform custom produce an `atx custom def exec ...` command as a dry run for review. Ghost never executes it. The transformation definition it names must already exist (`atx custom def list`), and `-t` is required with `-x`. The Kiro Power hands the command to the official AWS Transform power only when AWS credentials exist and that power is installed. The Verifier can check the result of either path.

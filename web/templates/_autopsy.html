@@ -5,6 +5,7 @@
     <li>Sheets: {{ sheets | join(", ") }}</li>
     <li>Formulas: {{ metrics.formula_count }}</li>
     <li>VBA lines: {{ metrics.vba_line_count }} in {{ metrics.module_count }} module(s)</li>
+    {% if vba_error %}<li class="error">{{ vba_error }} (VBA: not checked)</li>{% endif %}
     <li>Calculator shape: {{ "yes" if metrics.calculator_shape else "no" }}</li>
     <li>Excel-saved values: {{ "present" if excel_saved else "none (reported as not cross-checked against Excel)" }}</li>
   </ul>
@@ -63,7 +64,7 @@
       {% for c in outputs %}<label class="cell"><input type="checkbox" name="outputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.cell }}</label>{% endfor %}
     </fieldset>
     {% if decisions %}<p>Verification will run in Faithful and Intended mode ({{ decisions | length }} decision(s) recorded).</p>{% else %}<p>No decisions recorded: verification runs in Faithful mode.</p>{% endif %}
-    {% if unanswered %}<p class="note">{{ unanswered }} finding(s) still unanswered. They are reported as mismatches, not silently resolved.</p>{% endif %}
+    {% if unanswered %}<p class="note">{{ unanswered }} finding(s) still unanswered. Unanswered findings keep the original behaviour and are listed in the report.</p>{% endif %}
     <button type="submit">3. Run verification</button>
   </form>
   <div id="job" aria-live="polite"></div>

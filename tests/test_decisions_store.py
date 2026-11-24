@@ -17,7 +17,7 @@ GOOD = {
 
 def test_record_assigns_ids_and_roundtrips(tmp_path):
     d1 = record(tmp_path, GOOD)
-    d2 = record(tmp_path, {**GOOD, "decision_id": "D-099"})
+    d2 = record(tmp_path, {**GOOD, "finding_id": "F-002", "decision_id": "D-099"})
     assert (d1.decision_id, d2.decision_id) == ("D-001", "D-002")
     loaded = load_decisions(tmp_path)
     assert loaded == [d1, d2]
@@ -30,7 +30,7 @@ def test_record_assigns_ids_and_roundtrips(tmp_path):
 def test_summary_preserves_surrounding_design_text(tmp_path):
     (tmp_path / "design.md").write_text("# Design\n\nIntro\n")
     record(tmp_path, GOOD)
-    record(tmp_path, GOOD)
+    record(tmp_path, {**GOOD, "finding_id": "F-002"})
     text = (tmp_path / "design.md").read_text()
     assert text.startswith("# Design\n\nIntro") and text.count(SUMMARY_BEGIN) == 1
 

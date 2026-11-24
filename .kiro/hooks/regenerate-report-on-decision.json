@@ -8,7 +8,7 @@
       "matcher": "\\.kiro/specs/[^/]+/decisions\\.yaml$",
       "action": {
         "type": "command",
-        "command": "python3 -c \"import sys,re,subprocess; d=sys.stdin.read(); m=re.search(r'(\\.kiro/specs/[^/\\\"]+)/decisions\\.yaml', d); sys.exit(0) if not m else sys.exit(subprocess.call(['python3','-m','ghost.cli','report',m.group(1)]))\"",
+        "command": "scripts/ghost-py scripts/ghost_hook.py report",
         "timeout": 300
       }
     }

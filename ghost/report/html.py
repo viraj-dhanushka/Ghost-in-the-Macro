@@ -35,6 +35,7 @@ from ghost.report.model import (
 )
 
 __all__ = [
+    "describe_cases",
     "build_report",
     "render_html",
     "write_report",
@@ -48,14 +49,28 @@ REPORT_HTML = "proof-report.html"
 _NC = "not checked"
 
 
+def describe_cases(d: dict[str, Any]) -> str:
+    """"300 generated + 9 targeted, 176 distinct"; only the total when not counted."""
+    gen, tgt, dist = d.get("cases_generated"), d.get("cases_targeted"), d.get("distinct_cases")
+    if gen is None and tgt is None and dist is None:
+        return str(d["cases_tested"])
+    text = f"{gen if gen is not None else d['cases_tested']} generated" + (f" + {tgt} targeted" if tgt else "")
+    return text + (f", {dist} distinct" if dist is not None else "")
+
+
 def build_report(
     *,
     seed: int,
     mode: str,
     cases_tested: int,
     passed: bool,
+    cases_generated: int | None = None,
+    cases_targeted: int | None = None,
+    distinct_cases: int | None = None,
     mismatches: Iterable[Mismatch] = (),
     boundaries: Iterable[BoundaryResult] = (),
+    boundary_notes: Iterable[str] = (),
+    tested_domains: Iterable[dict[str, Any]] = (),
     rule_coverage: Iterable[RuleCoverage] = (),
     mutation: MutationResult | NotChecked | None = None,
     sanity: SanityResult | NotChecked | None = None,
@@ -74,9 +89,14 @@ def build_report(
         versions=v,
         mode=mode,  # type: ignore[arg-type]
         cases_tested=cases_tested,
+        cases_generated=cases_generated,
+        cases_targeted=cases_targeted,
+        distinct_cases=distinct_cases,
         passed=passed,
         mismatches=list(mismatches),
         boundaries=list(boundaries),
+        boundary_notes=list(boundary_notes),
+        tested_domains=list(tested_domains),
         rule_coverage=list(rule_coverage),
         mutation=mutation if mutation is not None else NotChecked(),
         sanity=sanity if sanity is not None else NotChecked(),
@@ -124,8 +144,8 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
             "Summary",
             f'<p class="verdict {verdict.lower()}">{verdict}</p>'
             + _table(
-                ["Mode", "Seed", "Cases tested", "LibreOffice", "Python", "Ghost"],
-                [[d["mode"], d["seed"], d["cases_tested"], ver["libreoffice"], ver["python"], ver["ghost"]]],
+                ["Mode", "Seed", "Cases", "LibreOffice", "Python", "Ghost"],
+                [[d["mode"], d["seed"], describe_cases(d), ver["libreoffice"], ver["python"], ver["ghost"]]],
             ),
         )
     )
@@ -142,7 +162,8 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
                 m["actual"],
                 m["rule_id"] or "",
                 m["finding_id"] or "",
-                m["decision_id"] or "",
+                (m["decision_id"] or "")
+                + (f" ({m['cases']} cases)" if m.get("cases") is not None else ""),
                 "yes" if m["minimal"] else "no",
             ]
             for m in mm
@@ -159,21 +180,51 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
     else:
         parts.append(_section("Mismatches", _para("No mismatches.")))
 
+    notes_html = (
+        "<ul>" + "".join(f"<li>{_e(n)}</li>" for n in d.get("boundary_notes", [])) + "</ul>"
+        if d.get("boundary_notes") else ""
+    )
     if d["boundaries"]:
         parts.append(
             _section(
                 "Boundaries",
-                _table(
-                    ["Cell", "Input", "Threshold", "Change point", "Owner of threshold", "Exact hits"],
+                notes_html + _table(
+                    ["Cell", "Input", "Threshold", "Change point", "Owner of threshold",
+                     "Change-point bracket", "Exact hits"],
                     [
-                        [b["cell"], b["input_name"], b["threshold"], b["change_point"] or _NC, b["operator_includes"] or _NC, b["exact_hits"]]
+                        [b.get("condition_id") or b["cell"], b["input_name"], b["threshold"], b["change_point"] or _NC,
+                         f"condition flip: {b.get('below')} (one side), {b.get('above')} (other side)"
+                         if b.get("kind") == "condition flip" else (b["operator_includes"] or _NC),
+                         b["exact_hits"] or "",
+                         # Real exact hits exist only where flip probing found the input value
+                         # that makes the condition hold with equality.
+                         b["exact"] if b.get("exact") is not None else _NC]
                         for b in d["boundaries"]
                     ],
                 ),
             )
         )
     else:
-        parts.append(_section("Boundaries", _para(_NC)))
+        parts.append(_section("Boundaries", _para(_NC) + notes_html))
+
+    if d.get("tested_domains"):
+        parts.append(
+            _section(
+                "Tested domains",
+                _table(
+                    ["Input", "Type", "Min", "Max", "Decimal places", "Distinct values"],
+                    [
+                        [t["input"], t["type"],
+                         _NC if t.get("not_tested") else t.get("min", ""),
+                         _NC if t.get("not_tested") else t.get("max", ""),
+                         t.get("decimal_places", ""), t.get("distinct_values", "")]
+                        for t in d["tested_domains"]
+                    ],
+                ),
+            )
+        )
+    else:
+        parts.append(_section("Tested domains", _para(_NC)))
 
     if d["rule_coverage"]:
         parts.append(
