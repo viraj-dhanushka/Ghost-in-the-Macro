@@ -167,7 +167,20 @@ def _report_summary(job: Job) -> dict | None:
     except ValueError:
         return None
     sanity = d.get("sanity") or {}
+    mut = d.get("mutation") or {}
+    mutation = None
+    if "total" in mut:
+        mutation = {
+            "killed": mut.get("killed"),
+            "total": mut.get("total"),
+            "survivors": [
+                {"id": m.get("mutant_id"), "operator": m.get("operator"),
+                 "location": m.get("location"), "reason": m.get("survivor_reason") or ""}
+                for m in mut.get("mutants") or [] if not m.get("killed")
+            ],
+        }
     return {
+        "mutation": mutation,
         "passed": d.get("passed"),
         "mode": d.get("mode"),
         "seed": d.get("seed"),

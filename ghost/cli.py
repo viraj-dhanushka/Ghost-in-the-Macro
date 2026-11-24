@@ -512,6 +512,7 @@ def run_verification(
                 mutation = run_mutation(
                     fsource, mapping, referee, fcfg, cases=mutation_cases,
                     targeted=list(candidate_inputs(base, constants)),
+                    progress=lambda i, n: print(f"mutation check: mutant {i}/{n}", flush=True),
                 )
             except MutationBaselineFailed as exc:
                 print(f"mutation check: not checked ({exc})")
@@ -566,7 +567,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
     mdir = _require_dir(args.migration_dir)
     ok = run_verification(
         mdir, mode=args.mode, workbook=args.workbook, trust_macros=args.trust_macros,
-        seed=args.seed, cases=args.cases,
+        seed=args.seed, cases=args.cases, mutation_cases=getattr(args, "mutation_cases", 0),
     )
     if not ok:
         print("ghost: verification failed: mismatches not explained by a Decision", file=sys.stderr)
@@ -764,6 +765,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("verify", help="verify logic.py against the Referee and write proof reports")
     _add_verify_flags(s)
+    s.add_argument(
+        "--mutation-cases", type=int, default=0,
+        help="also run the mutation self-check with this many cases per Mutant (0: not checked)",
+    )
     s.set_defaults(func=cmd_verify)
 
     s = sub.add_parser("report", help="regenerate proof reports for a migration")

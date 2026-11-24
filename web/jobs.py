@@ -51,12 +51,26 @@ def max_jobs_from_env() -> int:
         return DEFAULT_MAX_JOBS
 
 
+DEFAULT_MUTATION_CASES = 100
+
+
+def mutation_cases_from_env() -> int:
+    """Cases per Mutant for web jobs; GHOST_MUTATION_CASES=0 disables the check."""
+    try:
+        return max(0, int(os.environ.get("GHOST_MUTATION_CASES", DEFAULT_MUTATION_CASES)))
+    except ValueError:
+        return DEFAULT_MUTATION_CASES
+
+
 def default_command(migration_dir: Path, mode: str, seed: int | None, cases: int | None) -> list[str]:
     cmd = [sys.executable, "-m", "ghost.cli", "verify", str(migration_dir), "--mode", mode]
     if seed is not None:
         cmd += ["--seed", str(seed)]
     if cases is not None:
         cmd += ["--cases", str(cases)]
+    mutation_cases = mutation_cases_from_env()
+    if mutation_cases:
+        cmd += ["--mutation-cases", str(mutation_cases)]
     return cmd
 
 
@@ -199,6 +213,7 @@ class JobRunner:
             job._proc = subprocess.Popen(
                 cmd, cwd=self._cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True, start_new_session=True,
+                env={**os.environ, "PYTHONUNBUFFERED": "1"},
             )
 
             def on_timeout() -> None:

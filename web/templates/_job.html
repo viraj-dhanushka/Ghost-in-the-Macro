@@ -14,6 +14,13 @@
         ({{ report.mode }} mode, {{ report.cases_tested }} cases, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).
         Excel cross-check: {{ report.excel_check }}.
       </p>
+      {% if report.mutation %}
+      <p class="mutation">Mutation self-check: {{ report.mutation.killed }}/{{ report.mutation.total }} mutants killed.</p>
+      {% if report.mutation.survivors %}<ul class="survivors">{% for m in report.mutation.survivors %}
+        <li>Survivor {{ m.id }} ({{ m.operator }}, {{ m.location }}): {{ m.reason }}</li>{% endfor %}</ul>{% endif %}
+      {% else %}
+      <p class="mutation">Mutation self-check: not checked.</p>
+      {% endif %}
       <iframe class="report" title="Proof report" sandbox src="/run/{{ job.id }}/report.html?inline=1"></iframe>
       <h3>Downloads</h3>
       <ul>

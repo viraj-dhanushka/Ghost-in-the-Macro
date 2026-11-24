@@ -103,6 +103,10 @@ def test_haunted_end_to_end_through_web(tmp_path):
     assert data["seed"] is not None
     html = c.get(f"/run/{job_id}/report.html")
     assert html.status_code == 200 and b"quantity" in html.content.lower()
+    mut = data["mutation"]
+    assert mut.get("total", 0) > 0 and mut["killed"] > 0, mut
+    assert f'{mut["killed"]}/{mut["total"]} mutants killed' in panel.text
+    assert b"mutants killed" in html.content
     assert "sandbox" in c.get(f"/run/{job_id}/report.html?inline=1").headers["content-security-policy"]
     assert b"def compute" in c.get(f"/run/{job_id}/module.py").content
     assert c.get(f"/run/{job_id}/module.zip").headers["content-type"] == "application/zip"

@@ -344,7 +344,7 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - Load page, try sample, run verification, see report link
     - _Requirements: 20.8_
 
-- [-] 14. DEMO CHECKPOINT 2 - public URL
+- [x] 14. DEMO CHECKPOINT 2 - public URL
   - Ensure all tests pass, ask the user if questions arise.
   - Confirm the public URL runs the haunted sample flow end to end.
 
@@ -361,7 +361,7 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - **Property 29: Mutation score accounting**
     - **Validates: Requirements 9.1, 9.3, 9.4**
 
-  - [ ]* 15.4 Write mutation tests on samples
+  - [x]* 15.4 Write mutation tests on samples
     - Gold `>` versus `>=` Mutant caught by boundary probing; half-even rounding Mutant caught at 235 × 0.03
     - _Requirements: 20.7_
 
