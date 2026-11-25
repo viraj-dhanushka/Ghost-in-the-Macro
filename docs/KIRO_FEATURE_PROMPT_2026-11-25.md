@@ -52,7 +52,8 @@ Use a different Kiro capability on purpose for each piece, so the repository sho
 | 4 | The dead technology on screen | `vba-on-screen` | 0.5 day | Category fit, Impact |
 | 5 | Trial by Workbook, with a migration done by a Kiro agent | `trial-by-workbook` | 1.5 days | Innovation, Implementation |
 | 6 | Judge kit | `judge-kit` | 1 day | Presentation, Implementation |
-| Stretch | S1 to S4, only if 1 to 6 are finished by 30 November | | | |
+| 7 | Large-workbook lane with a refereed AWS Transform custom hand-off (build after 5) | `large-workbook-lane` | 1.5 days | Impact, Implementation, Innovation |
+| Stretch | S1 to S4, only if 1 to 7 are finished by 30 November | | | |
 
 The estimates come from a code review, not from a trial build. If a feature runs more than half a day over, STOP-AND-ASK before continuing; I would sooner cut scope than lose the video days.
 
@@ -186,6 +187,7 @@ A judge who opens `.kiro/` and finds config that cannot load will score this cri
 4. Show the router's recommendation ("Ghost converts", "AWS Transform custom" or "Split") with the reasons it gives. If it produces the `atx` command string, show it labelled "suggested command, not run".
 5. One honest sentence on the card: what Ghost does with macro workbooks today (reads the VBA, finds thresholds in it, converts the formulas, routes the macro logic) and what it does not do (translate VBA to Python).
 
+**Carried over from Feature 2 (owner decision, 2026-11-25 session):** the VBA read error on the autopsy screen (`web/templates/_autopsy.html`, the `<li class="error">` that prints `vba_error` followed by "(VBA: not checked)") has no `role="alert"`. Requirement 12.4 of `front-door` says every error message element keeps `role="alert"`. Feature 2 left it unchanged because that line is identical in HEAD and Feature 2 does not own it. Fix it in this feature, where the autopsy VBA block is rebuilt, and keep the visible text and the "(VBA: not checked)" suffix as they are. Add a test that every element with class `error` in the rendered autopsy page carries `role="alert"`.
 **Check and report, do not assume:** whether the Referee could convert a legacy `.xls` file to `.xlsx` safely so old files can be uploaded. Write the answer in the summary. Build it only if it is under two hours and adds no way to run macros.
 
 **Done when** the macro sample loads from its card; a module source containing `<script>` renders escaped; no code path runs a macro from an upload (existing tests still pass); the suite and `demo.sh` match the baseline.
@@ -257,6 +259,103 @@ A judge who opens `.kiro/` and finds config that cannot load will score this cri
 10. **More properties covered:** implement eight of the main spec's uncovered optional property tasks that need no LibreOffice (rule-id stability, emit determinism, spec file round trip, incomplete decisions rejected, tolerance, mutation accounting, report integrity against the schema, routing is total and deterministic) as new test files, and tick those tasks. They must add no more than 30 seconds to the suite.
 
 **Done when** the ledger is byte-identical across two runs and `--check` passes; `GET /kiro` works in a container built from the Dockerfile; the README's first screen has the items listed and no link that returns an error; nothing under `ghost/`, `samples/` or `scripts/demo.sh` changed for this feature.
+
+---
+
+## Feature 7: large-workbook lane with a refereed AWS Transform custom hand-off (`large-workbook-lane`)
+
+Added 25 November. Build it after Feature 5, because it reuses `ghost challenge` and the repair brief. Estimate: 1.5 days for parts A to D; part E is optional. STOP-AND-ASK before starting if Features 3 to 5 are not finished, so I can choose what to drop.
+
+**Problem.**
+
+- A workbook over the ingest limits (5 MB, 200,000 cells, 20,000 formulas, 60 s) never reaches the router. `ghost route` and the MCP tool `recommend_route` load the workbook first, so the user gets an ingest error, not a route.
+- The router ignores size. It looks only at VBA lines, UserForms, Declares and batch size.
+- The AWS Transform custom command Ghost prints cannot work as written:
+  - it names a definition, `excel-vba-to-python`, that exists nowhere;
+  - it has no `-g` configuration, which a non-interactive run of a managed definition requires;
+  - it passes the workbook's folder without checking that it is a Git repository.
+- Nothing prepares the input for AWS Transform custom, and nothing checks what comes back.
+
+**What this feature is, stated honestly.** AWS Transform custom migrates VBA code. Its documentation says nothing about worksheet formulas, cell counts or workbook size. So "large" is handled in two ways, and every screen and document must keep them apart:
+
+- **Large in VBA** (macro-heavy): the VBA goes to AWS Transform custom. Ghost prepares the hand-off and referees the Python that comes back.
+- **Large in cells or formulas:** Ghost does not send formulas to AWS Transform. It gives a route and a clear statement of what is and is not covered, and stops rejecting the file with a bare error.
+
+**Step 0: check the facts first.** These came from the AWS documentation on 25 November. Re-read the pages, and write what you find, with URLs, into `docs/AWS_TRANSFORM_FACTS.md` before any code. If a fact below is wrong, follow the documentation and tell me.
+
+- AWS lists a managed definition `AWS/vba-to-python-migration` (Early access) for `.bas`, `.cls`, `.frm` and VBA embedded in `.xlsm`.
+- `atx custom def exec` flags: `-n`, `-p`, `-c`, `-x`, `-t`, `-g/--configuration` (a JSON or YAML file, or key=value pairs). The key `additionalPlanContext` carries extra instructions. A managed definition run with `-x` fails without it.
+- `-p` must be a Git repository.
+- Since CLI 3.22.1 a failed transformation still exits 0. The exit code is not a verdict; the log line `Execution was not successful` is the failure signal the official Kiro power checks.
+- A definition on disk is a folder with `SKILL.md` and optional `references/` and `scripts/`.
+- Price: $0.035 per agent minute. Node.js 22 or later is required.
+- The official Kiro power `aws-transform` runs Transform custom through the `atx` CLI with ordinary AWS credentials.
+
+**Build, part A: size triage, so an oversize workbook gets a route.**
+
+1. A new function that reads sizes without loading the workbook: file bytes and the cell count from the existing streaming pre-scan (it counts cells today and throws the number away), plus the list of limits exceeded. The pre-scan does not count formulas. Either add a streaming formula count or report "formulas: over the limit, not counted". Do not guess a number.
+2. `ghost route` and `recommend_route` run triage first. For an over-limit workbook they return a route with the measured sizes and reasons, not an ingest error. VBA figures come from the static VBA read alone; handle its errors so an unreadable VBA project gives "VBA: not readable", not a crash. Metrics that need a loaded workbook are reported as "not checked".
+3. Size thresholds become optional keys in the YAML block of `.kiro/steering/routing-thresholds.md`. The parser today requires exactly four integer keys, so make the new keys optional with defaults; an existing file must still load.
+4. The route output always says what happens to each part: "VBA: N lines, sent to AWS Transform custom" and "Formulas: N, not sent, converted by Ghost" or "not converted, not checked", whichever is true.
+5. Web: a file under 5 MB that exceeds the cell or formula limit shows a route card where the error text is today. A file over 5 MB is cut off during upload, so the server cannot route it; that message becomes "too large for the public demo; run Ghost locally" with the command. Do not raise the upload cap.
+
+**Build, part B: a truthful AWS Transform command.** Rewrite the command builder in `ghost/router/explain.py` from what Step 0 found: the definition name read from configuration (default the AWS managed one), a `-g` configuration file, and a check that the target is a Git repository. It is still only printed, labelled "suggested command, not run". Update `plugin/skills/route-migration/SKILL.md` and the steering file to match.
+
+**Build, part C: the hand-off kit.** New command `ghost handoff <workbook> --out DIR`, and the same as an MCP tool. It executes nothing and calls no AWS service. It writes a folder ready to become a Git repository:
+
+- `vba/`: each VBA module as a text file, read statically.
+- `GHOST_CONTRACT.md`: the shape the returned Python must have so the workbook can referee it. One `logic.py` with `compute(inputs) -> dict`, the input and output names from `mapping.yaml`, the Excel error values, the tolerance, the rounding rules.
+- `mapping.yaml`, `rules.md` and a copy of the Excel-semantics table.
+- `atx-config.yaml`: the `-g` file, with `additionalPlanContext` pointing the agent at the contract.
+- `RUN.md`: the exact steps for the owner. `git init`, the command, how to tell whether the run failed (the log line, not the exit code), the price per agent minute, and the `ghost challenge` command to run afterwards.
+- A warning at the top of `RUN.md`: review `vba/` for passwords, connection strings and file paths before uploading, and note AWS's documented position on using content for service improvement, with its link.
+
+**Build, part D: referee what comes back.**
+
+1. `ghost challenge <workbook> --code <kit>/logic.py --mapping <kit>/mapping.yaml` gains a third exit code: 0 = no difference found on N cases; 1 = a difference was found, with the repair brief written as in Feature 5; 2 = could not be refereed, with the reason (for example no `compute()`, or outputs the Referee cannot calculate).
+2. The existing check that rejects not-converted outputs was written for Ghost's own generator. Decide, and STOP-AND-ASK if unsure, how a foreign module may be refereed on an output fed by a VBA function. Never weaken the check for generated code.
+3. **Macro spike, local only.** No test runs the Referee with macros on today. Write one LibreOffice-marked test on the macro sample that opens the Referee with macros trusted and evaluates the cell that calls the VBA function. Report what really happens.
+   - If it calculates: `ghost challenge --trust-macros` may referee VBA-fed outputs on the user's own machine. Every verdict on such an output adds "agrees with LibreOffice's reading of the VBA; not checked in Excel".
+   - If it does not: VBA-fed outputs are "not verifiable by the Referee", and the kit, the README and the Feature 4 wording say so.
+4. A `transform-receipt.json` beside the report records the definition name and the log path as "stated by the owner, not verified by Ghost". Ghost cannot prove where a file came from.
+
+**Part E, optional: how Kiro speeds this up.** Build only what the Kiro documentation supports; note the source in `docs/KIRO_SURFACES_FORMATS.md`.
+
+- **Two powers together.** A new skill in the Ghost power, `large-workbook-lane`: autopsy → route → hand-off kit → pass the kit folder to the official `aws-transform` power, which runs `atx` → `ghost challenge` → repair loop. The skill never hardcodes a definition name; the official power lists definitions itself.
+- **A guard hook.** A `PreToolUse` hook on shell commands that blocks any command starting with `atx` or `aws` unless I have approved it in that session. It turns ground rule 6 into something Kiro enforces.
+- **Steering as configuration.** The size thresholds from part A live in the steering file the router already reads.
+- **The repair hook from Feature 5, reused.** When `ghost challenge` exits 1 on returned code, the same brief drives the fix, and `repair-log.md` records each round.
+- **Sub-agents for a batch.** An orchestrating agent builds one kit per workbook in parallel and referees each return, grouping workbooks as the AWS post advises (calculation-focused, data processing, UI-heavy). Kiro's maximum parallel count is not documented, so measure before stating one.
+
+**Do not build in this feature.**
+
+- A mode that converts or verifies an over-limit workbook in Ghost. The Referee recalculates every cell for every case with a fixed 60 s command timeout, and nothing has been measured at that size.
+- The Referee as the `atx` build command. The build command also runs before any `logic.py` exists, so it would fail the baseline build.
+- A wall-clock cut-off on case generation. It would make the case count depend on the machine and break reproducibility.
+- Any AWS credentials, `atx` or macro execution on the public server.
+
+**Honesty.**
+
+- Nothing in this feature has been run against AWS. Until I complete a real run and fill in the checklist, every screen, README line and video caption says "suggested command, not run".
+- Do not create a pretend AWS Transform output. Tests use a hand-written module labelled as a stand-in.
+- Never say AWS Transform converts formulas or handles workbook size.
+
+**Correctness properties (no AWS, no LibreOffice).**
+
+- Triage never loads the workbook, and the route for a workbook within the limits is identical to today's.
+- For any size profile and thresholds, exactly one route is returned, and every limit exceeded appears in the reasons.
+- The kit is byte-identical across two runs, contains no absolute path, and every VBA module the static read returns appears exactly once.
+- The printed command always carries `-g`, and never appears without the "not run" label.
+- A thresholds file with only the four original keys loads with the defaults.
+
+**Done when**
+- `ghost route` on a generated over-limit workbook returns a route with sizes and reasons, and exits 0.
+- `ghost handoff` on the macro sample writes the kit, and `git init` in it succeeds.
+- `ghost challenge` on a stand-in `logic.py` in the kit exits 0, 1 and 2 in the three cases.
+- The macro spike result is written down as observed.
+- Routes for the existing samples are unchanged, and the suite and `scripts/demo.sh` match the baseline.
+
+**What I must do (add these rows to `docs/KIRO_OWNER_CHECKLIST.md`, Result left empty).** Install `atx` (it is not on this machine); attach the IAM policy; install the official `aws-transform` power; run one pilot on the macro sample; record the agent minutes and the cost; run `ghost challenge` on the result and keep the real output, whatever it is.
 
 ---
 
