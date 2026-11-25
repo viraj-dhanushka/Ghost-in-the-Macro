@@ -4,10 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ghost in the Macro</title>
+  <meta name="description" content="Ghost reads the business logic in an Excel workbook, writes it as plain-English rules and Python code, and compares the result with the original workbook recalculated by LibreOffice.">
+  <meta property="og:title" content="Ghost in the Macro">
+  <meta property="og:description" content="Turn Excel formulas into plain-English rules and Python code, then compare the result with the original workbook.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://github.com/viraj-dhanushka/Ghost-in-the-Macro">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/theme.js"></script>
   <script src="/static/htmx.min.js" defer></script>
   <script src="/static/htmx-errors.js" defer></script>
+  <script src="/static/start-over.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -16,7 +23,9 @@
     <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">Light mode</button>
   </header>
   <main id="main">
-    <p id="privacy-note" role="note">{{ privacy_note }}</p>
+    <p class="tagline">Bring the business logic out of the spreadsheet and check it against the original.</p>
+    <p class="explain">Ghost reads the formulas in one Excel workbook, writes them as plain-English rules and a Python module, and compares that module with the workbook recalculated by LibreOffice. It is for analysts and developers who inherited a spreadsheet they cannot easily change or audit.</p>
+    {% with current_step="exhume" %}{% include "_stepper.html" %}{% endwith %}
     <form hx-post="/upload" hx-target="#result" hx-encoding="multipart/form-data"
           action="/upload" method="post" enctype="multipart/form-data">
       <label for="file">Workbook ({{ accepted }}, up to {{ max_mb }} MB)</label>
@@ -26,10 +35,13 @@
     <h2>Try a sample</h2>
     <ul class="samples">
     {% for id, label in samples.items() %}
-      <li><button hx-post="/sample/{{ id }}" hx-target="#result">{{ label }}</button></li>
+      {% with blurb=sample_blurbs[id], measured=measured_runs.get(id) %}{% include "_sample_card.html" %}{% endwith %}
     {% endfor %}
     </ul>
-    <div id="result" aria-live="polite"></div>
+    <p id="privacy-note" role="note">{{ privacy_note }}</p>
+    <p><button type="button" id="start-over" hx-delete="/session" hx-swap="none">Start over</button></p>
+    <div id="result" tabindex="-1" aria-live="polite"></div>
+    <footer><a href="https://github.com/viraj-dhanushka/Ghost-in-the-Macro">Source code on GitHub</a></footer>
   </main>
 </body>
 </html>

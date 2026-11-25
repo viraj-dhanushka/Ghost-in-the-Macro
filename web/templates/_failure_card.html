@@ -1,0 +1,18 @@
+{#- Failure_Card. Context: kind, message (a pinned error text, shown unchanged inside role="alert"). -#}
+{% set cards = {
+  "session_expired": ["Session expired", "Start over: choose a workbook or a sample again.", "Warning"],
+  "job_failed": ["Verification failed", "Check the workbook and your cell choices, then run the verification again.", "Error"],
+  "job_timed_out": ["Verification timed out", "Try again, or choose fewer cells to verify.", "Error"],
+  "referee_unavailable": ["Referee unavailable", "The LibreOffice Referee could not start. Try again in a minute.", "Error"],
+  "file_rejected": ["File rejected", "Choose an .xlsx or .xlsm workbook within the size limit and upload it again.", "Error"],
+  "not_found": ["Page not found", "Go back to the start page.", "Warning"],
+  "error": ["That did not work", "Check your selection and try again.", "Error"],
+} %}
+{% set k = kind if kind in cards else "error" %}
+{% set c = cards[k] %}
+<section class="failure-card" data-kind="{{ k }}">
+  <p class="failure-severity">{{ c[2] }}</p>
+  <h2 class="failure-title">{{ c[0] }}</h2>
+  <p class="error" role="alert">{{ message }}</p>
+  <p class="failure-next-step">{{ c[1] }}{% if k in ("session_expired", "not_found") %} <a href="/">Back to the start page</a>{% endif %}</p>
+</section>

@@ -1,0 +1,31 @@
+{#- Progress_Rail. Context: rail (progress.rail_context). Sits outside any aria-live polled root content except the one Status_Line. -#}
+<div class="progress-rail"{% if rail.not_started %} data-not-started="true"{% endif %}>
+  {% if rail.not_started %}
+  <p id="status-line" aria-live="polite">Not started</p>
+  {% else %}
+  <p id="status-line" aria-live="polite">{{ rail.status_line }}</p>
+  {% endif %}
+  {% if rail.show_bar %}
+  <p class="mutation-bar-label">Mutation self-check: mutant {{ rail.counts.done }} of {{ rail.counts.total }}</p>
+  <progress class="mutation-bar" value="{{ rail.counts.done }}" max="{{ rail.counts.total }}" aria-label="Mutants checked">mutant {{ rail.counts.done }} of {{ rail.counts.total }}</progress>
+  {% endif %}
+  {% if rail.mutation_not_checked %}
+  <p class="mutation">Mutation self-check: not checked</p>
+  {% elif rail.tombstones %}
+  <ul class="graveyard" aria-label="Mutation self-check graveyard">
+    {% for t in rail.tombstones %}<li class="tombstone" data-state="{{ t.state }}" title="{{ t.mutant_id }}: {{ t.state }}"><span class="tomb-icon" aria-hidden="true">{{ {"killed": "✝", "survived": "!", "neutral": "·"}[t.state] }}</span> <span class="tomb-text">{{ t.mutant_id }} {{ t.state }}</span></li>
+    {% endfor %}
+  </ul>
+  {% if rail.survivors %}
+  <ul class="survivors">
+    {% for t in rail.survivors %}<li>Survivor {{ t.mutant_id }}{% if t.operator or t.location %} ({{ t.operator }}, {{ t.location }}){% endif %}{% if t.reason %}: {{ t.reason }}{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% endif %}
+  <details class="raw-log">
+    <summary>Raw log</summary>
+    <pre class="log">{% for l in rail.events %}{{ l }}
+{% endfor %}</pre>
+  </details>
+</div>

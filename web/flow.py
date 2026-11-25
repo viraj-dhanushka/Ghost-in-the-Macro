@@ -40,8 +40,9 @@ from ghost.decisions.store import DECISIONS_FILE, InvalidDecision, load_decision
 from ghost.ingest.limits import IngestError
 from ghost.report.html import describe_cases
 
-from .jobs import DONE, FAILED, SESSION_BUSY_MESSAGE, TERMINAL, Job, JobRunner, SessionBusy
+from .jobs import DONE, FAILED, TIMEOUT, SESSION_BUSY_MESSAGE, TERMINAL, Job, JobRunner, SessionBusy
 from .paths import scrub_paths
+from .progress import rail_context
 from .sessions import Session
 
 SPEC_DIR = "spec"  # per-session Decisions live here; each run gets a fresh copy
@@ -197,6 +198,49 @@ def prepare_run(session: Session, run_no: int) -> Path:
     return mdir
 
 
+def _mutation_block(job: Job) -> dict | None:
+    """The finished job's proof-report `mutation` object, or None (presentation only)."""
+    if job.status != DONE:
+        return None
+    raw = job.artifacts.get("proof-report.json")
+    if raw is None:
+        return None
+    try:
+        block = json.loads(raw).get("mutation")
+    except ValueError:
+        return None
+    return block if isinstance(block, dict) else None
+
+
+_EXPLAINED = "expected by decision"
+def verdict_text(d: dict) -> str:
+    """The label ("Passed" / "Not passed") plus one sentence built only from the proof report.
+    N is ``cases_tested``; K and the Decision ids come from ``mismatches``. A report that
+    contradicts itself gets the bare label, never a claim the report does not support; a report
+    with no `passed` field reads "Verdict not available"."""
+    if not isinstance(d.get("passed"), bool):
+        return "Verdict not available"
+    raw = d.get("mismatches")
+    if raw not in (None, [], {}) and not (isinstance(raw, list) and all(isinstance(m, dict) for m in raw)):
+        # A mismatch list the sentence cannot count is never read as "no mismatches".
+        return "Passed" if d.get("passed") is True else "Not passed"
+    ms = raw if isinstance(raw, list) else []
+    explained = [m for m in ms if m.get("class") == _EXPLAINED]
+    unexplained = len(ms) - len(explained)
+    n = d.get("cases_tested")
+    counted = isinstance(n, int) and not isinstance(n, bool) and n > 0
+    where = f" on {n} cases" if counted else "; number of cases: not checked"
+    if d.get("passed") is True:
+        if unexplained:
+            return "Passed"
+        if d.get("mode") == "faithful" and ms:
+            return "Passed"
+        if not ms:
+            return f"Passed: no difference found{where}"
+        ids = sorted({str(m["decision_id"]) for m in explained if m.get("decision_id")})
+        tail = f"{len(explained)} expected by decision" + (f" {', '.join(ids)}" if ids else "")
+        return f"Passed: no unexplained difference found{where}; {tail}"
+    return f"Not passed: {unexplained} difference(s) found" if unexplained else "Not passed"
 def _report_summary(job: Job) -> dict | None:
     raw = job.artifacts.get("proof-report.json")
     if raw is None:
@@ -221,11 +265,12 @@ def _report_summary(job: Job) -> dict | None:
     return {
         "mutation": mutation,
         "passed": d.get("passed"),
+        "verdict_text": verdict_text(d),
         "mode": d.get("mode"),
         "seed": d.get("seed"),
         "cases_tested": d.get("cases_tested"),
         "cases_text": describe_cases(d) if d.get("cases_tested") is not None else "not checked",
-        "mismatches": len(d.get("mismatches") or []),
+        "mismatches": len(d["mismatches"]) if isinstance(d.get("mismatches"), list) else 0,
         "excel_check": sanity.get("status", "not checked"),
         "libreoffice": (d.get("versions") or {}).get("libreoffice", "not checked"),
     }
@@ -249,7 +294,8 @@ def build_flow_router(
         s = session_of(request)
         if s is None or s.workbook is None:
             return None, page(request, "_message.html",
-                              {"error": "Choose a workbook or a sample first."}, 409)
+                              {"error": "Choose a workbook or a sample first.",
+                               "kind": "session_expired"}, 409)
         return s, None
 
     async def autopsy_view(request: Request, s: Session, error: str | None = None,
@@ -344,19 +390,34 @@ def build_flow_router(
         except SessionBusy as busy:  # lost a race with another request
             shutil.rmtree(mdir, ignore_errors=True)
             return _busy(request, busy.job)
-        return page(request, "_job.html", _job_ctx(job))
+        return _job_page(request, job)
 
     def _busy(request: Request, active: Job) -> Response:
         """429: say why, and keep showing the job that is already active."""
         return page(request, "_busy.html",
                     {"error": SESSION_BUSY_MESSAGE, **_job_ctx(active)}, 429)
 
+    def _job_page(request: Request, job: Job) -> Response:
+        """Job panel; a failed or timed-out job without a report renders a Failure_Card."""
+        ctx = _job_ctx(job)
+        if ctx["terminal"] and not ctx["report"] and job.status in (FAILED, TIMEOUT):
+            msg = job.error or "Verification did not produce a report."
+            low = msg.lower()
+            if job.status == TIMEOUT:
+                kind = "job_timed_out"
+            elif "referee" in low or "soffice" in low:
+                kind = "referee_unavailable"
+            else:
+                kind = "job_failed"
+            return page(request, "_message.html", {"error": msg, "kind": kind, "rail": ctx["rail"]})
+        return page(request, "_job.html", ctx)
+
     def _job_ctx(job: Job) -> dict:
         snap = job.snapshot()
         report = _report_summary(job) if job.status in TERMINAL else None
         return {
             "job": snap,
-            "tail": snap["events"][-12:],
+            "rail": rail_context(snap["events"], job.status, _mutation_block(job)),
             "terminal": job.status in TERMINAL,
             "finished": job.status == DONE,
             "failed": job.status == FAILED,
@@ -380,8 +441,8 @@ def build_flow_router(
     async def panel(request: Request, job_id: str) -> Response:
         job = _owned(request, job_id)
         if job is None:
-            return page(request, "_message.html", {"error": "Unknown verification run."}, 404)
-        return page(request, "_job.html", _job_ctx(job))
+            return page(request, "_message.html", {"error": "Unknown verification run.", "kind": "not_found"}, 404)
+        return _job_page(request, job)
 
     def _artifact(request: Request, job_id: str, name: str) -> tuple[Job | None, bytes | None]:
         job = _owned(request, job_id)

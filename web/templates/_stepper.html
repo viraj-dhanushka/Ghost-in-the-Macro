@@ -1,0 +1,12 @@
+{% set steps = [("exhume", "Exhume", "Upload"), ("autopsy", "Autopsy", "Findings"), ("verdict", "Verdict of the living", "Decisions"), ("trial", "Trial", "Verification"), ("resurrection", "Resurrection", "Proof")] %}
+<nav class="stepper" aria-label="Progress">
+  <ol>
+    {% set keys = steps | map(attribute=0) | list %}
+    {% set cur = keys.index(current_step) if current_step in keys else -1 %}
+    {% for key, themed, plain in steps %}
+    <li class="step{% if key == current_step %} current{% elif loop.index0 < cur %} done{% else %} upcoming{% endif %}"{% if key == current_step %} aria-current="step"{% endif %}>
+      <span class="step-name">{{ themed }}</span> <span class="step-plain">({{ plain }})</span>{% if key == current_step %} <strong class="step-cue">&#9679; current step</strong>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</nav>

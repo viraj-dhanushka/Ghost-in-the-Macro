@@ -6,5 +6,6 @@
 </section>
 <div id="autopsy" hx-get="/autopsy" hx-trigger="load" hx-swap="outerHTML" aria-live="polite">Reading the workbook...</div>
 {% else %}
+{% with current_step="exhume" %}{% include "_stepper.html" %}{% endwith %}
 <p class="error" role="alert">{{ error }}</p>
 {% endif %}

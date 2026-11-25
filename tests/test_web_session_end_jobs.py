@@ -39,18 +39,27 @@ def test_delete_session_drops_jobs_and_artifacts(tmp_path):
     assert c.get(f"/jobs/{job_id}").status_code == 404
 
 
+class _Clock:
+    """A clock the test moves by hand, so the idle sweep never depends on how long setup took."""
+    def __init__(self):
+        self.now = 0.0
+    def __call__(self):
+        return self.now
 def test_sweep_drops_jobs_and_artifacts(tmp_path):
-    app = create_app(session_root=tmp_path / "s", idle_timeout_s=0.2, sweep_interval_s=0.1)
+    clock = _Clock()
+    # The session is 60 s idle-limited on a clock that stands still: nothing can be swept
+    # while the sample is loaded and the job runs, however slow the machine is.
+    app = create_app(session_root=tmp_path / "s", idle_timeout_s=60, sweep_interval_s=0.05, clock=clock)
     with TestClient(app) as c:
         job_id, job = _finished_job(c, app)
-        deadline = time.monotonic() + 10
+        assert app.state.runner.get(job_id) is job and job.artifacts != {}
+        clock.now = 61.0  # the session is now idle for longer than the timeout
+        deadline = time.monotonic() + 30
         while app.state.runner._jobs and time.monotonic() < deadline:
             time.sleep(0.05)
         assert app.state.runner._jobs == {}
         assert job.artifacts == {}
         assert c.get(f"/jobs/{job_id}").status_code == 404
-
-
 def test_other_sessions_keep_their_jobs(tmp_path):
     r = JobRunner(max_jobs=2, command=_cmd("pass"))
     a, b = r.submit("s1", tmp_path / "a"), r.submit("s2", tmp_path / "b")

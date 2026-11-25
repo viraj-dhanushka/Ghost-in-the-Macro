@@ -1,0 +1,449 @@
+{
+  "pbtResults": {
+    "1.2 Write property test: phase index monotone under append": {
+      "status": "failed",
+      "failingExample": "Collection error, expected test-first: ModuleNotFoundError: No module named 'web.progress' (no counterexample; module not yet implemented)",
+      "lastRunTimestamp": 1795592046712
+    },
+    "1.5 Write property test: Status_Line text is a pure function of Phase": {
+      "status": "failed",
+      "failingExample": "Collection error: ModuleNotFoundError: No module named 'web.progress' (expected, test-first; module not yet created)",
+      "lastRunTimestamp": 1795592188449
+    },
+    "1.6 Write property test: killed/survived tombstone counts match the finished report": {
+      "status": "failed",
+      "failingExample": "Collection error: ModuleNotFoundError: No module named 'web.progress' (expected, test-first; module not yet created)",
+      "lastRunTimestamp": 1795592241512
+    }
+  },
+  "executionHistory": {
+    "1.1 Write unit tests for `phase_of`, `mutant_counts`, `status_line_text` on hand-built event lists (queued, each Phase_Marker, a `not checked` line, an out-of-order `i>n` line)": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938650
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591950723
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592015636
+      }
+    ],
+    "2. Write failing tests for landing page structure, Stepper and Sample_Cards": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938696
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592293900
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592480567
+      }
+    ],
+    "3. Write failing tests for the sample workbook download route": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938727
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592294292
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592480603
+      }
+    ],
+    "4. Write failing tests for Failure_Cards and the 404 page": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938750
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592295803
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592481354
+      }
+    ],
+    "5. Write the recorded-run regression fixture and its test": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938767
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592296319
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592481871
+      }
+    ],
+    "6. Implement `web/progress.py`": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938842
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592486645
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592603725
+      }
+    ],
+    "7. Checkpoint — Progress_Module tests pass": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938862
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592604436
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795593321144
+      }
+    ],
+    "8.1 Create `web/templates/_stepper.html` and wire it into `index.html`, `_autopsy.html`, `_upload_result.html`, `_job.html` with the correct `current_step` per screen": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938881
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795593321202
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795593634352
+      }
+    ],
+    "8.2 Create `web/templates/_sample_card.html`, a committed `docs/measured_runs.json` (or equivalent) duration file, and wire three cards into `index.html`": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938900
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795593635212
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795594198348
+      },
+      {
+        "executionId": "d6d05f02-c81c-4f70-abb0-4892e0ecb8ed",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795604749567
+      }
+    ],
+    "8.3 Create `web/templates/_failure_card.html` and a `404.html` page, and switch every existing error response to render through it while keeping each Pinned_Error_Text unchanged": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938917
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795593321448
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795593634699
+      }
+    ],
+    "9. Rewrite `index.html` content and meta tags": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938933
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795594198437
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795594841818
+      }
+    ],
+    "10. Implement `GET /sample/{id}/workbook` in `web/app.py`": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938949
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795594208338
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795595158074
+      }
+    ],
+    "11. Build `web/templates/_progress_rail.html` and wire `rail_context` into `/run/{id}/panel`": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591938966
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795595158116
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795595969362
+      }
+    ],
+    "12. Checkpoint — templates and routes tests pass": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939010
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795595969435
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795596370375
+      }
+    ],
+    "13. Add busy-state and focus-movement JS to `web/static/htmx-errors.js`": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939029
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795596370418
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795596519889
+      }
+    ],
+    "14. Checkpoint — full feature tests pass before the theme pass": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939047
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795596520334
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795596930805
+      }
+    ],
+    "15. Theme pass — vibe session": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939061
+      }
+    ],
+    "16. Checkpoint — accessibility and theme tests pass": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939079
+      }
+    ],
+    "17. Skeptic review of honesty wording and properties": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939100
+      }
+    ],
+    "18. Final checkpoint — full suite, demo invariants, owner summary": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591939116
+      }
+    ],
+    "1.2 Write property test: phase index monotone under append": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591945602
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592015770
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592060704
+      }
+    ],
+    "1.3 Write property test: unrecognised lines never change the phase": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591945783
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592061451
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592106986
+      }
+    ],
+    "1.4 Write property test: mutant counts stay within bounds and tombstone count matches the total": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591946818
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592107494
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592159439
+      }
+    ],
+    "1.5 Write property test: Status_Line text is a pure function of Phase": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591947793
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592158778
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592198450
+      }
+    ],
+    "1.6 Write property test: killed/survived tombstone counts match the finished report": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591948767
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592197604
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592254836
+      }
+    ],
+    "1.7 Write property test: determinism of `phase_of`": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795591949785
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592254267
+      },
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592293047
+      }
+    ],
+    "1. Write failing tests for the Progress_Module and its correctness properties": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795592015691
+      }
+    ],
+    "8. Build the Stepper, Sample_Card and Failure_Card partials": [
+      {
+        "executionId": "db2da101-c21a-47fc-85d3-38de1611d53f",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795594198372
+      }
+    ],
+    "8.2 Create `web/templates/_sample_card.html`, a committed `web/measured_runs.json` (or equivalent) duration file, and wire three cards into `index.html`": [
+      {
+        "executionId": "d6d05f02-c81c-4f70-abb0-4892e0ecb8ed",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795604874043
+      }
+    ]
+  }
+}

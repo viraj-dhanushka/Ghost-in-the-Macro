@@ -1,27 +1,26 @@
 <section class="job" {% if not terminal %}hx-get="/run/{{ job.id }}/panel" hx-trigger="every 1s" hx-swap="outerHTML"{% endif %} aria-labelledby="job-h-{{ job.id }}">
+  {% with current_step=("resurrection" if terminal else "trial") %}{% include "_stepper.html" %}{% endwith %}
   <h2 id="job-h-{{ job.id }}">{% if terminal %}4. Proof report{% else %}Verification in progress{% endif %}</h2>
   {% if job.status == "queued" %}
     <p>Queued. Position {{ job.queue_position }}.</p>
   {% elif not terminal %}
     <p>Running against LibreOffice (the Referee)...</p>
   {% endif %}
-  {% if tail %}<pre class="log" aria-label="Progress">{% for l in tail %}{{ l }}
-{% endfor %}</pre>{% endif %}
+  {% include "_progress_rail.html" %}
   {% if terminal %}
     {% if report %}
-      <p class="verdict {{ 'pass' if report.passed else 'fail' }}" role="status">
-        {{ "Passed" if report.passed else "Not passed: mismatches not explained by a Decision" }}
-        ({{ report.mode }} mode, {{ report.cases_text }} cases, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).
+      <p class="verdict {{ 'pass' if report.passed is true else ('fail' if report.passed is false else 'unavailable') }}" role="status">
+        {{ report.verdict_text }}
+        ({{ report.mode }} mode, {% if report.cases_text == "not checked" %}cases: not checked{% else %}{{ report.cases_text }} cases{% endif %}, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).
         Excel cross-check: {{ report.excel_check }}.
       </p>
       {% if report.mutation %}
-      <p class="mutation">Mutation self-check: {{ report.mutation.killed }}/{{ report.mutation.total }} mutants killed.</p>
-      {% if report.mutation.survivors %}<ul class="survivors">{% for m in report.mutation.survivors %}
-        <li>Survivor {{ m.id }} ({{ m.operator }}, {{ m.location }}): {{ m.reason }}</li>{% endfor %}</ul>{% endif %}
-      {% else %}
-      <p class="mutation">Mutation self-check: not checked.</p>
+      <p class="mutation mutation-summary">Mutation self-check: {{ report.mutation.killed }}/{{ report.mutation.total }} mutants killed.</p>
       {% endif %}
-      <iframe class="report" title="Proof report" sandbox src="/run/{{ job.id }}/report.html?inline=1"></iframe>
+      <figure class="report-frame">
+        <figcaption>The proof report as the engine wrote it.</figcaption>
+        <iframe class="report" title="Proof report" sandbox src="/run/{{ job.id }}/report.html?inline=1"></iframe>
+      </figure>
       <h3>Downloads</h3>
       <ul>
         <li><a href="/run/{{ job.id }}/report.html">Proof report (HTML)</a></li>

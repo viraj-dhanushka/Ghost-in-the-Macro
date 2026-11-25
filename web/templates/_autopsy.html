@@ -1,4 +1,6 @@
 <section id="autopsy" aria-labelledby="autopsy-h">
+  {% set ns = namespace(open=false) %}{% for f in findings %}{% if not f.decision %}{% set ns.open = true %}{% endif %}{% endfor %}
+  {% with current_step=("verdict" if ns.open else "autopsy") %}{% include "_stepper.html" %}{% endwith %}
   <h2 id="autopsy-h">1. Autopsy of {{ name }}</h2>
   {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
   <ul class="facts">

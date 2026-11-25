@@ -1,1 +1,2 @@
-<p class="error" role="alert">{{ error }}</p>
+{% with message=error, kind=kind|default("error") %}{% include "_failure_card.html" %}{% endwith %}
+{% if rail %}{% include "_progress_rail.html" %}{% endif %}

@@ -1,0 +1,6 @@
+<li class="sample-card">
+  <p class="sample-blurb">{{ blurb }}</p>
+  <button hx-post="/sample/{{ id }}" hx-target="#result">{{ label }}</button>
+  <a class="sample-download" href="/sample/{{ id }}/workbook">Download the workbook</a>
+  {% if measured and measured.measured_on %}<p class="sample-measured">One measured run: {{ measured.seconds }} s on {{ measured.date }}, {{ measured.cases }} cases ({{ measured.measured_on }}).</p>{% endif %}
+</li>
