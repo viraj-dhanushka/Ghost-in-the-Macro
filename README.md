@@ -152,7 +152,9 @@ docker run --rm -p 8080:8080 -e GHOST_MAX_JOBS=1 -e GHOST_COOKIE_SECURE=1 \
 
 ## Use the Kiro Power
 
-The `plugin/` folder is a Kiro Power: `plugin.json`, `mcp.json` (an MCP server over stdio, started with `uvx --from git+https://github.com/viraj-dhanushka/Ghost-in-the-Macro ghost-mcp`) and seven skills in `plugin/skills/`: `autopsy`, `write-rules-spec`, `implement-from-rules`, `verify-migration`, `record-decision`, `route-migration` and `guardrails`.
+The `plugin/` folder is a Kiro Power: `plugin.json`, `mcp.json` (an MCP server over stdio, started with `uvx --from git+https://github.com/viraj-dhanushka/Ghost-in-the-Macro ghost-mcp`) and eight skills in `plugin/skills/`: `getting-started` (onboarding), `autopsy`, `write-rules-spec`, `implement-from-rules`, `verify-migration`, `record-decision`, `route-migration` and `guardrails` (which carries copies of the two steering files in its `references/` folder). There is no `POWER.md` and no `plugin/steering/`; the Power follows the documented `plugin.json` format.
+
+Status in Kiro: four of the five hooks in `.kiro/hooks/` were seen to fire in the Kiro IDE (shown by side effects, 2026-11-25). The workspace MCP server `ghost` (`.kiro/settings/mcp.json`) was observed Connected with 13 tools in the Kiro MCP panel by the Owner on 2026-11-25 (checklist row). Installing the Power, the four agents and the `review-findings-on-create` hook are not checked in Kiro; `docs/KIRO_OWNER_CHECKLIST.md` lists the steps and its rows stay empty until the Owner records an observed result.
 
 In this path an AI agent in Kiro writes `logic.py` from the rules spec, and the same verifier that checks the web app's transpiler output checks it against the Referee.
 
@@ -162,7 +164,7 @@ Prerequisites on the machine that runs Kiro:
 - [`uv`](https://docs.astral.sh/uv/) (provides `uvx`). The Power starts the server with `uvx --from git+https://github.com/viraj-dhanushka/Ghost-in-the-Macro ghost-mcp`. `uvx` downloads Python 3.11+ and Ghost's dependencies by itself, so no `python` command, virtual environment or working directory is needed. The first start takes a minute.
 
 1. Install `uv` and LibreOffice (above).
-2. Install the Power in Kiro from the GitHub URL (`docs/KIRO_USAGE.md` has the owner's checklist). To run from a local checkout instead, change `args` in `plugin/mcp.json` to `["--from", "/path/to/Ghost-in-the-Macro", "ghost-mcp"]`.
+2. Install the Power in Kiro from the GitHub URL (`docs/KIRO_OWNER_CHECKLIST.md` lists what to check). To run from a local checkout instead, change `args` in `plugin/mcp.json` to `["--from", "/path/to/Ghost-in-the-Macro", "ghost-mcp"]`.
 3. Ask the agent to migrate a workbook. The skills guide it: autopsy, write the rules, implement `compute(inputs)`, verify, and record a Decision when the workbook contradicts itself.
 
 The agent must not change behaviour without a recorded Decision (see the `guardrails` skill).

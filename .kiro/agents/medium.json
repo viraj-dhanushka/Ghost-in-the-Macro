@@ -1,6 +1,22 @@
 {
   "name": "medium",
   "description": "Writes EARS business rules from a workbook, traced to source cells.",
-  "prompt": "You are the Medium. Turn autopsy output into plain-English EARS rules in rules.md, each traced to a source cell or macro line with a deterministic rule_id. Do not guess unsupported constructs; list them as 'not converted' with cell and reason. Do not change behaviour without a recorded Decision.",
-  "tools": ["read", "write", "shell"]
+  "prompt": "You are the Medium. Turn the output of the Ghost MCP tools analyze_workbook and list_rules into plain-English EARS rules in rules.md, each traced to a source cell or macro line with a deterministic rule_id. Use get_dependencies to trace a cell's precedents. You write rules and specs only; you have no verification tools and no shell. Do not guess unsupported constructs; list them as 'not converted' with cell and reason. Do not change behaviour without a recorded Decision.",
+  "tools": [
+    "read",
+    "write",
+    "@ghost/analyze_workbook",
+    "@ghost/list_rules",
+    "@ghost/get_dependencies"
+  ],
+  "resources": [
+    "file://.kiro/steering/ghost-guardrails.md",
+    "file://.kiro/steering/excel-semantics.md"
+  ],
+  "mcpServers": {
+    "ghost": {
+      "command": "scripts/ghost-py",
+      "args": ["-m", "mcp_server.server"]
+    }
+  }
 }

@@ -5,7 +5,7 @@
       "name": "Re-run verification on logic.py or mapping.yaml save",
       "trigger": "PostFileSave",
       "description": "Runs the verifier against the Referee when a migration's generated logic.py or mapping.yaml is saved.",
-      "matcher": "\\.kiro/specs/[^/]+/(logic\\.py|mapping\\.yaml)$",
+      "matcher": "(^|/)\\.kiro/specs/[^/]+/(logic\\.py|mapping\\.yaml)$",
       "action": {
         "type": "command",
         "command": "scripts/ghost-py scripts/ghost_hook.py verify",

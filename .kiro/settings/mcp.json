@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ghost": {
+      "command": "scripts/ghost-py",
+      "args": ["-m", "mcp_server.server"]
+    }
+  }
+}

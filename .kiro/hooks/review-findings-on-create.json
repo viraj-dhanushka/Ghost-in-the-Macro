@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Remind the agent to surface new findings to the human",
+      "trigger": "PostFileCreate",
+      "description": "When a migration's findings.yaml is first created, asks the agent to summarise the findings for the human and not to decide any of them.",
+      "matcher": "(^|/)\\.kiro/specs/[^/]+/findings\\.yaml$",
+      "action": {
+        "type": "agent",
+        "prompt": "A new findings.yaml was just created for a migration. Read it and give the human a short list of the findings (id, cell, what the workbook contradicts). Do not decide any finding, do not edit decisions.yaml, do not record a decision, and do not run any macro or modify any workbook. Ask the human which behaviour is correct for each finding that needs a Decision."
+      }
+    }
+  ]
+}
