@@ -55,8 +55,29 @@ def make_versions(libreoffice: str | None) -> Versions:
     )
 
 
+def excel_error_code(value: Any) -> str | None:
+    """The error text (for example ``"#VALUE!"``) when ``value`` is an Excel error, else None.
+
+    L-02: duck-typed on purpose. A generated module imports the ``excel.py`` copied
+    next to ``logic.py``, so its errors are instances of a different ``ExcelError``
+    class object from ``ghost.runtime.excel.ExcelError``; ``isinstance`` on one class
+    would miss them.
+    """
+    if type(value).__name__ != "ExcelError":
+        return None
+    code = getattr(value, "code", None)
+    return code if isinstance(code, str) and code.startswith("#") else None
+
+
 def _jsonable(value: Any) -> Any:
-    """Convert engine values to JSON types without losing precision."""
+    """Convert engine values to JSON types without losing precision.
+
+    Excel errors become their code text, so a report can hold them anywhere an
+    engine value appears (mismatches, mutant counterexamples, boundary cases).
+    """
+    code = excel_error_code(value)
+    if code is not None:
+        return code
     if isinstance(value, Decimal):
         return str(value)
     if isinstance(value, date):
@@ -89,10 +110,27 @@ def _mismatch_json(m: Mismatch) -> dict[str, Any]:
     }
 
 
+# L-08: shown only when the engine marked survivors with ``survivor_kind``. Words what was
+# observed on the tested inputs and never says the constants are equivalent.
+SURVIVOR_EXPLANATION = (
+    "These constants belong to rows that never become the best result on the tested inputs, "
+    "or change no output on any tested input, so changing them doesn't change any output."
+)
+
+
 def _mutation_json(m: MutationResult | NotChecked) -> dict[str, Any]:
     if isinstance(m, NotChecked):
         return dict(NOT_CHECKED)
-    return _jsonable(m.model_dump(mode="python"))
+    data = _jsonable(m.model_dump(mode="python"))
+    kinds = 0
+    for mutant in data["mutants"]:  # L-08: optional field, absent when not observed
+        if mutant.get("survivor_kind") is None:
+            mutant.pop("survivor_kind", None)
+        else:
+            kinds += 1
+    if kinds:
+        data["survivor_explanation"] = SURVIVOR_EXPLANATION
+    return data
 
 
 def _sanity_json(s: SanityResult | NotChecked) -> dict[str, Any]:
@@ -123,6 +161,8 @@ def report_to_dict(report: ProofReport) -> dict[str, Any]:
         data["boundary_notes"] = list(report.boundary_notes)
     if report.tested_domains:  # R-21: optional, omitted when the cases were not recorded
         data["tested_domains"] = _jsonable(report.tested_domains)
+    if report.not_converted:  # L-05: optional, omitted when every formula is converted
+        data["not_converted"] = [dict(e) for e in report.not_converted]
     # R-28: optional fields, omitted when the engine did not count them.
     for key in ("cases_generated", "cases_targeted", "distinct_cases"):
         value = getattr(report, key)

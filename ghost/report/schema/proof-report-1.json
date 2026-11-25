@@ -30,6 +30,12 @@
     "mismatches": {"type": "array", "items": {"$ref": "#/$defs/mismatch"}},
     "boundaries": {"type": "array", "items": {"$ref": "#/$defs/boundary"}},
     "boundary_notes": {"type": "array", "items": {"type": "string"}},
+    "not_converted": {"type": "array", "items": {
+      "type": "object",
+      "required": ["cell", "reason"],
+      "additionalProperties": false,
+      "properties": {"cell": {"type": "string"}, "reason": {"type": "string"}}
+    }},
     "tested_domains": {"type": "array", "items": {
       "type": "object",
       "required": ["input", "type"],
@@ -40,7 +46,8 @@
         "max": {"type": "string"},
         "decimal_places": {"type": "integer", "minimum": 0},
         "distinct_values": {"type": "integer", "minimum": 0},
-        "not_tested": {"type": "boolean"}
+        "not_tested": {"type": "boolean"},
+        "max_includes_sample": {"type": "string"}
       }
     }},
     "rule_coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}},
@@ -87,7 +94,11 @@
         "condition_id": {"type": ["string", "null"]},
         "below": {"type": ["string", "null"]},
         "above": {"type": ["string", "null"]},
-        "exact": {"type": ["string", "null"]}
+        "exact": {"type": ["string", "null"]},
+        "exact_others": {"type": ["object", "null"], "additionalProperties": {"type": "string"}},
+        "exact_note": {"type": ["string", "null"]},
+        "threshold_constant": {"type": ["string", "null"]},
+        "threshold_calculated": {"type": ["boolean", "null"]}
       }
     },
     "coverage": {
@@ -106,7 +117,8 @@
       "properties": {
         "mutants": {"type": "array", "items": {"type": "object", "required": ["mutant_id", "killed"]}},
         "killed": {"type": "integer", "minimum": 0},
-        "total": {"type": "integer", "minimum": 0}
+        "total": {"type": "integer", "minimum": 0},
+        "survivor_explanation": {"type": "string"}
       }
     },
     "sanity": {

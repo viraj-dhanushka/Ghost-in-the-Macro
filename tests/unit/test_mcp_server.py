@@ -182,3 +182,47 @@ def test_boundary_cases_and_verify_name_bad_arguments(haunted, monkeypatch):
     )
     assert is_error and payload["error"]["type"] == "invalid_argument"
     assert payload["error"]["argument"] == "cases"
+
+
+def test_jsonable_serialises_excel_errors_in_tool_payloads():
+    """L-02 (live-fixes-2026-11-24, task 3.2): MCP payloads holding Excel errors (for
+    example verify_implementation's mismatches) serialise them as their code text, for
+    the runtime class and for a vendored copy's class (a separate class object)."""
+    from decimal import Decimal
+
+    from ghost.models import BoundaryResult, Case, Mismatch
+    from ghost.runtime.excel import ExcelError
+
+    class Vendored:
+        __slots__ = ("code",)
+
+        def __init__(self, code):
+            self.code = code
+
+    Vendored.__name__ = "ExcelError"
+    payload = {
+        "mismatches": [Mismatch(
+            case=Case(inputs={"amount": Decimal("4")}, referee={"y": ExcelError("#VALUE!")},
+                      actual={"y": Vendored("#REF!")}),
+            output="y", cell="Calc!B3", mismatch_class="translation bug",
+        )],
+        "boundaries": [BoundaryResult(cell="Calc!B5", input_name="q", threshold=Decimal("50"),
+                                      exact_hits=[{"last_unchanged": ExcelError("#N/A"),
+                                                   "first_changed": Decimal("50")}])],
+        "value": Vendored("#DIV/0!"),
+    }
+    out = srv.jsonable(payload)
+    text = json.dumps(out, sort_keys=True)  # what call_tool / the MCP wiring sends
+    assert "ExcelError(" not in text
+    case = out["mismatches"][0]["case"]
+    assert case == {"inputs": {"amount": "4"}, "referee": {"y": "#VALUE!"}, "actual": {"y": "#REF!"}}
+    assert out["boundaries"][0]["exact_hits"] == [{"last_unchanged": "#N/A", "first_changed": "50"}]
+    assert out["value"] == "#DIV/0!"
+
+
+def test_jsonable_still_rejects_unknown_types_inside_models():
+    """Only Excel errors get a fallback; other unknown objects are not silently stringified."""
+    from ghost.models import Case
+
+    with pytest.raises(Exception, match="not JSON serializable|serialize"):
+        srv.jsonable(Case(inputs={"x": object()}))

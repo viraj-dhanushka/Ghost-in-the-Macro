@@ -9,9 +9,22 @@ Cells listed by ``find_not_converted`` (and cells the emitter itself cannot
 translate) get no code. Outputs that depend on them are left out of the
 result and named in the module header. Nothing is guessed (Requirement 7.7).
 
+``INDEX`` (L-03) gets its range origin and the formula cell's own position as
+constants, so a 0 row or column is reduced by implicit intersection the way the
+Referee does it; as a direct argument of an aggregate it yields the whole
+selection (``_index_area``). The rules were measured on the Referee
+(``.kiro/specs/live-fixes-2026-11-24/measurements-l03.md``).
+
 ``trace(condition_id, bool)`` is called for each IF condition evaluated, with
 ids of the form ``"Sheet!B7#1"`` (cell plus the 1-based IF index in the
-formula, pre-order). The Verifier uses it for rule coverage.
+formula, pre-order). The Verifier uses it for rule coverage. When the condition
+is a single comparison and the hook has the attribute ``compared = True``, the
+call is ``trace(condition_id, bool, left, right)`` with the two compared values
+(L-04: flip probing confirms exact hits with them). The values come from the
+module-level ``_SIDES`` table, which re-evaluates the two operands; the IF calls
+inside ``compute()`` are unchanged, so mutation sites are too. Every other hook
+keeps the two-argument call, and a hand-written module that never passes the
+values still works; its exact hits are reported as not checked.
 """
 
 from __future__ import annotations
@@ -21,6 +34,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from openpyxl.utils import column_index_from_string, get_column_letter
+from openpyxl.utils.cell import coordinate_from_string
 
 from ghost.converter.ast import (
     Ast,
@@ -61,10 +75,11 @@ except ImportError:
 
 
 class _Rng:
-    __slots__ = ("rows", "cols", "vals")
+    __slots__ = ("rows", "cols", "vals", "top", "left")
 
-    def __init__(self, rows, cols, vals):
+    def __init__(self, rows, cols, vals, top=None, left=None):
         self.rows, self.cols, self.vals = rows, cols, vals
+        self.top, self.left = top, left  # sheet row and column of the first cell (INDEX only)
 
 
 def _inp(x):
@@ -179,6 +194,27 @@ def _if(trace, cid, cond, then, other):
     return then() if c else other()
 
 
+def _with_sides(trace, v, sides):
+    """``trace`` itself, unless it asks for compared values (``trace.compared = True``).
+
+    Then conditions listed in ``sides`` are reported as ``trace(cid, truth, left,
+    right)``, the values evaluated again from ``v`` (nested IFs untraced); every
+    other condition keeps ``trace(cid, truth)``.
+    """
+    if trace is None or getattr(trace, "compared", False) is not True:
+        return trace
+
+    def traced(cid, c):
+        cell, _, n = str(cid).rpartition("#")
+        f = sides.get((cell, n))
+        if f is None:
+            trace(cid, c)
+        else:
+            trace(cid, c, *f(v))
+
+    return traced
+
+
 def _iferror(value, fallback):
     r = value()
     return fallback() if isinstance(r, ExcelError) else r
@@ -194,7 +230,12 @@ def _choose(i, *options):
     return options[k - 1]
 
 
-def _index(rng, r=None, c=None):
+def _index_pick(rng, r, c):
+    # (row, column) picked by INDEX, 1-based; 0 means the whole row or column.
+    # Measured on the Referee (LibreOffice 26.8.3.1 and 7.4.7.2; Excel not
+    # verified): a negative index is #VALUE!, an index past the end is #REF!,
+    # a 0 on a dimension of length 1 selects it, and on a grid an omitted
+    # column is 0.
     rn = xl_num(r)
     if isinstance(rn, ExcelError):
         return rn
@@ -202,28 +243,64 @@ def _index(rng, r=None, c=None):
     if c is None:
         if rng.rows == 1 and rng.cols > 1:
             ri, ci = 1, ri  # one row: the argument picks the column
-        else:
+        elif rng.cols == 1:
             ci = 1
+        else:
+            ci = 0
     else:
         cn = xl_num(c)
         if isinstance(cn, ExcelError):
             return cn
         ci = int(cn)
-    # A 0 asks for a whole row or column. On a dimension of length 1 that is the
-    # single row or column (LibreOffice, measured; Excel not verified); on a
-    # longer dimension a single-cell formula cannot hold it (#VALUE!).
-    if ri == 0:
-        if rng.rows != 1:
-            return VALUE
+    if ri < 0 or ci < 0:
+        return VALUE
+    if ri == 0 and rng.rows == 1:
         ri = 1
-    if ci == 0:
-        if rng.cols != 1:
-            return VALUE
+    if ci == 0 and rng.cols == 1:
         ci = 1
-    if ri < 1 or ci < 1 or ri > rng.rows or ci > rng.cols:
+    if ri > rng.rows or ci > rng.cols:
         return REF
+    return ri, ci
+
+
+def _index(rng, r=None, c=None, at=None):
+    # INDEX in a single-value context. A whole row or column is reduced by
+    # implicit intersection with the formula cell's own row or column number
+    # (``at`` = (sheet, row, column)), whatever sheet the range is on: the
+    # element if that row or column lies in the range, else #VALUE!. Both
+    # indexes 0 on a grid is #VALUE!.
+    pick = _index_pick(rng, r, c)
+    if isinstance(pick, ExcelError):
+        return pick
+    ri, ci = pick
+    if ri == 0 and ci == 0:
+        return VALUE
+    if ri == 0:
+        if at is None or rng.top is None or not rng.top <= at[1] < rng.top + rng.rows:
+            return VALUE
+        ri = at[1] - rng.top + 1
+    if ci == 0:
+        if at is None or rng.left is None or not rng.left <= at[2] < rng.left + rng.cols:
+            return VALUE
+        ci = at[2] - rng.left + 1
     v = rng.vals[(ri - 1) * rng.cols + (ci - 1)]
     return Decimal(0) if v is None else v
+
+
+def _index_area(rng, r=None, c=None):
+    # INDEX as a direct argument of SUM, AVERAGE, MIN, MAX, AND or OR: the
+    # selected row, column, grid or cell as a range (measured on the Referee:
+    # no intersection, and text in the selection is skipped like in a range).
+    pick = _index_pick(rng, r, c)
+    if isinstance(pick, ExcelError):
+        return pick
+    ri, ci = pick
+    rows = range(1, rng.rows + 1) if ri == 0 else (ri,)
+    cols = range(1, rng.cols + 1) if ci == 0 else (ci,)
+    vals = [rng.vals[(i - 1) * rng.cols + (j - 1)] for i in rows for j in cols]
+    return _Rng(len(rows), len(cols), vals)
+
+
 def _kind(x):
     if isinstance(x, bool):
         return 2
@@ -407,18 +484,45 @@ class _Translator:
         self.cell = cell
         self.sheet = _sheet_of(cell)
         self.if_count = 0
+        self.sides: dict[str, str] = {}  # condition id -> "(left, right)" source
+        col, row = coordinate_from_string(_norm(cell.rsplit("!", 1)[1]))
+        # The formula cell's own (sheet, row, column), for INDEX implicit intersection.
+        self.at = (self.sheet, row, column_index_from_string(col))
 
     def ref(self, node: CellRef) -> str:
         return f"v[{_key(node.sheet or self.sheet, node.address)!r}]"
 
-    def range_arg(self, node: Ast) -> str:
+    def range_arg(self, node: Ast, origin: bool = False) -> str:
+        """``_Rng`` for a cell or range; ``origin`` adds its top row and left column."""
         if isinstance(node, CellRef):
-            return f"_Rng(1, 1, [{self.ref(node)}])"
+            where = f", {node.row}, {column_index_from_string(node.col)}" if origin else ""
+            return f"_Rng(1, 1, [{self.ref(node)}]{where})"
         if isinstance(node, RangeRef):
             rows, cols, keys = _expand(node, self.sheet)
             cells = ", ".join(f"v[{k!r}]" for k in keys)
-            return f"_Rng({rows}, {cols}, [{cells}])"
+            where = ""
+            if origin:
+                top = min(node.start.row, node.end.row)
+                left = min(
+                    column_index_from_string(node.start.col),
+                    column_index_from_string(node.end.col),
+                )
+                where = f", {top}, {left}"
+            return f"_Rng({rows}, {cols}, [{cells}]{where})"
         raise _Unsupported("a range or cell reference is required here")
+
+    def index_call(self, node: FuncCall, area: bool = False) -> str:
+        """INDEX: ``_index_area`` as a direct aggregate argument, else ``_index``
+        with the formula cell's own position for implicit intersection."""
+        if len(node.args) not in (2, 3):
+            raise _Unsupported("INDEX needs 2 or 3 arguments")
+        rest = [self.scalar(a) for a in node.args[1:]]
+        if area:
+            return f"_index_area({self.range_arg(node.args[0])}, {', '.join(rest)})"
+        if len(rest) == 1:
+            rest.append("None")
+        rng = self.range_arg(node.args[0], origin=True)
+        return f"_index({rng}, {', '.join(rest)}, at={self.at!r})"
 
     def scalar(self, node: Ast) -> str:
         if isinstance(node, Number):
@@ -462,6 +566,11 @@ class _Translator:
             cond = self.scalar(args[0])
             then = self.scalar(args[1])
             other = self.scalar(args[2]) if n == 3 else "False"
+            c0 = args[0]
+            if isinstance(c0, BinaryOp) and c0.op in _COMPARISONS:
+                # The two compared values, for ``_SIDES`` (L-04). Kept out of the
+                # ``_if`` call so compute() and its mutation sites are unchanged.
+                self.sides[cid] = f"({self.scalar(c0.left)}, {self.scalar(c0.right)})"
             return f"_if(trace, {cid!r}, {cond}, lambda: {then}, lambda: {other})"
         if name == "IFERROR":
             if n != 2:
@@ -475,16 +584,17 @@ class _Translator:
         if name in _AGGREGATES:
             if n < 1:
                 raise _Unsupported(f"{name} needs at least one argument")
-            parts = [
-                self.range_arg(a) if isinstance(a, (CellRef, RangeRef)) else self.scalar(a)
-                for a in args
-            ]
+            parts = []
+            for a in args:
+                if isinstance(a, (CellRef, RangeRef)):
+                    parts.append(self.range_arg(a))
+                elif isinstance(a, FuncCall) and a.name == "INDEX":
+                    parts.append(self.index_call(a, area=True))  # a reference, not a value
+                else:
+                    parts.append(self.scalar(a))
             return f"{_AGGREGATES[name]}({', '.join(parts)})"
         if name == "INDEX":
-            if n not in (2, 3):
-                raise _Unsupported("INDEX needs 2 or 3 arguments")
-            rest = [self.scalar(a) for a in args[1:]]
-            return f"_index({self.range_arg(args[0])}, {', '.join(rest)})"
+            return self.index_call(node)
         if name == "MATCH":
             exact = n == 3 and (
                 (isinstance(args[2], Number) and args[2].value == 0)
@@ -531,6 +641,7 @@ def emit_module(
     bad: set[str] = {e.cell for e in not_converted if e.cell}
 
     code: dict[str, str] = {}
+    sides: dict[str, dict[str, str]] = {}  # cell -> condition id -> "(left, right)"
     deps: dict[str, set[str]] = {}
     for cell in sorted(workbook.cells):
         formula = workbook.cells[cell].formula
@@ -540,7 +651,9 @@ def emit_module(
             ast = _patch_ast(
                 substitute_names(parse_formula(formula), workbook), cell, patches, applied
             )
-            code[cell] = _Translator(cell).scalar(ast)
+            tr = _Translator(cell)
+            code[cell] = tr.scalar(ast)
+            sides[cell] = tr.sides
             deps[cell] = _refs(ast, _sheet_of(cell))
         except _Unsupported as exc:
             bad.add(cell)
@@ -627,10 +740,26 @@ def emit_module(
         cell = workbook.cells.get(c)
         lines.append(f"    {c!r}: {_const_code(cell.value if cell else None)},")
     lines.append("}")
+    # The two values each single-comparison IF condition compares (L-04), for a
+    # trace hook with ``compared = True``. Outside compute(), so not a mutation site.
+    # Keyed by (cell, IF index) so each condition id is still written once in the
+    # module (tools and tests that patch a condition id by its text keep working).
+    side_rows = sorted(
+        (tuple(cid.rsplit("#", 1)), src)
+        for c in formula_order for cid, src in sides.get(c, {}).items()
+    )
+    if side_rows:
+        lines.append("")
+        lines.append("_SIDES = {")
+        for key, src in side_rows:
+            lines.append(f"    {key!r}: lambda v, trace=None: {src},")
+        lines.append("}")
     lines.append("")
     lines.append("")
     lines.append("def compute(inputs, trace=None):")
     lines.append("    v = dict(_CONSTS)")
+    if side_rows:
+        lines.append("    trace = _with_sides(trace, v, _SIDES)")
     for name in sorted(in_cells):
         lines.append(f"    v[{in_cells[name]!r}] = _inp(inputs.get({name!r}))")
     for c in formula_order:

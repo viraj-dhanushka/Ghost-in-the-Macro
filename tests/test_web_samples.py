@@ -67,3 +67,27 @@ def test_bundled_sample_passes_faithful_with_default_inputs(tmp_path, sample_id)
     data = json.loads(rep.content)
     assert data["mode"] == "faithful"
     assert data["passed"] is True, data.get("mismatches") or panel.text
+
+
+# Clause 3.11 of .kiro/specs/live-fixes-2026-11-24 (task 2, Property 2: Preservation).
+# Measured on the unfixed code; L-05 must not change them (no sample has a
+# not-converted or not-verifiable output).
+DEFAULT_BOXES = {
+    "discount": {"inputs": ["Calculator!B2", "Calculator!B3", "Calculator!B4"],
+                 "outputs": ["Calculator!B11"]},
+    "haunted": {"inputs": ["Calculator!B2", "Calculator!B3", "Calculator!B4"],
+                "outputs": ["Calculator!B11"]},
+    "scenarios": {"inputs": ["Model!B2", "Model!B3", "Model!E2"],
+                  "outputs": ["Model!B19", "Model!B20"]},
+}
+
+
+@pytest.mark.parametrize("sample_id", sorted(DEFAULT_BOXES))
+def test_bundled_sample_default_boxes_are_unchanged(tmp_path, sample_id):
+    """**Validates: Requirements 3.11**"""
+    assert set(DEFAULT_BOXES) == set(SAMPLES)
+    c = TestClient(create_app(session_root=tmp_path / "s"))
+    assert c.post(f"/sample/{sample_id}").status_code == 200
+    page = c.get("/autopsy")
+    assert page.status_code == 200
+    assert _prechecked(page.text) == DEFAULT_BOXES[sample_id]

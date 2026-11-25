@@ -206,6 +206,26 @@ class BoundaryResult(_Model):
     below: Decimal | None = None
     above: Decimal | None = None
     exact: Decimal | None = None
+    # L-04 follow-up, optional: the other input values the exact hit was found with, as
+    # text (``{"quantity": "1"}``), and a note when the hit cannot be called checked.
+    exact_others: dict[str, str] | None = None
+    exact_note: str | None = None
+    # L-06, optional, flip rows only: the constant the condition compares the input's side
+    # against (``None`` when not found), and whether flip probing found that the compared
+    # threshold is calculated (it moves with this input or another one), not a constant.
+    threshold_constant: Decimal | None = None
+    threshold_calculated: bool | None = None
+
+
+def exact_hit_text(
+    exact: object, others: dict[str, str] | None, note: str | None
+) -> str | None:
+    """One line for an exact hit: ``500 (with price = 1)``; ``None`` when there is none."""
+    if exact is None:
+        return None
+    extra = ", ".join(f"{k} = {v}" for k, v in sorted((others or {}).items()))
+    parts = [p for p in (f"with {extra}" if extra else "", note or "") if p]
+    return f"{exact} ({'; '.join(parts)})" if parts else f"{exact}"
 
 
 class RuleCoverage(_Model):
@@ -226,6 +246,10 @@ class Mutant(_Model):
     killed: bool
     killed_by: Case | None = None
     survivor_reason: str | None = None
+    # L-08, optional: "no_output_change" when the survivor changed no output on any tested
+    # input in a module whose MAX/MIN/MATCH selection never picked some row. Never a claim
+    # of equivalence.
+    survivor_kind: str | None = None
 
 
 class NotChecked(_Model):
@@ -273,6 +297,9 @@ class Report(_Model):
     boundary_notes: list[str] = Field(default_factory=list)
     # R-21, optional: per input type, min, max, decimal places over the cases actually run.
     tested_domains: list[dict[str, object]] = Field(default_factory=list)
+    # L-05, optional: workbook cells that are not converted, as {cell, reason}. They are
+    # not compared; the field is omitted when the workbook has none.
+    not_converted: list[dict[str, str]] = Field(default_factory=list)
     rule_coverage: list[RuleCoverage] = Field(default_factory=list)
     mutation: Union[MutationResult, NotChecked] = Field(default_factory=NotChecked)
     sanity: Union[SanityResult, NotChecked] = Field(default_factory=NotChecked)

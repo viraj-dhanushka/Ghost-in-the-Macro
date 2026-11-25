@@ -1,0 +1,855 @@
+[
+  {
+    "label": "healthz",
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "referee": {
+        "available": true
+      }
+    }
+  },
+  {
+    "label": "haunted",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "decision_status": 200,
+    "decision_recorded": true,
+    "default_boxes": {
+      "inputs": [
+        "Calculator!B2",
+        "Calculator!B3",
+        "Calculator!B4"
+      ],
+      "outputs": [
+        "Calculator!B11"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calculator!B2",
+        "Calculator!B3",
+        "Calculator!B4",
+        "Calculator!E2",
+        "Calculator!E3",
+        "Calculator!E4",
+        "Calculator!E5",
+        "Calculator!E6",
+        "Calculator!E7"
+      ],
+      "outputs": [
+        "Calculator!B10",
+        "Calculator!B11",
+        "Calculator!B6",
+        "Calculator!B7",
+        "Calculator!B8",
+        "Calculator!B9"
+      ]
+    },
+    "verify_status": 200,
+    "job_id": "slq7fP7Wsgs6bZzb",
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    mutation score: 33/35 killed (94%)",
+      "      survived M-3cbed5dc Calculator!B9 rounding_mode: no difference found on 97 distinct cases; tested domain: delivery_distance_km: decimal, min 0, max 10000, up to 3 decimal places; quantity: integer, min 0, max 10000, 0 decimal places; unit_price: decimal, min 0, max 10000, up to 3 decimal places",
+      "      survived M-687cf270 Calculator!B10 rounding_mode: no difference found on 97 distinct cases; tested domain: delivery_distance_km: decimal, min 0, max 10000, up to 3 decimal places; quantity: integer, min 0, max 10000, 0 decimal places; unit_price: decimal, min 0, max 10000, up to 3 decimal places",
+      "    module: ./logic_intended.py",
+      "    report: ./reports/intended/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "job_seconds": 6.1,
+    "report_json_status": 200,
+    "report_html_status": 200,
+    "faithful_report_json_status": 200,
+    "report": {
+      "mode": "intended",
+      "passed": true,
+      "mismatches": [
+        {
+          "cell": "Calculator!B11",
+          "inputs": {
+            "delivery_distance_km": "0",
+            "quantity": 50,
+            "unit_price": "0"
+          },
+          "expected": {
+            "total": 6.0
+          },
+          "actual": {
+            "total": "0"
+          },
+          "class": "expected by decision"
+        }
+      ],
+      "cases_tested": 311,
+      "cases_generated": 300,
+      "cases_targeted": 11,
+      "distinct_cases": 200,
+      "mutation": {
+        "killed": 33,
+        "total": 35
+      },
+      "survivors": [
+        "rounding_mode@Calculator!B10",
+        "rounding_mode@Calculator!B9"
+      ],
+      "boundaries": [
+        {
+          "above": null,
+          "below": null,
+          "cell": "Calculator!B7",
+          "change_point": "50",
+          "condition_id": null,
+          "exact": null,
+          "exact_hits": [
+            {
+              "first_changed": 50,
+              "last_unchanged": 49
+            }
+          ],
+          "exact_note": null,
+          "exact_others": null,
+          "input_name": "Calculator!B2",
+          "kind": null,
+          "operator_includes": "at",
+          "threshold": "50",
+          "threshold_calculated": null,
+          "threshold_constant": null
+        },
+        {
+          "above": null,
+          "below": null,
+          "cell": "Calculator!B9",
+          "change_point": "50",
+          "condition_id": null,
+          "exact": null,
+          "exact_hits": [
+            {
+              "first_changed": 51,
+              "last_unchanged": 50
+            }
+          ],
+          "exact_note": null,
+          "exact_others": null,
+          "input_name": "Calculator!B2",
+          "kind": null,
+          "operator_includes": "above",
+          "threshold": "50",
+          "threshold_calculated": null,
+          "threshold_constant": null
+        },
+        {
+          "above": "50",
+          "below": "49",
+          "cell": "Calculator!B7",
+          "change_point": "50",
+          "condition_id": "Calculator!B7#1",
+          "exact": "50",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "delivery_distance_km": "12",
+            "unit_price": "19.95"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "50",
+          "threshold_calculated": false,
+          "threshold_constant": "50"
+        },
+        {
+          "above": "51",
+          "below": "50",
+          "cell": "Calculator!B9",
+          "change_point": "50",
+          "condition_id": "Calculator!B9#1",
+          "exact": "50",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "delivery_distance_km": "12",
+            "unit_price": "19.95"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "50",
+          "threshold_calculated": false,
+          "threshold_constant": "50"
+        }
+      ],
+      "boundary_notes": [
+        "no flip found for Calculator!B7#1 on delivery_distance_km [0, 10000], unit_price [0, 10000]",
+        "no flip found for Calculator!B9#1 on delivery_distance_km [0, 10000], unit_price [0, 10000]"
+      ],
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    },
+    "faithful_report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 311,
+      "cases_generated": 300,
+      "cases_targeted": 11,
+      "distinct_cases": 200,
+      "mutation": {
+        "killed": 33,
+        "total": 35
+      },
+      "survivors": [
+        "rounding_mode@Calculator!B10",
+        "rounding_mode@Calculator!B9"
+      ],
+      "boundaries": [
+        {
+          "above": null,
+          "below": null,
+          "cell": "Calculator!B7",
+          "change_point": "50",
+          "condition_id": null,
+          "exact": null,
+          "exact_hits": [
+            {
+              "first_changed": 50,
+              "last_unchanged": 49
+            }
+          ],
+          "exact_note": null,
+          "exact_others": null,
+          "input_name": "Calculator!B2",
+          "kind": null,
+          "operator_includes": "at",
+          "threshold": "50",
+          "threshold_calculated": null,
+          "threshold_constant": null
+        },
+        {
+          "above": null,
+          "below": null,
+          "cell": "Calculator!B9",
+          "change_point": "50",
+          "condition_id": null,
+          "exact": null,
+          "exact_hits": [
+            {
+              "first_changed": 51,
+              "last_unchanged": 50
+            }
+          ],
+          "exact_note": null,
+          "exact_others": null,
+          "input_name": "Calculator!B2",
+          "kind": null,
+          "operator_includes": "above",
+          "threshold": "50",
+          "threshold_calculated": null,
+          "threshold_constant": null
+        },
+        {
+          "above": "50",
+          "below": "49",
+          "cell": "Calculator!B7",
+          "change_point": "50",
+          "condition_id": "Calculator!B7#1",
+          "exact": "50",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "delivery_distance_km": "12",
+            "unit_price": "19.95"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "50",
+          "threshold_calculated": false,
+          "threshold_constant": "50"
+        },
+        {
+          "above": "51",
+          "below": "50",
+          "cell": "Calculator!B9",
+          "change_point": "50",
+          "condition_id": "Calculator!B9#1",
+          "exact": "50",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "delivery_distance_km": "12",
+            "unit_price": "19.95"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "50",
+          "threshold_calculated": false,
+          "threshold_constant": "50"
+        }
+      ],
+      "boundary_notes": [
+        "no flip found for Calculator!B7#1 on delivery_distance_km [0, 10000], unit_price [0, 10000]",
+        "no flip found for Calculator!B9#1 on delivery_distance_km [0, 10000], unit_price [0, 10000]"
+      ],
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    }
+  },
+  {
+    "label": "L-02 sem_index",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M1"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B4"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M1"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B4"
+      ]
+    },
+    "verify_status": 200,
+    "job_id": "y7PC7iBxzlcqSimC",
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 3/4 killed (75%)",
+      "      survived M-2620f56e Calc!B4 constant_plus_one: no difference found on 43 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m1: integer, min 0, max 10000, 0 decimal places",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "job_seconds": 3.1,
+    "report_json_status": 200,
+    "report_html_status": 200,
+    "faithful_report_json_status": 404,
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 300,
+      "cases_generated": 300,
+      "cases_targeted": 0,
+      "distinct_cases": 137,
+      "mutation": {
+        "killed": 3,
+        "total": 4
+      },
+      "survivors": [
+        "constant_plus_one@Calc!B4"
+      ],
+      "boundaries": [],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    },
+    "diff_vs_local_26.8.3": [
+      "report.libreoffice: local=\"LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b\" docker=\"LibreOffice 7.4.7.2 40(Build:2)\"",
+      "report.mutation.raw_keys: local=[\"killed\", \"mutants\", \"total\"] docker=null",
+      "report.survivors: local=[{\"id\": \"M-2620f56e\", \"op\": \"constant_plus_one\", \"loc\": \"Calc!B4\", \"reason\": \"no difference found on 43 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m1: int docker=[\"constant_plus_one@Calc!B4\"]"
+    ]
+  },
+  {
+    "label": "L-03 sem_index + B3",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M2",
+        "Calc!M3"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B3",
+        "Calc!B4"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M1",
+        "Calc!M2",
+        "Calc!M3"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B3",
+        "Calc!B4"
+      ]
+    },
+    "verify_status": 200,
+    "job_id": "Qu8-VY2nJ6hYKnTm",
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 7/8 killed (88%)",
+      "      survived M-2620f56e Calc!B4 constant_plus_one: no difference found on 75 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m2: integer, min 0, max 10000, 0 decimal places; calc_m3: integer, min 0, max 10000, 0 decimal places",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "job_seconds": 3.1,
+    "report_json_status": 200,
+    "report_html_status": 200,
+    "faithful_report_json_status": 404,
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 300,
+      "cases_generated": 300,
+      "cases_targeted": 0,
+      "distinct_cases": 175,
+      "mutation": {
+        "killed": 7,
+        "total": 8
+      },
+      "survivors": [
+        "constant_plus_one@Calc!B4"
+      ],
+      "boundaries": [],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    },
+    "diff_vs_local_26.8.3": [
+      "report.libreoffice: local=\"LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b\" docker=\"LibreOffice 7.4.7.2 40(Build:2)\"",
+      "report.mutation.raw_keys: local=[\"killed\", \"mutants\", \"total\"] docker=null",
+      "report.survivors: local=[{\"id\": \"M-2620f56e\", \"op\": \"constant_plus_one\", \"loc\": \"Calc!B4\", \"reason\": \"no difference found on 75 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m2: int docker=[\"constant_plus_one@Calc!B4\"]"
+    ]
+  },
+  {
+    "label": "L-04 tier",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!B3"
+      ],
+      "outputs": [
+        "Calc!B5"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!B3"
+      ],
+      "outputs": [
+        "Calc!B4",
+        "Calc!B5"
+      ]
+    },
+    "verify_status": 200,
+    "job_id": "VZ_k10YJKaeu-uGP",
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    boundary Calc!B5: quantity changes at 500 (threshold 500, exact hit 500 (with price = 1))",
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 5/5 killed (100%)",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "job_seconds": 3.1,
+    "report_json_status": 200,
+    "report_html_status": 200,
+    "faithful_report_json_status": 404,
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 316,
+      "cases_generated": 300,
+      "cases_targeted": 16,
+      "distinct_cases": 159,
+      "mutation": {
+        "killed": 5,
+        "total": 5
+      },
+      "survivors": [],
+      "boundaries": [
+        {
+          "above": "500.000",
+          "below": "499.999",
+          "cell": "Calc!B5",
+          "change_point": "500.000",
+          "condition_id": "Calc!B5#1",
+          "exact": "500.000",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "quantity": "1"
+          },
+          "input_name": "price",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "500.000",
+          "threshold_calculated": false,
+          "threshold_constant": "500"
+        },
+        {
+          "above": "500",
+          "below": "499",
+          "cell": "Calc!B5",
+          "change_point": "500",
+          "condition_id": "Calc!B5#1",
+          "exact": "500",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "price": "1"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "500",
+          "threshold_calculated": false,
+          "threshold_constant": "500"
+        }
+      ],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    },
+    "diff_vs_local_26.8.3": [
+      "report.libreoffice: local=\"LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b\" docker=\"LibreOffice 7.4.7.2 40(Build:2)\"",
+      "report.mutation.raw_keys: local=[\"killed\", \"mutants\", \"total\"] docker=null"
+    ]
+  },
+  {
+    "label": "L-05 sem_names",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!E1"
+      ],
+      "outputs": [
+        "Calc!C2",
+        "Calc!C3"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!E1"
+      ],
+      "outputs": [
+        "Calc!C2",
+        "Calc!C3"
+      ]
+    },
+    "verify_status": 200,
+    "job_id": "Xja8FK0bptmQXn2O",
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    boundary Calc!C3: quantity changes at 50 (threshold 50, exact hit 50 (with bulk_level = 50))",
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 5/5 killed (100%)",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "job_seconds": 3.1,
+    "report_json_status": 200,
+    "report_html_status": 200,
+    "faithful_report_json_status": 404,
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 312,
+      "cases_generated": 300,
+      "cases_targeted": 12,
+      "distinct_cases": 149,
+      "mutation": {
+        "killed": 5,
+        "total": 5
+      },
+      "survivors": [],
+      "boundaries": [
+        {
+          "above": "31",
+          "below": "30",
+          "cell": "Calc!C3",
+          "change_point": "30",
+          "condition_id": "Calc!C3#1",
+          "exact": "30",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "quantity": "30"
+          },
+          "input_name": "bulk_level",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "30",
+          "threshold_calculated": true,
+          "threshold_constant": null
+        },
+        {
+          "above": "50",
+          "below": "49",
+          "cell": "Calc!C3",
+          "change_point": "50",
+          "condition_id": "Calc!C3#1",
+          "exact": "50",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "bulk_level": "50"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "50",
+          "threshold_calculated": true,
+          "threshold_constant": null
+        }
+      ],
+      "boundary_notes": [
+        "flip probing partial: conditions in not-converted cells are not checked (Calc!C4)"
+      ],
+      "not_converted": [
+        {
+          "cell": "Calc!C4",
+          "reason": "named reference Dyn is not supported: dynamic name (formula such as OFFSET or INDIRECT)"
+        }
+      ],
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    },
+    "diff_vs_local_26.8.3": [
+      "report.libreoffice: local=\"LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b\" docker=\"LibreOffice 7.4.7.2 40(Build:2)\"",
+      "report.mutation.raw_keys: local=[\"killed\", \"mutants\", \"total\"] docker=null"
+    ]
+  },
+  {
+    "label": "scenarios sample",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Model!B2",
+        "Model!B3",
+        "Model!E2"
+      ],
+      "outputs": [
+        "Model!B19",
+        "Model!B20"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Model!A10",
+        "Model!A11",
+        "Model!A12",
+        "Model!A13",
+        "Model!A14",
+        "Model!A15",
+        "Model!A6",
+        "Model!A7",
+        "Model!A8",
+        "Model!A9",
+        "Model!B10",
+        "Model!B11",
+        "Model!B12",
+        "Model!B13",
+        "Model!B14",
+        "Model!B15",
+        "Model!B2",
+        "Model!B3",
+        "Model!B6",
+        "Model!B7",
+        "Model!B8",
+        "Model!B9",
+        "Model!C10",
+        "Model!C11",
+        "Model!C12",
+        "Model!C13",
+        "Model!C14",
+        "Model!C15",
+        "Model!C6",
+        "Model!C7",
+        "Model!C8",
+        "Model!C9",
+        "Model!D10",
+        "Model!D11",
+        "Model!D12",
+        "Model!D13",
+        "Model!D14",
+        "Model!D15",
+        "Model!D6",
+        "Model!D7",
+        "Model!D8",
+        "Model!D9",
+        "Model!E10",
+        "Model!E11",
+        "Model!E12",
+        "Model!E13",
+        "Model!E14",
+        "Model!E15",
+        "Model!E2",
+        "Model!E3",
+        "Model!E6",
+        "Model!E7",
+        "Model!E8",
+        "Model!E9"
+      ],
+      "outputs": [
+        "Model!B18",
+        "Model!B19",
+        "Model!B20",
+        "Model!F10",
+        "Model!F11",
+        "Model!F12",
+        "Model!F13",
+        "Model!F14",
+        "Model!F15",
+        "Model!F6",
+        "Model!F7",
+        "Model!F8",
+        "Model!F9",
+        "Model!H10",
+        "Model!H11",
+        "Model!H12",
+        "Model!H13",
+        "Model!H14",
+        "Model!H15",
+        "Model!H6",
+        "Model!H7",
+        "Model!H8",
+        "Model!H9"
+      ]
+    },
+    "verify_status": 200,
+    "job_id": "m_spezjGYmInTBOK",
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "      survived M-ad060935 Model!F8 constant_minus_one: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places",
+      "      survived M-47ac08d3 Model!F9 rounding_mode: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places",
+      "      survived M-671b2842 Model!F9 constant_plus_one: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "job_seconds": 12.1,
+    "report_json_status": 200,
+    "report_html_status": 200,
+    "faithful_report_json_status": 404,
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 354,
+      "cases_generated": 300,
+      "cases_targeted": 54,
+      "distinct_cases": 206,
+      "mutation": {
+        "killed": 70,
+        "total": 132
+      },
+      "survivors": [
+        "constant_minus_one@Model!C12",
+        "constant_minus_one@Model!C13",
+        "constant_minus_one@Model!C15",
+        "constant_minus_one@Model!C8",
+        "constant_minus_one@Model!D12",
+        "constant_minus_one@Model!D13",
+        "constant_minus_one@Model!D15",
+        "constant_minus_one@Model!D8",
+        "constant_minus_one@Model!E12",
+        "constant_minus_one@Model!E13",
+        "constant_minus_one@Model!E15",
+        "constant_minus_one@Model!E8",
+        "constant_minus_one@Model!F11",
+        "constant_minus_one@Model!F11",
+        "constant_minus_one@Model!F12",
+        "constant_minus_one@Model!F12",
+        "constant_minus_one@Model!F13",
+        "constant_minus_one@Model!F13",
+        "constant_minus_one@Model!F15",
+        "constant_minus_one@Model!F15",
+        "constant_minus_one@Model!F6",
+        "constant_minus_one@Model!F8",
+        "constant_minus_one@Model!F8",
+        "constant_plus_one@Model!B12",
+        "constant_plus_one@Model!B13",
+        "constant_plus_one@Model!B15",
+        "constant_plus_one@Model!B6",
+        "constant_plus_one@Model!B8",
+        "constant_plus_one@Model!C12",
+        "constant_plus_one@Model!C13",
+        "constant_plus_one@Model!C15",
+        "constant_plus_one@Model!C6",
+        "constant_plus_one@Model!C8",
+        "constant_plus_one@Model!E12",
+        "constant_plus_one@Model!E13",
+        "constant_plus_one@Model!E15",
+        "constant_plus_one@Model!E8",
+        "constant_plus_one@Model!F10",
+        "constant_plus_one@Model!F11",
+        "constant_plus_one@Model!F11",
+        "constant_plus_one@Model!F12",
+        "constant_plus_one@Model!F12",
+        "constant_plus_one@Model!F13",
+        "constant_plus_one@Model!F13",
+        "constant_plus_one@Model!F14",
+        "constant_plus_one@Model!F15",
+        "constant_plus_one@Model!F15",
+        "constant_plus_one@Model!F6",
+        "constant_plus_one@Model!F7",
+        "constant_plus_one@Model!F8",
+        "constant_plus_one@Model!F8",
+        "constant_plus_one@Model!F9",
+        "rounding_mode@Model!F10",
+        "rounding_mode@Model!F11",
+        "rounding_mode@Model!F12",
+        "rounding_mode@Model!F13",
+        "rounding_mode@Model!F14",
+        "rounding_mode@Model!F15",
+        "rounding_mode@Model!F6",
+        "rounding_mode@Model!F7",
+        "rounding_mode@Model!F8",
+        "rounding_mode@Model!F9"
+      ],
+      "boundaries": [],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 7.4.7.2 40(Build:2)"
+    },
+    "diff_vs_local_26.8.3": [
+      "report.libreoffice: local=\"LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b\" docker=\"LibreOffice 7.4.7.2 40(Build:2)\"",
+      "report.mutation.raw_keys: local=[\"killed\", \"mutants\", \"survivor_explanation\", \"total\"] docker=null",
+      "report.survivors: local=[{\"id\": \"M-a27ba96e\", \"op\": \"constant_plus_one\", \"loc\": \"Model!B12\", \"reason\": \"no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross docker=[\"constant_minus_one@Model!C12\", \"constant_minus_one@Model!C13\", \"constant_minus_one@Model!C15\", \"constant_minus_one@Model!C8\", \"constant_minus_one@Model!D12\", \"constant_minus_one@Model!D13\", \"constan"
+    ]
+  }
+]

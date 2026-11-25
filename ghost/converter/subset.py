@@ -8,12 +8,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from openpyxl.utils import column_index_from_string
+
 from ghost.converter.ast import (
     Ast,
     BinaryOp,
     ErrorLiteral,
     FuncCall,
     NameRef,
+    Number,
     RangeRef,
     walk,
 )
@@ -38,6 +41,42 @@ SUPPORTED_FUNCTIONS = frozenset(
 )
 
 _OPERATORS = frozenset({"+", "-", "*", "/", "^", "&", "=", "<>", "<", "<=", ">", ">="})
+
+# L-03: functions whose direct INDEX arguments are references (whole selection),
+# and functions that pass a reference through from these argument positions.
+_AGGREGATE_FUNCS = frozenset({"SUM", "AVERAGE", "MIN", "MAX", "AND", "OR"})
+_PASS_THROUGH = {"IF": slice(1, None), "IFERROR": slice(0, None), "CHOOSE": slice(1, None)}
+INDEX_PASSED_THROUGH = (
+    "INDEX that can select a whole row or column (an index of 0, or one computed at run "
+    "time), passed through IF, IFERROR or CHOOSE inside SUM, AVERAGE, MIN, MAX, AND or OR "
+    "(reference context), is not converted"
+)
+
+
+def _may_select_whole(index: FuncCall) -> bool:
+    """True when this INDEX can select a whole row or column of a multi-cell range."""
+    if not index.args or not isinstance(index.args[0], RangeRef):
+        return False  # a single cell, or not a range (the emitter rejects it)
+    rng = index.args[0]
+    rows = abs(rng.end.row - rng.start.row) + 1
+    cols = abs(column_index_from_string(rng.end.col) - column_index_from_string(rng.start.col)) + 1
+    if rows == 1 and cols == 1:
+        return False
+    if len(index.args) == 2 and rows > 1 and cols > 1:
+        return True  # an omitted column on a grid is 0
+    return any(not (isinstance(a, Number) and a.value >= 1) for a in index.args[1:])
+
+
+def _passed_through_index(node: Ast) -> bool:
+    """An INDEX that may select a whole row or column reaches ``node``'s value
+    through IF, IFERROR or CHOOSE."""
+    if not isinstance(node, FuncCall):
+        return False
+    if node.name == "INDEX":
+        return _may_select_whole(node)
+    if node.name in _PASS_THROUGH:
+        return any(_passed_through_index(a) for a in node.args[_PASS_THROUGH[node.name]])
+    return False
 
 
 @dataclass(frozen=True)
@@ -79,6 +118,15 @@ def check_subset(
             continue
         elif isinstance(node, RangeRef) and node.start.sheet != node.end.sheet:
             add("3-D reference is not supported")
+        if (
+            isinstance(node, FuncCall)
+            and node.name in _AGGREGATE_FUNCS
+            and any(
+                isinstance(a, FuncCall) and a.name in _PASS_THROUGH and _passed_through_index(a)
+                for a in node.args
+            )
+        ):
+            add(INDEX_PASSED_THROUGH)
     return out
 
 

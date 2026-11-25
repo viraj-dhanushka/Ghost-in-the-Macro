@@ -29,6 +29,7 @@ from hypothesis import HealthCheck, Phase, seed as hyp_seed, settings
 from ghost.models import Case, IOSpec, Mapping, Mismatch, Mode, Threshold
 from ghost.verifier.classify import explaining_decision, verdict
 from ghost.verifier.compare import DEFAULT_TOL, case_key, values_equal
+from ghost.verifier.domain import DEFAULT_MAX, effective_domains
 from ghost.verifier.strategies import inputs_strategy
 
 __all__ = ["VerifyConfig", "VerifyResult", "load_compute", "verify"]
@@ -50,7 +51,11 @@ class VerifyConfig:
     # Upper bound applied to numeric inputs whose mapping has no max. The
     # Referee computes in binary doubles, so very large products cannot meet
     # the 1e-6 absolute tolerance; this keeps clean workbooks at zero Mismatches.
-    default_max: Decimal | None = Decimal(10_000)
+    default_max: Decimal | None = DEFAULT_MAX
+    # The workbook's own input values (name -> value). An input whose sample is above its
+    # max is generated up to the sample, so the effective domain (ghost.verifier.domain)
+    # includes it. Empty: the domain is the declared range plus ``default_max``.
+    sample: dict[str, Any] = field(default_factory=dict)
     thresholds: list[Threshold] = field(default_factory=list)
     overrides: dict[str, IOSpec] = field(default_factory=dict)
     # progress(cases_done, cases_total) after each new Referee evaluation.
@@ -260,11 +265,10 @@ def verify(
             break
 
     overrides = dict(cfg.overrides)
-    if cfg.default_max is not None:
-        for n, spec in mapping.inputs.items():
-            spec = overrides.get(n, spec)
-            if spec.type in ("integer", "decimal") and spec.max is None:
-                overrides[n] = spec.model_copy(update={"max": cfg.default_max})
+    for n, (_lo, hi) in effective_domains(mapping, cfg.sample, cfg.default_max, cfg.overrides).items():
+        spec = overrides.get(n, mapping.inputs[n])
+        if hi is not None and spec.max != hi:
+            overrides[n] = spec.model_copy(update={"max": hi})
     strat = inputs_strategy(mapping, cfg.thresholds, overrides)
 
     def run_search(body: Callable[[dict[str, Any]], None]) -> None:

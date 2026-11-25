@@ -1,0 +1,626 @@
+{
+ "cases": [
+  {
+   "agree": true,
+   "cell": "Calc!B3",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_above_far",
+   "placement": "row 3, above rows 5-7",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!B4",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_above_adj",
+   "placement": "row 4, just above",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!B5",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_top_edge",
+   "placement": "row 5 = top edge",
+   "referee": 7.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!B6",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_inside",
+   "placement": "row 6, middle",
+   "referee": 8.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!B7",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_bottom_edge",
+   "placement": "row 7 = bottom edge",
+   "referee": 9.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!B8",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_below_adj",
+   "placement": "row 8, just below",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!B12",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_below_far",
+   "placement": "row 12, below",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!X6",
+   "formula": "=INDEX($M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0_inside_right",
+   "placement": "row 6, column X right of the range",
+   "referee": 8.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!C6",
+   "formula": "=INDEX($M$5:$M$7,0,1)",
+   "ghost": "#VALUE!",
+   "id": "col_r0c1_inside",
+   "placement": "row 6 inside",
+   "referee": 8.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!C9",
+   "formula": "=INDEX($M$5:$M$7,0,1)",
+   "ghost": "#VALUE!",
+   "id": "col_r0c1_outside",
+   "placement": "row 9 outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!D6",
+   "formula": "=INDEX($M$5:$M$7,0,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0c0_inside",
+   "placement": "row 6 inside",
+   "referee": 8.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!D9",
+   "formula": "=INDEX($M$5:$M$7,0,0)",
+   "ghost": "#VALUE!",
+   "id": "col_r0c0_outside",
+   "placement": "row 9 outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!H9",
+   "formula": "=INDEX($M$5:$M$7,2,0)",
+   "ghost": 8.0,
+   "id": "col_r2c0_outside",
+   "placement": "row 9 outside (col 0 on width 1)",
+   "referee": 8.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!I6",
+   "formula": "=INDEX($M$5:$M$7,$Z$1)",
+   "ghost": "#VALUE!",
+   "id": "col_rZ_inside",
+   "placement": "row 6 inside, row index from Z1 = 0",
+   "referee": 8.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!I9",
+   "formula": "=INDEX($M$5:$M$7,$Z$1)",
+   "ghost": "#VALUE!",
+   "id": "col_rZ_outside",
+   "placement": "row 9 outside, row index from Z1 = 0",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!J6",
+   "formula": "=INDEX($M$5:$M$7,0)+0",
+   "ghost": "#VALUE!",
+   "id": "col_r0_plus0_inside",
+   "placement": "row 6 inside, in arithmetic",
+   "referee": 8.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!J9",
+   "formula": "=INDEX($M$5:$M$7,0)+0",
+   "ghost": "#VALUE!",
+   "id": "col_r0_plus0_outside",
+   "placement": "row 9 outside, in arithmetic",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!K6",
+   "formula": "=SUM(INDEX($M$5:$M$7,0))",
+   "ghost": "#VALUE!",
+   "id": "col_r0_sum_inside",
+   "placement": "row 6 inside, inside SUM",
+   "referee": 24.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!K9",
+   "formula": "=SUM(INDEX($M$5:$M$7,0))",
+   "ghost": "#VALUE!",
+   "id": "col_r0_sum_outside",
+   "placement": "row 9 outside, inside SUM",
+   "referee": 24.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!L6",
+   "formula": "=AVERAGE(INDEX($M$5:$M$7,0))",
+   "ghost": "#VALUE!",
+   "id": "col_r0_avg_inside",
+   "placement": "row 6 inside, inside AVERAGE",
+   "referee": 8.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!L9",
+   "formula": "=AVERAGE(INDEX($M$5:$M$7,0))",
+   "ghost": "#VALUE!",
+   "id": "col_r0_avg_outside",
+   "placement": "row 9 outside, inside AVERAGE",
+   "referee": 8.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!C30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_left_far",
+   "placement": "column C, left of E-G",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!D30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_left_adj",
+   "placement": "column D, just left",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!E30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_left_edge",
+   "placement": "column E = left edge",
+   "referee": 21.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!F30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_inside",
+   "placement": "column F, middle",
+   "referee": 22.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!G30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_right_edge",
+   "placement": "column G = right edge",
+   "referee": 23.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!H30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_right_adj",
+   "placement": "column H, just right",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!K30",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_right_far",
+   "placement": "column K, right",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!F15",
+   "formula": "=INDEX($E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "row_c0_inside_above",
+   "placement": "column F, row 15 above the range",
+   "referee": 22.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!F31",
+   "formula": "=INDEX($E$20:$G$20,1,0)",
+   "ghost": "#VALUE!",
+   "id": "row_r1c0_inside",
+   "placement": "column F inside",
+   "referee": 22.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!C31",
+   "formula": "=INDEX($E$20:$G$20,1,0)",
+   "ghost": "#VALUE!",
+   "id": "row_r1c0_outside",
+   "placement": "column C outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!F32",
+   "formula": "=INDEX($E$20:$G$20,0,0)",
+   "ghost": "#VALUE!",
+   "id": "row_r0c0_inside",
+   "placement": "column F inside",
+   "referee": 22.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!C32",
+   "formula": "=INDEX($E$20:$G$20,0,0)",
+   "ghost": "#VALUE!",
+   "id": "row_r0c0_outside",
+   "placement": "column C outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!C33",
+   "formula": "=INDEX($E$20:$G$20,0,2)",
+   "ghost": 22.0,
+   "id": "row_r0c2_outside",
+   "placement": "column C outside (row 0 on height 1)",
+   "referee": 22.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!F34",
+   "formula": "=SUM(INDEX($E$20:$G$20,0))",
+   "ghost": "#VALUE!",
+   "id": "row_c0_sum_inside",
+   "placement": "column F inside, inside SUM",
+   "referee": 66.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!C34",
+   "formula": "=SUM(INDEX($E$20:$G$20,0))",
+   "ghost": "#VALUE!",
+   "id": "row_c0_sum_outside",
+   "placement": "column C outside, inside SUM",
+   "referee": 66.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!N4",
+   "formula": "=INDEX($Q$5:$R$7,0,2)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_above",
+   "placement": "row 4, above rows 5-7",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!N5",
+   "formula": "=INDEX($Q$5:$R$7,0,2)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_top_edge",
+   "placement": "row 5 = top edge",
+   "referee": 41.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!N6",
+   "formula": "=INDEX($Q$5:$R$7,0,2)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_inside",
+   "placement": "row 6, middle",
+   "referee": 42.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!N7",
+   "formula": "=INDEX($Q$5:$R$7,0,2)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_bottom_edge",
+   "placement": "row 7 = bottom edge",
+   "referee": 43.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!N8",
+   "formula": "=INDEX($Q$5:$R$7,0,2)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_below",
+   "placement": "row 8, below",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!O6",
+   "formula": "=INDEX($Q$5:$R$7,0,1)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c1_inside",
+   "placement": "row 6 inside",
+   "referee": 32.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!O9",
+   "formula": "=INDEX($Q$5:$R$7,0,1)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c1_outside",
+   "placement": "row 9 outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!P30",
+   "formula": "=INDEX($Q$5:$R$7,2,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r2c0_left_adj",
+   "placement": "column P, just left of Q-R",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!Q30",
+   "formula": "=INDEX($Q$5:$R$7,2,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r2c0_left_edge",
+   "placement": "column Q = left edge",
+   "referee": 32.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!R30",
+   "formula": "=INDEX($Q$5:$R$7,2,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r2c0_right_edge",
+   "placement": "column R = right edge",
+   "referee": 42.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!S30",
+   "formula": "=INDEX($Q$5:$R$7,2,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r2c0_right_adj",
+   "placement": "column S, just right",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!U6",
+   "formula": "=INDEX($Q$5:$R$7,0,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c0_row_inside",
+   "placement": "row 6 inside, column U outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!Q31",
+   "formula": "=INDEX($Q$5:$R$7,0,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c0_col_inside",
+   "placement": "column Q inside, row 31 outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!U31",
+   "formula": "=INDEX($Q$5:$R$7,0,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c0_neither",
+   "placement": "row and column outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!U7",
+   "formula": "=INDEX($Q$5:$R$7,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0_row_inside",
+   "placement": "one argument; row 7 inside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!Q32",
+   "formula": "=INDEX($Q$5:$R$7,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0_col_inside",
+   "placement": "one argument; column Q inside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!U32",
+   "formula": "=INDEX($Q$5:$R$7,0)",
+   "ghost": "#VALUE!",
+   "id": "grid_r0_neither",
+   "placement": "one argument; outside",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!V6",
+   "formula": "=SUM(INDEX($Q$5:$R$7,0,2))",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_sum_inside",
+   "placement": "row 6 inside, inside SUM",
+   "referee": 126.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!V9",
+   "formula": "=SUM(INDEX($Q$5:$R$7,0,2))",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c2_sum_outside",
+   "placement": "row 9 outside, inside SUM",
+   "referee": 126.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!S33",
+   "formula": "=SUM(INDEX($Q$5:$R$7,2,0))",
+   "ghost": "#VALUE!",
+   "id": "grid_r2c0_sum_outside",
+   "placement": "column S outside, inside SUM",
+   "referee": 74.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!W6",
+   "formula": "=SUM(INDEX($Q$5:$R$7,0,0))",
+   "ghost": "#VALUE!",
+   "id": "grid_r0c0_sum",
+   "placement": "inside SUM",
+   "referee": 222.0
+  },
+  {
+   "agree": false,
+   "cell": "Calc!Y6",
+   "formula": "=INDEX(Data!$M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "xsheet_col_r0_inside",
+   "placement": "Calc row 6, range Data rows 5-7",
+   "referee": 108.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!Y9",
+   "formula": "=INDEX(Data!$M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "xsheet_col_r0_outside",
+   "placement": "Calc row 9, range Data rows 5-7",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Calc!F35",
+   "formula": "=INDEX(Data!$E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "xsheet_row_c0_inside",
+   "placement": "Calc column F, range Data E-G",
+   "referee": 122.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!C35",
+   "formula": "=INDEX(Data!$E$20:$G$20,0)",
+   "ghost": "#VALUE!",
+   "id": "xsheet_row_c0_outside",
+   "placement": "Calc column C, range Data E-G",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": false,
+   "cell": "Data!B6",
+   "formula": "=INDEX(Calc!$M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "xsheet_back_inside",
+   "placement": "Data row 6, range Calc rows 5-7",
+   "referee": 8.0
+  },
+  {
+   "agree": true,
+   "cell": "Data!B9",
+   "formula": "=INDEX(Calc!$M$5:$M$7,0)",
+   "ghost": "#VALUE!",
+   "id": "xsheet_back_outside",
+   "placement": "Data row 9, range Calc rows 5-7",
+   "referee": "#VALUE!"
+  },
+  {
+   "agree": true,
+   "cell": "Calc!AA5",
+   "formula": "=INDEX($T$5:$T$5,0)",
+   "ghost": 55.0,
+   "id": "cell_rng_r0_same_row",
+   "placement": "row 5 = the cell's row",
+   "referee": 55.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!AA9",
+   "formula": "=INDEX($T$5:$T$5,0)",
+   "ghost": 55.0,
+   "id": "cell_rng_r0_other_row",
+   "placement": "row 9",
+   "referee": 55.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!AB5",
+   "formula": "=INDEX($T$5,0)",
+   "ghost": 55.0,
+   "id": "cell_ref_r0_same_row",
+   "placement": "row 5",
+   "referee": 55.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!AB9",
+   "formula": "=INDEX($T$5,0)",
+   "ghost": 55.0,
+   "id": "cell_ref_r0_other_row",
+   "placement": "row 9",
+   "referee": 55.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!AC5",
+   "formula": "=INDEX($T$5:$T$5,0,0)",
+   "ghost": 55.0,
+   "id": "cell_rng_r0c0_same_row",
+   "placement": "row 5",
+   "referee": 55.0
+  },
+  {
+   "agree": true,
+   "cell": "Calc!AC9",
+   "formula": "=INDEX($T$5:$T$5,0,0)",
+   "ghost": 55.0,
+   "id": "cell_rng_r0c0_other_row",
+   "placement": "row 9",
+   "referee": 55.0
+  }
+ ],
+ "libreoffice": "7.4.7.2"
+}

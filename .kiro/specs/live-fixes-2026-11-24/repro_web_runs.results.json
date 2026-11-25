@@ -1,0 +1,908 @@
+[
+  {
+    "label": "L-02 sem_index",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M1"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B4"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M1"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B4"
+      ]
+    },
+    "verify_status": 200,
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 3/4 killed (75%)",
+      "      survived M-2620f56e Calc!B4 constant_plus_one: no difference found on 43 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m1: integer, min 0, max 10000, 0 decimal places",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "panel_text": "4. Proof report Starting verification mutation check: mutant 1/4 mutation check: mutant 2/4 mutation check: mutant 3/4 mutation check: mutant 4/4 [faithful] PASS: 300 generated, 137 distinct cases, 0 mismatch(es), seed 20261204 Excel cross-check: not cross-checked against Excel mutation score: 3/4 killed (75%) survived M-2620f56e Calc!B4 constant_plus_one: no difference found on 43 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m1: integer, min 0, max 10000, 0 decimal places module: ./logic.py report: ./reports/faithful/proof-report.html Proof report: ",
+    "report_json": {
+      "status": 200,
+      "bytes": 2762
+    },
+    "report_html": {
+      "status": 200,
+      "bytes": 2792
+    },
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 300,
+      "cases_generated": 300,
+      "cases_targeted": 0,
+      "distinct_cases": 137,
+      "mutation": {
+        "killed": 3,
+        "total": 4,
+        "status": null,
+        "raw_keys": [
+          "killed",
+          "mutants",
+          "total"
+        ]
+      },
+      "survivors": [
+        {
+          "id": "M-2620f56e",
+          "op": "constant_plus_one",
+          "loc": "Calc!B4",
+          "reason": "no difference found on 43 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m1: integer, min 0, max 10000, 0 decimal places"
+        }
+      ],
+      "boundaries": [],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b"
+    },
+    "faithful_report_json_status": 404
+  },
+  {
+    "label": "L-03 sem_index + B3",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M2",
+        "Calc!M3"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B3",
+        "Calc!B4"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B1",
+        "Calc!M1",
+        "Calc!M2",
+        "Calc!M3"
+      ],
+      "outputs": [
+        "Calc!B2",
+        "Calc!B3",
+        "Calc!B4"
+      ]
+    },
+    "verify_status": 200,
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 7/8 killed (88%)",
+      "      survived M-2620f56e Calc!B4 constant_plus_one: no difference found on 75 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m2: integer, min 0, max 10000, 0 decimal places; calc_m3: integer, min 0, max 10000, 0 decimal places",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "panel_text": "4. Proof report mutation check: mutant 4/8 mutation check: mutant 5/8 mutation check: mutant 6/8 mutation check: mutant 7/8 mutation check: mutant 8/8 [faithful] PASS: 300 generated, 175 distinct cases, 0 mismatch(es), seed 20261204 Excel cross-check: not cross-checked against Excel mutation score: 7/8 killed (88%) survived M-2620f56e Calc!B4 constant_plus_one: no difference found on 75 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m2: integer, min 0, max 10000, 0 decimal places; calc_m3: integer, min 0, max 10000, 0 decimal places module: ./logic.py ",
+    "report_json": {
+      "status": 200,
+      "bytes": 5444
+    },
+    "report_html": {
+      "status": 200,
+      "bytes": 3963
+    },
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 300,
+      "cases_generated": 300,
+      "cases_targeted": 0,
+      "distinct_cases": 175,
+      "mutation": {
+        "killed": 7,
+        "total": 8,
+        "status": null,
+        "raw_keys": [
+          "killed",
+          "mutants",
+          "total"
+        ]
+      },
+      "survivors": [
+        {
+          "id": "M-2620f56e",
+          "op": "constant_plus_one",
+          "loc": "Calc!B4",
+          "reason": "no difference found on 75 distinct cases; tested domain: amount: integer, min 0, max 10000, 0 decimal places; calc_m2: integer, min 0, max 10000, 0 decimal places; calc_m3: integer, min 0, max 10000, 0 decimal places"
+        }
+      ],
+      "boundaries": [],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b"
+    },
+    "faithful_report_json_status": 404
+  },
+  {
+    "label": "L-04 tier",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!B3"
+      ],
+      "outputs": [
+        "Calc!B5"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!B3"
+      ],
+      "outputs": [
+        "Calc!B4",
+        "Calc!B5"
+      ]
+    },
+    "verify_status": 200,
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    boundary Calc!B5: quantity changes at 500 (threshold 500, exact hit 500 (with price = 1))",
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 5/5 killed (100%)",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "panel_text": "4. Proof report mutation check: mutant 2/5 mutation check: mutant 3/5 mutation check: mutant 4/5 mutation check: mutant 5/5 [faithful] PASS: 300 generated + 16 targeted, 159 distinct cases, 0 mismatch(es), seed 20261204 boundary Calc!B5: price changes at 500.000 (threshold 500.000, exact hit 500.000 (with quantity = 1)) boundary Calc!B5: quantity changes at 500 (threshold 500, exact hit 500 (with price = 1)) Excel cross-check: not cross-checked against Excel mutation score: 5/5 killed (100%) module: ./logic.py report: ./reports/faithful/proof-report.html Proof report: ./proof-report.html Passe",
+    "report_json": {
+      "status": 200,
+      "bytes": 4192
+    },
+    "report_html": {
+      "status": 200,
+      "bytes": 3500
+    },
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 316,
+      "cases_generated": 300,
+      "cases_targeted": 16,
+      "distinct_cases": 159,
+      "mutation": {
+        "killed": 5,
+        "total": 5,
+        "status": null,
+        "raw_keys": [
+          "killed",
+          "mutants",
+          "total"
+        ]
+      },
+      "survivors": [],
+      "boundaries": [
+        {
+          "above": "500.000",
+          "below": "499.999",
+          "cell": "Calc!B5",
+          "change_point": "500.000",
+          "condition_id": "Calc!B5#1",
+          "exact": "500.000",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "quantity": "1"
+          },
+          "input_name": "price",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "500.000",
+          "threshold_calculated": false,
+          "threshold_constant": "500"
+        },
+        {
+          "above": "500",
+          "below": "499",
+          "cell": "Calc!B5",
+          "change_point": "500",
+          "condition_id": "Calc!B5#1",
+          "exact": "500",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "price": "1"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "500",
+          "threshold_calculated": false,
+          "threshold_constant": "500"
+        }
+      ],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b"
+    },
+    "faithful_report_json_status": 404
+  },
+  {
+    "label": "L-05 sem_names",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!E1"
+      ],
+      "outputs": [
+        "Calc!C2",
+        "Calc!C3"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Calc!B2",
+        "Calc!E1"
+      ],
+      "outputs": [
+        "Calc!C2",
+        "Calc!C3"
+      ]
+    },
+    "verify_status": 200,
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "    boundary Calc!C3: quantity changes at 50 (threshold 50, exact hit 50 (with bulk_level = 50))",
+      "    Excel cross-check: not cross-checked against Excel",
+      "    mutation score: 5/5 killed (100%)",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "panel_text": "4. Proof report mutation check: mutant 2/5 mutation check: mutant 3/5 mutation check: mutant 4/5 mutation check: mutant 5/5 [faithful] PASS: 300 generated + 12 targeted, 149 distinct cases, 0 mismatch(es), seed 20261204 boundary Calc!C3: bulk_level changes at 30 (threshold 30, exact hit 30 (with quantity = 30)) boundary Calc!C3: quantity changes at 50 (threshold 50, exact hit 50 (with bulk_level = 50)) Excel cross-check: not cross-checked against Excel mutation score: 5/5 killed (100%) module: ./logic.py report: ./reports/faithful/proof-report.html Proof report: ./proof-report.html Passed (fai",
+    "report_json": {
+      "status": 200,
+      "bytes": 4770
+    },
+    "report_html": {
+      "status": 200,
+      "bytes": 4086
+    },
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 312,
+      "cases_generated": 300,
+      "cases_targeted": 12,
+      "distinct_cases": 149,
+      "mutation": {
+        "killed": 5,
+        "total": 5,
+        "status": null,
+        "raw_keys": [
+          "killed",
+          "mutants",
+          "total"
+        ]
+      },
+      "survivors": [],
+      "boundaries": [
+        {
+          "above": "31",
+          "below": "30",
+          "cell": "Calc!C3",
+          "change_point": "30",
+          "condition_id": "Calc!C3#1",
+          "exact": "30",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "quantity": "30"
+          },
+          "input_name": "bulk_level",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "30",
+          "threshold_calculated": true,
+          "threshold_constant": null
+        },
+        {
+          "above": "50",
+          "below": "49",
+          "cell": "Calc!C3",
+          "change_point": "50",
+          "condition_id": "Calc!C3#1",
+          "exact": "50",
+          "exact_hits": [],
+          "exact_note": null,
+          "exact_others": {
+            "bulk_level": "50"
+          },
+          "input_name": "quantity",
+          "kind": "condition flip",
+          "operator_includes": null,
+          "threshold": "50",
+          "threshold_calculated": true,
+          "threshold_constant": null
+        }
+      ],
+      "boundary_notes": [
+        "flip probing partial: conditions in not-converted cells are not checked (Calc!C4)"
+      ],
+      "not_converted": [
+        {
+          "cell": "Calc!C4",
+          "reason": "named reference Dyn is not supported: dynamic name (formula such as OFFSET or INDIRECT)"
+        }
+      ],
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b"
+    },
+    "faithful_report_json_status": 404
+  },
+  {
+    "label": "scenarios sample",
+    "upload_status": 200,
+    "autopsy_status": 200,
+    "default_boxes": {
+      "inputs": [
+        "Model!B2",
+        "Model!B3",
+        "Model!E2"
+      ],
+      "outputs": [
+        "Model!B19",
+        "Model!B20"
+      ]
+    },
+    "offered_boxes": {
+      "inputs": [
+        "Model!A10",
+        "Model!A11",
+        "Model!A12",
+        "Model!A13",
+        "Model!A14",
+        "Model!A15",
+        "Model!A6",
+        "Model!A7",
+        "Model!A8",
+        "Model!A9",
+        "Model!B10",
+        "Model!B11",
+        "Model!B12",
+        "Model!B13",
+        "Model!B14",
+        "Model!B15",
+        "Model!B2",
+        "Model!B3",
+        "Model!B6",
+        "Model!B7",
+        "Model!B8",
+        "Model!B9",
+        "Model!C10",
+        "Model!C11",
+        "Model!C12",
+        "Model!C13",
+        "Model!C14",
+        "Model!C15",
+        "Model!C6",
+        "Model!C7",
+        "Model!C8",
+        "Model!C9",
+        "Model!D10",
+        "Model!D11",
+        "Model!D12",
+        "Model!D13",
+        "Model!D14",
+        "Model!D15",
+        "Model!D6",
+        "Model!D7",
+        "Model!D8",
+        "Model!D9",
+        "Model!E10",
+        "Model!E11",
+        "Model!E12",
+        "Model!E13",
+        "Model!E14",
+        "Model!E15",
+        "Model!E2",
+        "Model!E3",
+        "Model!E6",
+        "Model!E7",
+        "Model!E8",
+        "Model!E9"
+      ],
+      "outputs": [
+        "Model!B18",
+        "Model!B19",
+        "Model!B20",
+        "Model!F10",
+        "Model!F11",
+        "Model!F12",
+        "Model!F13",
+        "Model!F14",
+        "Model!F15",
+        "Model!F6",
+        "Model!F7",
+        "Model!F8",
+        "Model!F9",
+        "Model!H10",
+        "Model!H11",
+        "Model!H12",
+        "Model!H13",
+        "Model!H14",
+        "Model!H15",
+        "Model!H6",
+        "Model!H7",
+        "Model!H8",
+        "Model!H9"
+      ]
+    },
+    "verify_status": 200,
+    "job_status": "done",
+    "job_error": null,
+    "job_events_tail": [
+      "      survived M-ad060935 Model!F8 constant_minus_one: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places",
+      "      survived M-47ac08d3 Model!F9 rounding_mode: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places",
+      "      survived M-671b2842 Model!F9 constant_plus_one: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places",
+      "    module: ./logic.py",
+      "    report: ./reports/faithful/proof-report.html",
+      "Proof report: ./proof-report.html"
+    ],
+    "panel_text": "4. Proof report survived M-9ae6aa4c Model!F7 rounding_mode: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places survived M-5d239f81 Model!F7 constant_plus_one: no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places survived M-99dfbf4b ",
+    "report_json": {
+      "status": 200,
+      "bytes": 72165
+    },
+    "report_html": {
+      "status": 200,
+      "bytes": 42824
+    },
+    "report": {
+      "mode": "faithful",
+      "passed": true,
+      "mismatches": [],
+      "cases_tested": 354,
+      "cases_generated": 300,
+      "cases_targeted": 54,
+      "distinct_cases": 206,
+      "mutation": {
+        "killed": 70,
+        "total": 132,
+        "status": null,
+        "raw_keys": [
+          "killed",
+          "mutants",
+          "survivor_explanation",
+          "total"
+        ]
+      },
+      "survivors": [
+        {
+          "id": "M-a27ba96e",
+          "op": "constant_plus_one",
+          "loc": "Model!B12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-9c7d916e",
+          "op": "constant_plus_one",
+          "loc": "Model!B13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-d864941f",
+          "op": "constant_plus_one",
+          "loc": "Model!B15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-c35e9ca5",
+          "op": "constant_plus_one",
+          "loc": "Model!B6",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-78c5d5d5",
+          "op": "constant_plus_one",
+          "loc": "Model!B8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-359ef524",
+          "op": "constant_plus_one",
+          "loc": "Model!C12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-48a68a9b",
+          "op": "constant_minus_one",
+          "loc": "Model!C12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-bba42fe6",
+          "op": "constant_plus_one",
+          "loc": "Model!C13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-fe0a6425",
+          "op": "constant_minus_one",
+          "loc": "Model!C13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-c268e7ce",
+          "op": "constant_plus_one",
+          "loc": "Model!C15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-cc6e1c59",
+          "op": "constant_minus_one",
+          "loc": "Model!C15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-cb3d2f05",
+          "op": "constant_plus_one",
+          "loc": "Model!C6",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-9dbbc6de",
+          "op": "constant_plus_one",
+          "loc": "Model!C8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-74b96737",
+          "op": "constant_minus_one",
+          "loc": "Model!C8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-c5e0b907",
+          "op": "constant_minus_one",
+          "loc": "Model!D12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-af518d21",
+          "op": "constant_minus_one",
+          "loc": "Model!D13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-97116db6",
+          "op": "constant_minus_one",
+          "loc": "Model!D15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-457afe4a",
+          "op": "constant_minus_one",
+          "loc": "Model!D8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-d89cf351",
+          "op": "constant_plus_one",
+          "loc": "Model!E12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-abda1a06",
+          "op": "constant_minus_one",
+          "loc": "Model!E12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-db730a29",
+          "op": "constant_plus_one",
+          "loc": "Model!E13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-0566ac72",
+          "op": "constant_minus_one",
+          "loc": "Model!E13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-447af8d9",
+          "op": "constant_plus_one",
+          "loc": "Model!E15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-d9bb4a31",
+          "op": "constant_minus_one",
+          "loc": "Model!E15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-9891d0fe",
+          "op": "constant_plus_one",
+          "loc": "Model!E8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-0d75dcf2",
+          "op": "constant_minus_one",
+          "loc": "Model!E8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-45c28532",
+          "op": "rounding_mode",
+          "loc": "Model!F10",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-62fff893",
+          "op": "constant_plus_one",
+          "loc": "Model!F10",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-cd746cde",
+          "op": "rounding_mode",
+          "loc": "Model!F11",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-b10f371e",
+          "op": "constant_plus_one",
+          "loc": "Model!F11",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-39b30436",
+          "op": "constant_minus_one",
+          "loc": "Model!F11",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-ba440352",
+          "op": "constant_plus_one",
+          "loc": "Model!F11",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-cbab1df4",
+          "op": "constant_minus_one",
+          "loc": "Model!F11",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-83a9432b",
+          "op": "rounding_mode",
+          "loc": "Model!F12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-7ab2c04b",
+          "op": "constant_plus_one",
+          "loc": "Model!F12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-fc04bb77",
+          "op": "constant_minus_one",
+          "loc": "Model!F12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-7789219b",
+          "op": "constant_plus_one",
+          "loc": "Model!F12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-345af069",
+          "op": "constant_minus_one",
+          "loc": "Model!F12",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-f1027a66",
+          "op": "rounding_mode",
+          "loc": "Model!F13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-f0ac99cd",
+          "op": "constant_plus_one",
+          "loc": "Model!F13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-7a239d38",
+          "op": "constant_minus_one",
+          "loc": "Model!F13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-ca11a0a6",
+          "op": "constant_plus_one",
+          "loc": "Model!F13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-23454b5c",
+          "op": "constant_minus_one",
+          "loc": "Model!F13",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-3a7c36a0",
+          "op": "rounding_mode",
+          "loc": "Model!F14",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-ea6df011",
+          "op": "constant_plus_one",
+          "loc": "Model!F14",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-5c747f39",
+          "op": "rounding_mode",
+          "loc": "Model!F15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-f91a7e49",
+          "op": "constant_plus_one",
+          "loc": "Model!F15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-6b201050",
+          "op": "constant_minus_one",
+          "loc": "Model!F15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-9eb43bf1",
+          "op": "constant_plus_one",
+          "loc": "Model!F15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-74516ebe",
+          "op": "constant_minus_one",
+          "loc": "Model!F15",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-31457f7b",
+          "op": "rounding_mode",
+          "loc": "Model!F6",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-7feb90bd",
+          "op": "constant_plus_one",
+          "loc": "Model!F6",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-47893140",
+          "op": "constant_minus_one",
+          "loc": "Model!F6",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-9ae6aa4c",
+          "op": "rounding_mode",
+          "loc": "Model!F7",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-5d239f81",
+          "op": "constant_plus_one",
+          "loc": "Model!F7",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-99dfbf4b",
+          "op": "rounding_mode",
+          "loc": "Model!F8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-028172d1",
+          "op": "constant_plus_one",
+          "loc": "Model!F8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-9852dd5d",
+          "op": "constant_minus_one",
+          "loc": "Model!F8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-33eade65",
+          "op": "constant_plus_one",
+          "loc": "Model!F8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-ad060935",
+          "op": "constant_minus_one",
+          "loc": "Model!F8",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-47ac08d3",
+          "op": "rounding_mode",
+          "loc": "Model!F9",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        },
+        {
+          "id": "M-671b2842",
+          "op": "constant_plus_one",
+          "loc": "Model!F9",
+          "reason": "no difference found on 112 distinct cases; tested domain: dependants: integer, min 0, max 10000, 0 decimal places; gross_income: integer, min 0, max 60000, 0 decimal places; other_deductions: integer, min 0, max 10000, 0 decimal places"
+        }
+      ],
+      "boundaries": [],
+      "boundary_notes": null,
+      "not_converted": null,
+      "sanity": "not cross-checked against Excel",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b"
+    },
+    "faithful_report_json_status": 404
+  }
+]

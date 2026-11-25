@@ -7,6 +7,9 @@ docs/TEST_REPORT_2026-11-24.md and deliberately not tested here.
 """
 from __future__ import annotations
 
+import re
+import subprocess
+
 import pytest
 from openpyxl import Workbook
 
@@ -19,7 +22,7 @@ from ghost.verifier.compare import values_equal
 from ghost.verifier.run import load_compute
 
 try:
-    locate_soffice()
+    _SOFFICE = locate_soffice()
 except RefereeUnavailable:  # pragma: no cover
     pytest.skip("soffice not available", allow_module_level=True)
 
@@ -97,6 +100,24 @@ BUGS = {
 
 # Cases from BUGS whose fix has landed: the xfail marker is gone, the test must pass.
 FIXED = {"compare_after_division", "equality_after_division", "index_row_zero"}  # R-07 (7.2), R-08 (7.3)
+# Cases in PASSING whose Referee result depends on the LibreOffice major version
+# (live-fixes-2026-11-24 task 3.7, measured 2026-11-24). An INDEX index past the end
+# is #REF! on 26.8.3.1 (local) and #VALUE! on 7.4.7.2 (live image ghost-local:l03).
+# Ghost gives #REF! on both; that is asserted on its own, whatever the version. The
+# cases stay in PASSING so the workbook layout (and every formula's row) is unchanged.
+VERSION_DEPENDENT_REFEREE: dict[int, dict[str, str]] = {
+    26: {"index_out_of_range": "#REF!"},
+    7: {"index_out_of_range": "#VALUE!"},
+}
+VERSION_DEPENDENT_GHOST = {"index_out_of_range": "#REF!"}
+
+
+def _major_version() -> int:
+    out = subprocess.run([_SOFFICE, "--version"], capture_output=True, text=True, timeout=60).stdout
+    m = re.search(r"LibreOffice\s+(\d+)\.", out)
+    if not m:  # pragma: no cover
+        pytest.skip(f"cannot read the LibreOffice version from {out!r}")
+    return int(m.group(1))
 
 
 def _build(path, formulas: dict[str, str]) -> list[str]:
@@ -140,10 +161,32 @@ def results(tmp_path_factory):
     return out
 
 
-@pytest.mark.parametrize("cid", sorted(PASSING))
+@pytest.mark.parametrize("cid", sorted(set(PASSING) - set(VERSION_DEPENDENT_GHOST)))
 def test_transpiler_matches_referee(results, cid):
     referee, ghost = results[cid]
     assert values_equal(referee, ghost, 1e-6), (PASSING[cid], referee, ghost)
+
+
+@pytest.mark.parametrize("cid", sorted(VERSION_DEPENDENT_GHOST))
+def test_version_dependent_ghost_result(results, cid):
+    """Ghost's result does not depend on the LibreOffice version."""
+    _, ghost = results[cid]
+    assert values_equal(VERSION_DEPENDENT_GHOST[cid], ghost, 1e-6), (PASSING[cid], ghost)
+
+
+@pytest.mark.parametrize("cid", sorted(VERSION_DEPENDENT_GHOST))
+def test_version_dependent_referee_is_pinned(results, cid):
+    """The Referee result is pinned per major version; on 26 it equals Ghost's."""
+    major = _major_version()
+    if major not in VERSION_DEPENDENT_REFEREE:
+        pytest.skip(f"LibreOffice {major} has no pinned expectation for {cid}; measure and add it")
+    referee, ghost = results[cid]
+    want = VERSION_DEPENDENT_REFEREE[major][cid]
+    assert values_equal(referee, want, 1e-6), (
+        f"LibreOffice {major} changed its result for {PASSING[cid]}: {referee!r}; "
+        "update VERSION_DEPENDENT_REFEREE and .kiro/steering/excel-semantics.md")
+    if want == VERSION_DEPENDENT_GHOST[cid]:
+        assert values_equal(referee, ghost, 1e-6), (PASSING[cid], referee, ghost)
 
 
 @pytest.mark.parametrize("cid", sorted(BUGS))

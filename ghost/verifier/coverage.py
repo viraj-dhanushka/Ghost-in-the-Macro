@@ -20,6 +20,7 @@ from decimal import Decimal
 from typing import Any
 
 from ghost.models import Rule, RuleCoverage
+from ghost.verifier.domain import Domain, clamp
 from ghost.verifier.strategies import threshold_neighbours
 
 
@@ -78,17 +79,25 @@ def candidate_inputs(
     base: MappingABC[str, Any],
     constants: Iterable[Decimal | int | float] = (),
     names: Iterable[str] | None = None,
+    domains: MappingABC[str, Domain] | None = None,
 ) -> Iterator[dict[str, Any]]:
     """Targeted candidates: vary one numeric input at a time over the neighbours
     (t-1, t, t+1, t±0.1) of each constant, plus zero and negative one.
-    Deterministic order."""
+    Deterministic order.
+
+    ``domains`` (input name -> effective domain, ``ghost.verifier.domain``) clamps every
+    value into the input's domain, so -1 turns into the minimum (0) where negatives are
+    not allowed and a neighbour above the maximum turns into the maximum. Inputs without
+    an entry are not bounded."""
     consts = [c if isinstance(c, Decimal) else Decimal(repr(c)) for c in constants]
     values = sorted(set(threshold_neighbours(consts)) | {Decimal(0), Decimal(-1)})
     for name in names if names is not None else sorted(base):
         cur = base[name]
         if isinstance(cur, bool) or not isinstance(cur, (int, float, Decimal)):
             continue
-        for v in values:
+        domain = (domains or {}).get(name)
+        candidates = values if domain is None else sorted({clamp(v, domain) for v in values})
+        for v in candidates:
             if isinstance(cur, int):
                 if v != v.to_integral_value():
                     continue

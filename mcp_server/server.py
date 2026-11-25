@@ -11,6 +11,8 @@ Rules enforced here:
 * Invalid arguments return a structured error naming the argument
   (Requirement 12.11): ``{"error": {"type": "invalid_argument",
   "argument": "<name>", "message": "..."}}``.
+* A proof report that cannot be written returns ``{"error": {"type":
+  "report_not_written", "message": "The report could not be written (<ExceptionType>)."}}``.
 * ``mutation_check`` runs the mutation self-check (task 15) and returns the score.
 
 Run: ``python -m mcp_server.server``.
@@ -34,6 +36,9 @@ from ghost.autopsy.metrics import metrics as compute_metrics
 from ghost.autopsy.thresholds import extract_thresholds
 from ghost.cli import (
     CliError,
+    UnverifiableOutput,
+    require_verifiable_outputs,
+    ReportNotWritten,
     patch_validator,
     _accepts_trace,
     _analyse,
@@ -55,9 +60,11 @@ from ghost.mutation.run import DEFAULT_MUTANT_CASES
 from ghost.referee.client import RefereeClient, RefereeError
 from ghost.referee.locate import RefereeUnavailable, locate_soffice
 from ghost.referee.sanity import run_sanity
+from ghost.report.model import excel_error_code
 from ghost.rules.ears import generate_rules
 from ghost.verifier.classify import make_classifier
 from ghost.verifier.coverage import CoverageTracker, candidate_inputs, close_gaps
+from ghost.verifier.domain import effective_domains
 from ghost.verifier.flip import flip_cases
 from ghost.verifier.run import DEFAULT_CASES, DEFAULT_SEED, VerifyConfig, load_compute, verify
 
@@ -88,10 +95,24 @@ def _bad(argument: str, message: str) -> ToolFailure:
     return ToolFailure("invalid_argument", message, argument)
 
 
+def _json_fallback(value: Any) -> Any:
+    """Pydantic fallback for values it cannot serialise: Excel errors become their text (L-02)."""
+    code = excel_error_code(value)
+    if code is None:
+        raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
+    return code
+
+
 def jsonable(value: Any) -> Any:
-    """Convert engine values to JSON types without losing Decimal precision."""
+    """Convert engine values to JSON types without losing Decimal precision.
+
+    Excel errors (runtime or vendored class) become their code text, as in the proof report.
+    """
+    code = excel_error_code(value)
+    if code is not None:
+        return code
     if isinstance(value, BaseModel):
-        return jsonable(value.model_dump(mode="json"))
+        return jsonable(value.model_dump(mode="json", fallback=_json_fallback))
     if isinstance(value, Decimal):
         return str(value)
     if isinstance(value, dict):
@@ -230,6 +251,14 @@ def _require_cells(wb, cells: list[str], argument: str) -> None:
             raise _bad(argument, f"cell {ref} is not in the workbook")
 
 
+def _require_verifiable(wb, cells: list[str]) -> None:
+    """L-05: reject a not-converted or not-verifiable output, naming ``outputs.<cell>``."""
+    try:
+        require_verifiable_outputs(wb, cells)
+    except UnverifiableOutput as exc:
+        raise _bad(f"outputs.{exc.cell}", str(exc)) from exc
+
+
 def _wire(v: Any) -> Any:
     return int(v) if isinstance(v, Decimal) and v == v.to_integral_value() else (
         float(v) if isinstance(v, Decimal) else v
@@ -362,6 +391,7 @@ def verify_implementation(a: VerifyImplementationArgs) -> dict[str, Any]:
         raise _bad("mapping", "mapping has no outputs to verify")
     _require_cells(wb, [s.cell for s in mapping.inputs.values()], "mapping")
     _require_cells(wb, [s.cell for s in mapping.outputs.values()], "mapping")
+    _require_verifiable(wb, [s.cell for s in mapping.outputs.values()])
     try:
         compute = load_compute(_read_module_arg(a.module))
     except Exception as exc:  # the supplied module is untrusted code: report, do not crash
@@ -386,8 +416,14 @@ def verify_implementation(a: VerifyImplementationArgs) -> dict[str, Any]:
         except Exception:  # noqa: BLE001 - unconvertible means "cannot explain"
             faithful = None
     flips, flip_summary = _probe_flips_with_summary(wb, mapping, a.seed)
-    flip_extra = flip_cases(flips, mapping, summary=flip_summary)  # R-04, as the CLI
+    sample = {
+        n: wb.cells[s.cell].value if s.cell in wb.cells else None
+        for n, s in mapping.inputs.items()
+    }
+    domains = effective_domains(mapping, sample)  # L-07, as the CLI
+    flip_extra = flip_cases(flips, mapping, summary=flip_summary, domains=domains)  # R-04
     cfg = VerifyConfig(
+        sample=sample,
         seed=a.seed,
         max_examples=a.cases,
         mode=a.mode,
@@ -401,11 +437,10 @@ def verify_implementation(a: VerifyImplementationArgs) -> dict[str, Any]:
         res = verify(compute, mapping, ref, cfg)
     uncovered: list[Any] = []
     if traced:
-        base = {
-            n: wb.cells[s.cell].value if s.cell in wb.cells else None
-            for n, s in mapping.inputs.items()
-        }
-        close_gaps(tracker, compute, candidate_inputs(base, [t.constant for t in thresholds]))
+        close_gaps(
+            tracker, compute,
+            candidate_inputs(sample, [t.constant for t in thresholds], domains=domains),
+        )
         uncovered = [c for c in tracker.report() if c.uncovered]
     return {
         "mode": res.mode,
@@ -437,6 +472,8 @@ def mutation_check(a: MutationCheckArgs) -> dict[str, Any]:
                 seed=a.seed, cases=a.cases, mutation_cases=a.mutant_cases,
             )
         )
+    except UnverifiableOutput as exc:
+        raise _bad(f"outputs.{exc.cell}", str(exc)) from exc
     except CliError as exc:
         raise ToolFailure("invalid_argument", str(exc), "migration_dir") from exc
     jp = mdir / "proof-report.json"
@@ -475,6 +512,8 @@ def generate_proof_report(a: GenerateProofReportArgs) -> dict[str, Any]:
                 seed=a.seed, cases=a.cases,
             )
         )
+    except UnverifiableOutput as exc:
+        raise _bad(f"outputs.{exc.cell}", str(exc)) from exc
     except CliError as exc:
         raise ToolFailure("invalid_argument", str(exc), "migration_dir") from exc
     out: dict[str, Any] = {
@@ -597,6 +636,11 @@ def call_tool_sync(name: str, arguments: dict[str, Any] | None) -> tuple[dict[st
         return _validation_failure(exc).payload(), True
     except ToolFailure as exc:
         return exc.payload(), True
+    except ReportNotWritten as exc:
+        # L-02: the exception type only; its message can hold a server path.
+        return ToolFailure(
+            "report_not_written", f"The report could not be written ({exc.exception_type})."
+        ).payload(), True
     except IngestError as exc:
         return ToolFailure("ingest_error", f"{type(exc).__name__}: {exc}", "workbook").payload(), True
     except RefereeUnavailable as exc:

@@ -54,8 +54,8 @@ scripts/demo.sh /tmp/out   # or pick a folder
 This generates the sample workbooks with the committed scripts in `samples/`, then runs the whole flow on sample (a), the discount calculator, and sample (b), the "haunted" discount calculator. It prints, for the haunted sample:
 
 - Finding F-001: free delivery compares the quantity with `>` 50 while the discount uses `>=` 50.
-- Faithful mode passes (300 generated cases plus targeted ones, 0 mismatches).
-- After Decision D-001 ("bulk means 50 or more") Intended mode passes: 300 generated cases, one difference expected by the Decision, with the minimal example at quantity = 50.
+- Faithful mode passes (300 generated + 11 targeted cases, 200 distinct, 0 mismatches).
+- After Decision D-001 ("bulk means 50 or more") Intended mode passes on the same cases, with one difference expected by the Decision and the minimal example at quantity = 50.
 
 Proof reports are written to `demo-out/<sample>/reports/<mode>/proof-report.html`. Open them in a browser.
 
@@ -105,10 +105,12 @@ Open http://127.0.0.1:8080. `GET /healthz` returns `{"status":"ok","referee":{"a
 
 Everything in the report comes from engine output. A check that did not run is written as "not checked".
 
-- **Cases:** generated cases, targeted cases (boundary and flip probes) and distinct cases, for example "300 generated + 9 targeted, 198 distinct". Many generated cases can repeat, so the distinct count is the honest one.
-- **Tested domains:** for each input, its type, minimum, maximum and decimal places. A pass only covers those domains.
-- **Boundaries:** for each threshold, a change-point bracket (the two input values on either side of the flip, found by probing every `IF` condition) and the exact hits, where an input value equals the threshold. Notes say when only a bracket was found.
-- **Mutation self-check:** the share of injected bugs the verifier caught. A surviving mutant is worded "no difference found on N distinct cases" with the tested domain. That does not mean the mutant is equivalent to the original.
+- **Cases:** generated cases, targeted cases (boundary and flip probes) and distinct cases, for example "300 generated + 11 targeted, 200 distinct". Many generated cases can repeat, so the distinct count is the honest one.
+- **Tested domains:** for each input, its type, minimum, maximum and decimal places. A pass only covers those domains. The domain includes the workbook's own sample value when that is above the default cap, and targeted cases stay inside it.
+- **Boundaries:** for each threshold, a change-point bracket shown as "below → above" (the two input values on either side of the flip, found by probing every `IF` condition), the threshold constant or "calculated", and the exact hits, where an input value equals the threshold. An exact hit is listed only when the compared values confirm it, together with the other input values needed to reach it. Notes say when only a bracket was found.
+- **Mutation self-check:** the share of injected bugs the verifier caught. A surviving mutant is worded "no difference found on N distinct cases" with the tested domain. That does not mean the mutant is equivalent to the original. Ghost aims cases at changing which row `MAX`, `MIN` or `MATCH` picks, and when survivors remain on rows that never win on any tested input, the report says so.
+- **Not converted:** cells Ghost could not convert are listed with the cell and the reason.
+- **Excel errors** appear in reports as their text (`#VALUE!`). If a job fails while writing the report, the page says "The report could not be written".
 - **Excel cross-check:** "not cross-checked against Excel" unless the workbook has Excel-saved values.
 - **Both modes:** when Faithful and Intended both ran, the job page links the Faithful report as well (`/run/<job id>/report.html?mode=faithful`).
 
@@ -198,7 +200,9 @@ The cross-check reads the saved values with openpyxl (`data_only=True`) and comp
 - Comparison tolerance: absolute 1e-6 for numbers, exact for strings, Excel errors compared by error type.
 - **LibreOffice is not Excel.** The Referee is LibreOffice, so a pass means "matches LibreOffice", and matches Excel only where the two agree. They differ on seven known cases (R-24): `0^0`, `(-8)^(1/3)`, `MATCH("2",numbers,0)`, `MATCH(TRUE,numbers,0)`, `TRUE>1`, `SUM("5",1)` and `TRUE&""`. Ghost's generated code follows Excel in these, so a workbook that relies on one shows a false mismatch. The table in `.kiro/steering/excel-semantics.md` lists each result; the Excel column there is documented behaviour, not measured. Those cases are left out of golden tests and formula fuzzing, and `tests/test_referee_libreoffice_differences.py` pins today's LibreOffice results so an upgrade is noticed.
 - Very large or small numbers converted to text (`&""`) use scientific notation as Excel does ("1E+20"). LibreOffice writes "1E+020"; the verifier treats scientific strings of the same value as equal (R-08).
-- `INDEX` with a 0 row or column on a multi-cell range gives `#VALUE!` in a single-cell formula. On a one-row or one-column range, the 0 selects that whole single row or column and returns the cell value (R-30; Excel's result for this case is not verified). The live site runs LibreOffice 7.4.7; a current macOS install is newer, so edge cases can differ between the two Referees. `.kiro/steering/excel-semantics.md` holds the semantics table Ghost follows.
+- `INDEX` with a 0 row or column uses implicit intersection the way the Referee does: in a single-cell formula it returns the element on the formula's own row or column, or `#VALUE!` outside the range's span. Excel 365 spills the whole row or column instead, and Excel's result was not checked. An `INDEX` that can select a whole row or column and is passed through `IF`, `IFERROR` or `CHOOSE` into an aggregate is "not converted". The rules and measurements are in `.kiro/steering/excel-semantics.md` ("INDEX with a 0 row or column"). The live site runs LibreOffice 7.4.7; a current macOS install is newer, so edge cases can differ between the two Referees.
+- Two differences were found and not fixed (details in the same steering file): an `INDEX` past the end of its range gives `#REF!` on LibreOffice 26.8.3 but `#VALUE!` on 7.4.7.2 (the live version), and Ghost gives `#REF!`; and `SUM(IF(TRUE,N5))` with text in N5 gives 0 on the Referee but `#VALUE!` in Ghost. Excel was not checked for either.
+- Outputs that are "not converted" or "not verifiable" are not offered as outputs in the web app. If you choose one explicitly, the request is rejected with the cell and the reason.
 - Worksheet `ROUND` is half away from zero on 15 significant digits. Its behaviour on numbers with more than 15 significant digits has not been checked against Excel. Unverified example: `=ROUND(123456789012345.67,1)` gives `123456789012345.7` in the Referee (LibreOffice 26.8.3.1 and 7.4.7.2) and `123456789012346.0` in Ghost's generated code. The owner will confirm Excel's result in Excel for the web; until then, treat a match or mismatch on such values as unverified (see `.kiro/steering/excel-semantics.md`).
 - The mutation self-check, which injects bugs to see whether the verifier notices, runs on request with `ghost mutate` or `ghost verify --mutation-cases N`, and in the web app with `GHOST_MUTATION_CASES` cases per mutant. When it did not run, the report says "not checked".
 - VBA is read statically. Conversion of VBA to Python is a stretch goal; portfolios with a lot of VBA are routed to AWS Transform custom with `ghost route` (dry run only, nothing is executed).

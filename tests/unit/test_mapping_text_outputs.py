@@ -44,7 +44,12 @@ def test_if_returning_text_branches_is_string(tmp_path):
 
 def test_concatenation_and_text_function_are_string(tmp_path):
     assert _types(_tier_workbook(tmp_path / "c.xlsx", '="Total: "&B1')) == {"tier": "string"}
-    assert _types(_tier_workbook(tmp_path / "f.xlsx", '=TEXT(B1,"0.00")')) == {"tier": "string"}
+    # L-05 (task 3.14): TEXT is outside the P0 subset, so the cell is "not converted"
+    # and is no longer offered as a default output. Owner decision: select the cell
+    # explicitly so this case still checks that a text function's output is typed string.
+    p = _tier_workbook(tmp_path / "f.xlsx", '=TEXT(B1,"0.00")')
+    explicit = generate_mapping(load_workbook(str(p)), user_outputs=["S!B2"])
+    assert {k: v.type for k, v in explicit.outputs.items()} == {"tier": "string"}
 
 
 def test_mixed_branches_keep_the_default(tmp_path):

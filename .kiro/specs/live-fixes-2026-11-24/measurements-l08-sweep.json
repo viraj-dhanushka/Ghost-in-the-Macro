@@ -1,0 +1,206 @@
+{
+ "replica_vs_logic_py": {
+  "cases": 3000,
+  "mismatches": 0
+ },
+ "sweep_default_boxes": {
+  "grid_cases": 3025,
+  "random_cases": 300000,
+  "wins": {
+   "6": {
+    "count": 98654,
+    "first": {
+     "gross_income": 0,
+     "dependants": 0,
+     "other_deductions": 0,
+     "allowance": 800
+    },
+    "first_src": "grid"
+   },
+   "14": {
+    "count": 13498,
+    "first": {
+     "gross_income": 2500,
+     "dependants": 0,
+     "other_deductions": 0,
+     "allowance": 800
+    },
+    "first_src": "grid"
+   },
+   "7": {
+    "count": 1242,
+    "first": {
+     "gross_income": 2500,
+     "dependants": 0,
+     "other_deductions": 1000,
+     "allowance": 800
+    },
+    "first_src": "grid"
+   },
+   "9": {
+    "count": 16714,
+    "first": {
+     "gross_income": 2500,
+     "dependants": 0,
+     "other_deductions": 2000,
+     "allowance": 800
+    },
+    "first_src": "grid"
+   },
+   "11": {
+    "count": 216,
+    "first": {
+     "gross_income": 5000,
+     "dependants": 0,
+     "other_deductions": 0,
+     "allowance": 800
+    },
+    "first_src": "grid"
+   },
+   "10": {
+    "count": 172701,
+    "first": {
+     "gross_income": 7500,
+     "dependants": 0,
+     "other_deductions": 7000,
+     "allowance": 800
+    },
+    "first_src": "grid"
+   }
+  }
+ },
+ "sweep_with_allowance": {
+  "grid_cases": 18150,
+  "random_cases": 600000,
+  "wins": {
+   "6": {
+    "count": 195029,
+    "first": {
+     "gross_income": 0,
+     "dependants": 0,
+     "other_deductions": 0,
+     "allowance": 0
+    },
+    "first_src": "grid"
+   },
+   "14": {
+    "count": 42527,
+    "first": {
+     "gross_income": 2500,
+     "dependants": 0,
+     "other_deductions": 0,
+     "allowance": 0
+    },
+    "first_src": "grid"
+   },
+   "7": {
+    "count": 4651,
+    "first": {
+     "gross_income": 2500,
+     "dependants": 0,
+     "other_deductions": 1000,
+     "allowance": 0
+    },
+    "first_src": "grid"
+   },
+   "9": {
+    "count": 34177,
+    "first": {
+     "gross_income": 2500,
+     "dependants": 0,
+     "other_deductions": 2000,
+     "allowance": 0
+    },
+    "first_src": "grid"
+   },
+   "11": {
+    "count": 718,
+    "first": {
+     "gross_income": 5000,
+     "dependants": 0,
+     "other_deductions": 0,
+     "allowance": 0
+    },
+    "first_src": "grid"
+   },
+   "10": {
+    "count": 341048,
+    "first": {
+     "gross_income": 7500,
+     "dependants": 0,
+     "other_deductions": 7000,
+     "allowance": 0
+    },
+    "first_src": "grid"
+   }
+  }
+ },
+ "referee_spot_check_default_boxes": {
+  "6": {
+   "input": {
+    "gross_income": 0,
+    "dependants": 0,
+    "other_deductions": 0,
+    "allowance": 800
+   },
+   "referee_B19": "Flat 20",
+   "referee_B20": 0.0,
+   "expected": "Flat 20"
+  },
+  "7": {
+   "input": {
+    "gross_income": 2500,
+    "dependants": 0,
+    "other_deductions": 1000,
+    "allowance": 800
+   },
+   "referee_B19": "Flat 25 + deduction",
+   "referee_B20": 0.0,
+   "expected": "Flat 25 + deduction"
+  },
+  "9": {
+   "input": {
+    "gross_income": 2500,
+    "dependants": 0,
+    "other_deductions": 2000,
+    "allowance": 800
+   },
+   "referee_B19": "Credit A",
+   "referee_B20": -25.0,
+   "expected": "Credit A"
+  },
+  "10": {
+   "input": {
+    "gross_income": 7500,
+    "dependants": 0,
+    "other_deductions": 7000,
+    "allowance": 800
+   },
+   "referee_B19": "Credit B",
+   "referee_B20": -350.0,
+   "expected": "Credit B"
+  },
+  "11": {
+   "input": {
+    "gross_income": 5000,
+    "dependants": 0,
+    "other_deductions": 0,
+    "allowance": 800
+   },
+   "referee_B19": "Deduction heavy",
+   "referee_B20": 300.0,
+   "expected": "Deduction heavy"
+  },
+  "14": {
+   "input": {
+    "gross_income": 2500,
+    "dependants": 0,
+    "other_deductions": 0,
+    "allowance": 800
+   },
+   "referee_B19": "Family",
+   "referee_B20": 100.0,
+   "expected": "Family"
+  }
+ }
+}

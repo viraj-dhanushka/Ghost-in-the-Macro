@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import secrets
 import shutil
 import signal
@@ -29,6 +30,8 @@ from typing import Callable, Iterable
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+
+from ghost.cli import EXIT_FAIL, EXIT_REPORT_NOT_WRITTEN
 
 from .paths import scrub_paths
 
@@ -59,6 +62,79 @@ class SessionBusy(Exception):
     def __init__(self, job: "Job") -> None:
         super().__init__(SESSION_BUSY_MESSAGE)
         self.job = job
+
+
+MISMATCHES_MESSAGE = "Verification found mismatches."
+REPORT_NOT_WRITTEN_MESSAGE = "The report could not be written"
+_TRACEBACK_HEADER = "Traceback (most recent call last):"
+_EXCEPTION_LINE = re.compile(r"^([A-Za-z_][\w.]*)(?::\s?(.*))?$")
+_CLI_ERROR_PREFIX = "ghost: error: "
+_CLI_TYPED_ERROR = re.compile(r"^([A-Za-z_]\w*): (.*)$")
+_MAX_DETAIL = 300
+
+
+def _uncaught_exception(lines: list[str]) -> tuple[str, str] | None:
+    """(type, message) of the last uncaught Python traceback in the output, if any.
+
+    The exception line is the first unindented line after the last
+    "Traceback (most recent call last):" header; frames are indented.
+    """
+    starts = [i for i, line in enumerate(lines) if line.strip() == _TRACEBACK_HEADER]
+    if not starts:
+        return None
+    for line in lines[starts[-1] + 1:]:
+        if not line or line[0].isspace():
+            continue
+        m = _EXCEPTION_LINE.match(line)
+        if m is None:
+            return None
+        return m.group(1).rsplit(".", 1)[-1], (m.group(2) or "")
+    return None
+
+
+def _cli_error(lines: list[str]) -> tuple[str | None, str] | None:
+    """(type or None, message) from the last ``ghost: error: ...`` line, if any."""
+    for line in reversed(lines):
+        if line.startswith(_CLI_ERROR_PREFIX):
+            rest = line[len(_CLI_ERROR_PREFIX):].strip()
+            m = _CLI_TYPED_ERROR.match(rest)
+            return (m.group(1), m.group(2)) if m else (None, rest)
+    return None
+
+
+def _report_not_written(etype: str | None, detail: str, code: int, run_dirs) -> str:
+    if etype and detail:
+        inner = f"{etype}: {detail}"
+    else:
+        inner = etype or detail or f"exit code {code}"
+    inner = scrub_paths(inner, *run_dirs)  # R-21: no server paths in the panel
+    if len(inner) > _MAX_DETAIL:
+        inner = inner[: _MAX_DETAIL - 1].rstrip() + "…"
+    return f"{REPORT_NOT_WRITTEN_MESSAGE} ({inner})."
+
+
+def failure_message(code: int, lines: list[str], *run_dirs: Path | str) -> str:
+    """Panel text for a verification process that exited with non-zero ``code`` (L-02).
+
+    Exit 1 means "mismatches not explained by a Decision" only when the output
+    holds no uncaught traceback (Python also exits 1 on a crash) and no
+    ``ghost: error:`` line. ``EXIT_REPORT_NOT_WRITTEN`` and those two cases say
+    "The report could not be written (<ExceptionType>: ...)"; other codes name
+    the exit code.
+    """
+    crash = _uncaught_exception(lines)
+    cli_error = _cli_error(lines)
+    if code == EXIT_REPORT_NOT_WRITTEN:
+        etype, detail = cli_error or crash or (None, "")
+        return _report_not_written(etype, detail, code, run_dirs)
+    if code == EXIT_FAIL:
+        if crash is not None:
+            return _report_not_written(*crash, code, run_dirs)
+        if cli_error is not None:
+            return _report_not_written(*cli_error, code, run_dirs)
+        # The verifier ran and found mismatches: a result, not a crash.
+        return MISMATCHES_MESSAGE
+    return f"Verification stopped with exit code {code}."
 
 
 def max_jobs_from_env() -> int:
@@ -275,11 +351,10 @@ class JobRunner:
                 status, error = FAILED, job.error
             elif code == 0:
                 status = DONE
-            elif code == 1:
-                # The verifier ran and found mismatches: a result, not a crash.
-                status, error = FAILED, "Verification found mismatches."
             else:
-                status, error = FAILED, f"Verification stopped with exit code {code}."
+                with self._lock:
+                    lines = list(job.events)
+                status, error = FAILED, failure_message(code, lines, job.migration_dir)
         except Exception as exc:  # noqa: BLE001
             status, error = FAILED, scrub_paths(
                 f"Could not run verification: {exc}", job.migration_dir)

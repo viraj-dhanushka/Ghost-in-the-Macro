@@ -35,12 +35,15 @@ from typing import Any
 from ghost.models import Case, Mapping, Mutant, MutationResult
 from ghost.mutation.mutants import GeneratedMutant, generate_mutants
 from ghost.verifier.compare import case_key, values_equal
+from ghost.verifier.domain import effective_domains, in_domain
+from ghost.verifier.selection import unpicked_rows_observed
 from ghost.verifier.run import Evaluator, VerifyConfig, load_compute, verify
 
 __all__ = [
     "MutationBaselineFailed",
     "REASON_NOT_EXERCISED",
     "REASON_UNREACHABLE",
+    "SURVIVOR_NO_OUTPUT_CHANGE",
     "no_difference_reason",
     "run_mutation",
     "score",
@@ -51,6 +54,7 @@ DEFAULT_MUTANT_CASES = 100
 
 REASON_UNREACHABLE = "branch not reachable"
 REASON_NOT_EXERCISED = "not exercised by cases"
+SURVIVOR_NO_OUTPUT_CHANGE = "no_output_change"
 
 
 class MutationBaselineFailed(Exception):
@@ -187,7 +191,13 @@ def run_mutation(
     Raises ``MutationBaselineFailed`` when the unmutated module has Mismatches.
     """
     base_cfg = config or VerifyConfig()
-    extra = [dict(c) for c in targeted]
+    # L-07: a targeted case with a value outside an input's effective domain is not run,
+    # so survivor reasons never describe values the verification did not test.
+    domains = effective_domains(mapping, base_cfg.sample, base_cfg.default_max, base_cfg.overrides)
+    extra = [
+        dict(c) for c in targeted
+        if all(n not in domains or in_domain(v, domains[n]) for n, v in c.items())
+    ]
     cfg = replace(
         base_cfg,
         mode="faithful",
@@ -209,6 +219,7 @@ def run_mutation(
     base_compute = load_compute(module)
     seen, base_outs = _hook_outcomes(base_compute, tested)
 
+    unpicked = unpicked_rows_observed(base_compute, tested)  # L-08, from the traced module
     generated = generate_mutants(module)
     records: list[Mutant] = []
     for i, gm in enumerate(generated, 1):
@@ -238,6 +249,10 @@ def run_mutation(
                     location=gm.location,
                     killed=False,
                     survivor_reason=reason,
+                    survivor_kind=(
+                        SURVIVOR_NO_OUTPUT_CHANGE
+                        if unpicked and reason.startswith("no difference found on ") else None
+                    ),
                 )
             )
         if progress:

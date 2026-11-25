@@ -1,0 +1,674 @@
+{
+  "pbtResults": {
+    "1. Write bug condition exploration tests (L-02 to L-05)": {
+      "status": "passed",
+      "failingExample": "All 7 exploration tests fail on unfixed code (--runxfail), each for the finding's reason:\nL-02 report_to_json: TypeError: Object of type ExcelError is not JSON serializable (o = ExcelError('#VALUE!')).\nL-02 sem_index B4 web job: status 'failed', error 'Verification found mismatches.', events end with TypeError: Object of type ExcelError is not JSON serializable; no report.json.\nL-02 panel text: report-write crash (exit 1, TypeError) shown as 'Verification found mismatches.'.\nL-03: B3 =INDEX(M1:M3,0): referee 9.0, ghost ExcelError('#VALUE!').\nL-04 tier: B5 boundaries [('price','166.666','166.667',None), ('quantity','19','20',None)], no exact hit; M-e39c9b66 flip_comparison on Calc!B5 survives, 'no difference found on 62 distinct cases'.\nL-05 defaults: offered and pre-checked outputs ['Calc!C2','Calc!C3','Calc!C4'].\nL-05 explicit: POST /verify with C4 returns 200; job failed, mismatch ('translation bug', 'calc_c4', actual None), mutation 'not checked'.",
+      "lastRunTimestamp": 1795528008237
+    },
+    "2. Write preservation property tests (BEFORE implementing any fix)": {
+      "status": "passed",
+      "lastRunTimestamp": 1795528928415
+    },
+    "3.9 **Property 5: Exact hits are found and confirmed for product and integer thresholds (PBT)** - write the test": {
+      "status": "failed",
+      "failingExample": "After task 3.10: integer part passes (test_property_5_integer_single_input_exact_hit_at_50, all 4 ops, xfail marker removed). Product part still fails as expected until task 3.11 (strict xfail kept): case=('>=', 2, 100, 100, 3, Decimal('1.5')) -> AssertionError 'no exact hit'; flips e.g. ('Calc!B5#1','price',{'quantity':3},0.666,0.667,None) — no small-values retry yet.",
+      "lastRunTimestamp": 1795538006088
+    },
+    "3.16 Verify the bug condition exploration tests now pass": {
+      "status": "passed",
+      "lastRunTimestamp": 1795574653617
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration tests (L-02 to L-05)": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527613954
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527623506
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795528306941
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing any fix)": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527613990
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795528307035
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795528960225
+      }
+    ],
+    "3.1 **Property 3: Excel errors serialise as their text (PBT)** - write the test": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614091
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795528960999
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795529521278
+      }
+    ],
+    "3.2 Fix L-02: serialise Excel errors in reports": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614124
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795529520531
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795530855839
+      }
+    ],
+    "3.3 Fix L-02: report a write failure as a write failure": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614147
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795530856469
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795531651312
+      }
+    ],
+    "3.4 Verify L-02 end to end": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614172
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795531650872
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795532458014
+      }
+    ],
+    "3.5 Measure `INDEX(range,0)` on the Referee (L-03)": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614195
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795532458081
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795533316832
+      }
+    ],
+    "3.6 **Property 4: INDEX with 0 follows implicit intersection (PBT)** - write the test": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614216
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795533316987
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795534030665
+      }
+    ],
+    "3.7 Fix L-03: implicit intersection in `INDEX`": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614266
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795534030912
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795535915476
+      }
+    ],
+    "3.8 Golden tests, docs and web check for L-03": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614288
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795535915609
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795536917030
+      }
+    ],
+    "3.9 **Property 5: Exact hits are found and confirmed for product and integer thresholds (PBT)** - write the test": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614313
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795536917163
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795537491007
+      }
+    ],
+    "3.10 Fix L-04: record integer exact hits": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614332
+      },
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795537489983
+      },
+      {
+        "executionId": "cea8218f-cc6d-4443-a00b-92342bca8870",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795565945979
+      }
+    ],
+    "3.11 Fix L-04: retry the flip search with small values for the other inputs": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614361
+      },
+      {
+        "executionId": "cea8218f-cc6d-4443-a00b-92342bca8870",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795565946473
+      },
+      {
+        "executionId": "cea8218f-cc6d-4443-a00b-92342bca8870",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795566577129
+      }
+    ],
+    "3.12 Wire L-04 exact hits into verification and mutation, then verify": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614383
+      },
+      {
+        "executionId": "cea8218f-cc6d-4443-a00b-92342bca8870",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795566577820
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795573471991
+      }
+    ],
+    "3.13 **Property 6: Not-converted and not-verifiable cells are never offered as outputs (PBT)** - write the test": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614429
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795571541777
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795572173165
+      }
+    ],
+    "3.14 Fix L-05: do not offer not-converted or not-verifiable outputs": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614461
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795572173230
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795573999819
+      }
+    ],
+    "3.15 Fix L-05: reject explicit selection and list not-converted cells in the report": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614483
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574000683
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574590188
+      }
+    ],
+    "3.16 Verify the bug condition exploration tests now pass": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614502
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574591092
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574701900
+      }
+    ],
+    "3.17 Verify preservation tests still pass": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614522
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574592018
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574702916
+      }
+    ],
+    "4. Checkpoint: Phase 1": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614542
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574703750
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795575103227
+      }
+    ],
+    "5.1 Write the L-06 test first": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614563
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795575103268
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795575676458
+      }
+    ],
+    "5.2 Fix L-06: boundary table layout": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614587
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795575677159
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795576582929
+      }
+    ],
+    "5.3 **Property 7: Targeted values stay inside the effective domain (PBT)** - write the test": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614616
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795575103445
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795575676847
+      }
+    ],
+    "5.4 Fix L-07: clamp targeted values to the effective domain": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614642
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795576583777
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795577314390
+      }
+    ],
+    "5.5 Fix L-07: one case set for survivor reasons and \"Tested domains\"": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614666
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795577314434
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795577808479
+      }
+    ],
+    "5.6 Measure the L-08 baseline": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614697
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795577809085
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795578180993
+      }
+    ],
+    "5.7 Fix L-08: aim cases at changing the winning row": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614725
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795578181280
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579185255
+      }
+    ],
+    "5.8 Fix L-08: explain remaining survivors in the report": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614759
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579185728
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579799361
+      }
+    ],
+    "5.9 Verify preservation tests still pass after Phase 2": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614788
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579800135
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579909771
+      }
+    ],
+    "6. Checkpoint: Phase 2": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614814
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579909872
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795580756874
+      }
+    ],
+    "7.1 Full suite": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614847
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795580756957
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581132692
+      }
+    ],
+    "7.2 Demo storyline": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614879
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795580757150
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581132976
+      }
+    ],
+    "7.3 Repro workbooks and scenarios through the web app": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614904
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795580757569
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581133032
+      }
+    ],
+    "7.4 Local Docker run": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614930
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795580758509
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581402951
+      }
+    ],
+    "7.5 Update the README": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614962
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581403946
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581526441
+      }
+    ],
+    "7.6 Complete the logs": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527614988
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581404870
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581588761
+      }
+    ],
+    "7.7 Summary for the owner": [
+      {
+        "executionId": "28026f16-226b-481e-9b69-8f801b9ba108",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795527615013
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581588875
+      },
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581653812
+      }
+    ],
+    "3. Phase 1: wrong results (L-02, L-03, L-04, L-05)": [
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795574702942
+      }
+    ],
+    "5. Phase 2: polish (L-06, L-07, L-08)": [
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795579909831
+      }
+    ],
+    "7. Final checks (report the real output of each)": [
+      {
+        "executionId": "a05fba42-79fd-44ca-8a08-a4b0858685a2",
+        "chatSessionId": "sess_50a5e05e-b763-4e4e-8ebc-592e82be5c5e",
+        "timestamp": 1795581653869
+      }
+    ]
+  }
+}

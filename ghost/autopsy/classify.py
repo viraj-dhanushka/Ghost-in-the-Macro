@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 
+from ghost.converter.subset import find_not_converted
 from ghost.models import Cell, CellRef, CellRoleName, Workbook
 
 __all__ = ["classify", "input_score"]
@@ -189,6 +190,66 @@ def input_score(cell: Cell, label: str | None) -> int:
     return score
 
 
+def not_offerable_outputs(workbook: Workbook) -> set[CellRef]:
+    """Cells that must never be offered or pre-checked as outputs (L-05).
+
+    Not-converted cells (with their dependents, as ``find_not_converted`` lists
+    them) and not-verifiable cells (volatile or external constructs) plus
+    everything that depends on them. One shared rule for the mapping defaults,
+    the web autopsy, the CLI and MCP.
+    """
+    bad: set[CellRef] = {e.cell for e in find_not_converted(workbook) if e.cell}
+    bad |= {f.cell for f in workbook.features if f.not_verifiable and f.cell}
+    dependents: dict[CellRef, set[CellRef]] = {}
+    for formula_ref, reads in workbook.deps.items():
+        for src in reads:
+            dependents.setdefault(src, set()).add(formula_ref)
+    todo = list(bad)
+    while todo:
+        for d in dependents.get(todo.pop(), ()):
+            if d not in bad:
+                bad.add(d)
+                todo.append(d)
+    return bad
+
+
+def unverifiable_output_reasons(
+    workbook: Workbook, cells: Iterable[CellRef]
+) -> dict[CellRef, str]:
+    """For each requested output that cannot be verified, say why (L-05).
+
+    The reason is the engine's own: the ``find_not_converted`` text, or the
+    not-verifiable feature (volatile or external construct). A dependant of
+    such a cell names the cell it reads. Cells that are fine, or not in the
+    workbook, are absent from the result.
+    """
+    wanted = [c for c in dict.fromkeys(cells)]
+    bad = not_offerable_outputs(workbook)
+    if not any(c in bad for c in wanted):
+        return {}
+    not_converted: dict[CellRef, list[str]] = {}
+    for e in find_not_converted(workbook):
+        if e.cell:
+            not_converted.setdefault(e.cell, []).append(e.reason)
+    volatile = {
+        f.cell: f"not verifiable as-is: {f.kind} {f.detail}".rstrip()
+        for f in workbook.features
+        if f.not_verifiable and f.cell
+    }
+    out: dict[CellRef, str] = {}
+    for cell in wanted:
+        if cell not in bad:
+            continue
+        if cell in not_converted:
+            out[cell] = "not converted: " + "; ".join(not_converted[cell])
+        elif cell in volatile:
+            out[cell] = volatile[cell]
+        else:
+            src = sorted(p for p in workbook.deps.get(cell, ()) if p in bad)
+            out[cell] = "not verifiable as-is: depends on " + ", ".join(src)
+    return out
+
+
 def classify(
     workbook: Workbook, user_outputs: Iterable[CellRef] = ()
 ) -> dict[CellRef, CellRoleName]:
@@ -204,12 +265,18 @@ def classify(
     table_cells = _table_block_cells(workbook)
     compared = _compared_with_literal(workbook)
 
+    not_offered = not_offerable_outputs(workbook)
+
     roles: dict[CellRef, CellRoleName] = {}
     for ref in sorted(workbook.cells):
         cell = workbook.cells[ref]
         users = dependents.get(ref, set()) - {ref}
         if cell.formula is not None:
-            if ref in selected or not users:
+            if ref in selected:
+                roles[ref] = "OUTPUT"  # explicit choice; rejected elsewhere (task 3.15)
+            elif ref in not_offered:
+                roles[ref] = "INTERMEDIATE"  # never a default output (L-05)
+            elif not users:
                 roles[ref] = "OUTPUT"
             else:
                 roles[ref] = "INTERMEDIATE"

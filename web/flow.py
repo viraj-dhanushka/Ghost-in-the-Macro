@@ -30,8 +30,10 @@ from ghost.cli import (
     _analyse,
     cmd_convert,
     cmd_rules,
+    require_verifiable_outputs,
 )
 from ghost.converter.emit_python import InvalidPatch
+from ghost.autopsy.classify import not_offerable_outputs
 from ghost.converter.mapping import read_mapping
 from ghost.converter.subset import find_not_converted
 from ghost.decisions.store import DECISIONS_FILE, InvalidDecision, load_decisions, record
@@ -131,7 +133,11 @@ def _describe(session: Session) -> dict:
         for f in a.findings
     ]
     in_cells = sorted(r for r, v in a.roles.items() if v in ("INPUT", "PARAMETER"))
-    out_cells = sorted(r for r, v in a.roles.items() if v in ("OUTPUT", "INTERMEDIATE"))
+    not_offered = not_offerable_outputs(a.wb)
+    out_cells = sorted(
+        r for r, v in a.roles.items()
+        if v in ("OUTPUT", "INTERMEDIATE") and r not in not_offered
+    )
     return {
         "name": wb_info["name"],
         "sheets": list(a.wb.sheets),
@@ -318,6 +324,12 @@ def build_flow_router(
         active = runner.active_job(s.sid)
         if active is not None:
             return _busy(request, active)
+        # L-05: a not-converted or not-verifiable output is rejected, naming cell and reason.
+        try:
+            a = await asyncio.to_thread(_analysis, s)
+            require_verifiable_outputs(a.wb, [o.replace("$", "").replace("'", "") for o in outs])
+        except (CliError, IngestError) as exc:
+            return page(request, "_message.html", {"error": str(exc)}, 422)
         # Cell names are validated against the workbook by the engine.
         s.data["inputs"] = ",".join(ins)
         s.data["outputs"] = ",".join(outs)

@@ -24,6 +24,7 @@ from ghost.models import (
     RuleCoverage,
     SanityResult,
     Versions,
+    exact_hit_text,
 )
 from ghost.report.model import (
     ProofReport,
@@ -71,6 +72,7 @@ def build_report(
     boundaries: Iterable[BoundaryResult] = (),
     boundary_notes: Iterable[str] = (),
     tested_domains: Iterable[dict[str, Any]] = (),
+    not_converted: Iterable[dict[str, str]] = (),
     rule_coverage: Iterable[RuleCoverage] = (),
     mutation: MutationResult | NotChecked | None = None,
     sanity: SanityResult | NotChecked | None = None,
@@ -97,6 +99,7 @@ def build_report(
         boundaries=list(boundaries),
         boundary_notes=list(boundary_notes),
         tested_domains=list(tested_domains),
+        not_converted=[{"cell": str(e["cell"]), "reason": str(e["reason"])} for e in not_converted],
         rule_coverage=list(rule_coverage),
         mutation=mutation if mutation is not None else NotChecked(),
         sanity=sanity if sanity is not None else NotChecked(),
@@ -114,6 +117,63 @@ def _e(v: Any) -> str:
     if isinstance(v, (dict, list)):
         v = json.dumps(v, sort_keys=True, ensure_ascii=False)
     return escape("" if v is None else str(v), quote=True)
+
+
+def _value_text(v: Any) -> str:
+    """One serialised engine value: text as-is (Excel errors are already their code
+    text, e.g. "#REF!"), anything else in its JSON form."""
+    return v if isinstance(v, str) else json.dumps(v, sort_keys=True, ensure_ascii=False)
+
+
+def _case_text(case: Any) -> str:
+    """A mutant's counterexample as plain text, from the serialised ``killed_by`` case.
+
+    "inputs: amount=4; Referee: y=7; new code: y=#REF!". Empty for a survivor.
+    """
+    if not isinstance(case, dict):
+        return ""
+    parts = []
+    for key, label in (("inputs", "inputs"), ("referee", "Referee"), ("actual", "new code")):
+        values = case.get(key) or {}
+        if isinstance(values, dict):
+            shown = ", ".join(f"{k}={_value_text(values[k])}" for k in sorted(values))
+        else:
+            shown = _value_text(values)
+        parts.append(f"{label}: {shown or '(none)'}")
+    return "; ".join(parts)
+
+
+def _plain(v: Any) -> str:
+    """Readable text for a JSON value: no braces or brackets."""
+    if isinstance(v, dict):
+        return ", ".join(f"{k}: {_plain(x)}" for k, x in sorted(v.items()))
+    if isinstance(v, list):
+        return "; ".join(_plain(x) for x in v)
+    return "" if v is None else str(v)
+
+
+def _bracket_text(b: dict[str, Any]) -> str:
+    """The change-point bracket as text: ``49 → 50`` (last unchanged → first changed)."""
+    if b.get("kind") == "condition flip":
+        if b.get("below") is not None and b.get("above") is not None:
+            return f"{b['below']} → {b['above']}"
+        return ""
+    parts = []
+    for h in b.get("exact_hits") or []:
+        if isinstance(h, dict) and set(h) == {"last_unchanged", "first_changed"}:
+            parts.append(f"{_plain(h['last_unchanged'])} → {_plain(h['first_changed'])}")
+        else:
+            parts.append(_plain(h))
+    return "; ".join(parts)
+
+
+def _threshold_text(b: dict[str, Any]) -> str:
+    """The threshold constant; flip rows say "calculated" when there is none."""
+    if b.get("kind") != "condition flip":
+        return str(b["threshold"])
+    if b.get("threshold_constant") is not None:
+        return str(b["threshold_constant"])
+    return "calculated" if b.get("threshold_calculated") else _NC
 
 
 def _table(headers: list[str], rows: list[list[Any]]) -> str:
@@ -192,13 +252,15 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
                     ["Cell", "Input", "Threshold", "Change point", "Owner of threshold",
                      "Change-point bracket", "Exact hits"],
                     [
-                        [b.get("condition_id") or b["cell"], b["input_name"], b["threshold"], b["change_point"] or _NC,
-                         f"condition flip: {b.get('below')} (one side), {b.get('above')} (other side)"
-                         if b.get("kind") == "condition flip" else (b["operator_includes"] or _NC),
-                         b["exact_hits"] or "",
+                        [b.get("condition_id") or b["cell"], b["input_name"],
+                         _threshold_text(b), b["change_point"] or _NC,
+                         # Operator ownership only; a flip row has none.
+                         (b["operator_includes"] or _NC) if b.get("kind") != "condition flip" else _NC,
+                         _bracket_text(b),
                          # Real exact hits exist only where flip probing found the input value
                          # that makes the condition hold with equality.
-                         b["exact"] if b.get("exact") is not None else _NC]
+                         exact_hit_text(b.get("exact"), b.get("exact_others"), b.get("exact_note"))
+                         or _NC]
                         for b in d["boundaries"]
                     ],
                 ),
@@ -211,7 +273,9 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
         parts.append(
             _section(
                 "Tested domains",
-                _table(
+                _para("Ranges of the verification cases. Mutation cases and their survivor "
+                      "reasons stay inside the same ranges.")
+                + _table(
                     ["Input", "Type", "Min", "Max", "Decimal places", "Distinct values"],
                     [
                         [t["input"], t["type"],
@@ -220,11 +284,24 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
                          t.get("decimal_places", ""), t.get("distinct_values", "")]
                         for t in d["tested_domains"]
                     ],
+                ) + "".join(
+                    _para(f"Max of {t['input']} includes the workbook's own value "
+                          f"{t['max_includes_sample']}.")
+                    for t in d["tested_domains"] if t.get("max_includes_sample")
                 ),
             )
         )
     else:
         parts.append(_section("Tested domains", _para(_NC)))
+
+    if d.get("not_converted"):
+        parts.append(
+            _section(
+                "Not converted",
+                _para("These cells are not converted and are not compared with the Referee.")
+                + _table(["Cell", "Reason"], [[e["cell"], e["reason"]] for e in d["not_converted"]]),
+            )
+        )
 
     if d["rule_coverage"]:
         parts.append(
@@ -256,10 +333,12 @@ def render_html(report: ProofReport | dict[str, Any]) -> str:
             _section(
                 "Mutation self-check",
                 _para(f"{mut['killed']} of {mut['total']} mutants killed.")
+                + (_para(mut["survivor_explanation"]) if mut.get("survivor_explanation") else "")
                 + _table(
-                    ["Mutant", "Operator", "Location", "Killed", "Survivor reason"],
+                    ["Mutant", "Operator", "Location", "Killed", "Counterexample", "Survivor reason"],
                     [
-                        [m["mutant_id"], m["operator"], m["location"], m["killed"], m["survivor_reason"] or ""]
+                        [m["mutant_id"], m["operator"], m["location"], m["killed"],
+                         _case_text(m.get("killed_by")), m["survivor_reason"] or ""]
                         for m in mut["mutants"]
                     ],
                 ),

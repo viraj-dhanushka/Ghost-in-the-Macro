@@ -74,3 +74,49 @@ def test_schema_rejects_bad_report():
     d["sanity"] = {"status": "pass"}
     with pytest.raises(ReportValidationError):
         validate_report_dict(d)
+
+
+# L-02 (live-fixes-2026-11-24, task 3.2): Excel errors serialise as their code text.
+
+
+class _VendoredExcelError:
+    """Stands in for the ExcelError of a vendored excel.py copy: a separate class object."""
+
+    __slots__ = ("code",)
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+
+
+_VendoredExcelError.__name__ = "ExcelError"
+
+
+def test_excel_error_code_is_duck_typed():
+    from ghost.report.model import excel_error_code
+    from ghost.runtime.excel import ExcelError
+
+    assert excel_error_code(ExcelError("#REF!")) == "#REF!"
+    assert excel_error_code(_VendoredExcelError("#N/A")) == "#N/A"
+    assert excel_error_code("#REF!") is None  # text is not an error
+    assert excel_error_code(Decimal("1")) is None
+    assert excel_error_code(_VendoredExcelError("hello")) is None  # not an error code
+
+    class Other:
+        code = "#REF!"
+
+    assert excel_error_code(Other()) is None  # another class name is not an Excel error
+
+
+def test_report_serialises_excel_errors_from_both_classes():
+    from ghost.runtime.excel import ExcelError
+
+    m = Mismatch(
+        case=Case(inputs={"q": _VendoredExcelError("#VALUE!")}, referee={"y": ExcelError("#DIV/0!")},
+                  actual={"y": _VendoredExcelError("#REF!")}),
+        output="y", cell="Calc!B3", mismatch_class="translation bug", minimal=True,
+    )
+    data = json.loads(report_to_json(_report(passed=False, mismatches=[m])))
+    got = data["mismatches"][0]
+    assert (got["inputs"], got["expected"], got["actual"]) == (
+        {"q": "#VALUE!"}, {"y": "#DIV/0!"}, {"y": "#REF!"}
+    )

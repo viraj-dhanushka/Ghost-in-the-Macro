@@ -89,7 +89,8 @@ def test_html_separates_change_points_from_real_exact_hits():
     # and the plain boundary has no exact hit: it says so instead of repeating the bracket.
     section = html.split("<h2>Boundaries</h2>")[1].split("</section>")[0]
     rows = section.split("<tbody>")[1].split("</tr>")
-    assert "first_changed" in rows[0] and rows[0].endswith("<td>not checked</td>")
+    # L-06 (task 5.2): the bracket is readable text, not raw JSON, so the check is on "49 → 50".
+    assert "49 → 50" in rows[0] and "first_changed" not in rows[0] and rows[0].endswith("<td>not checked</td>")
     assert rows[1].endswith("<td>10</td>")
 
 
