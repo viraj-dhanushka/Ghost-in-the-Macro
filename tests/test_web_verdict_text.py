@@ -196,3 +196,21 @@ def test_template_does_not_write_not_checked_cases():
     text = " ".join(re.search(r'<p class="verdict pass" role="status">(.*?)</p>', html, re.S).group(1).split())
     assert "not checked cases" not in text
     assert "(faithful mode, cases: not checked, 0 mismatch(es), seed 20261204)" in text
+
+def _excel_sentence(status):
+    d = _report()
+    if status is not None:
+        d["sanity"] = {"status": status}
+    _, html = _render(d)
+    text = " ".join(re.search(r'<p class="verdict pass" role="status">(.*?)</p>', html, re.S).group(1).split())
+    return text
+def test_excel_status_that_already_says_it_is_printed_alone_as_a_sentence():
+    # Owner decision 2026-11-25: no "Excel cross-check: not cross-checked against Excel".
+    text = _excel_sentence("not cross-checked against Excel")
+    assert text.endswith("Not cross-checked against Excel.")
+    assert "Excel cross-check: not cross-checked" not in text
+    assert text.count("Excel") == 1
+def test_other_excel_statuses_keep_the_prefix():
+    assert _excel_sentence("matched").endswith("Excel cross-check: matched.")
+    assert _excel_sentence("differences").endswith("Excel cross-check: differences.")
+    assert _excel_sentence(None).endswith("Excel cross-check: not checked.")

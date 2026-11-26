@@ -256,6 +256,20 @@ def test_card_entry_without_measured_on_shows_no_duration(templates):
     assert "5.3" not in text
 
 
+def test_scenarios_blurb_is_the_single_sentence_the_owner_chose(client):
+    # Owner decision 2026-11-25: no engine change for E3; the blurb says what a visitor sees.
+    assert (
+        "A model with ten tax scenarios that picks the lowest net cost with INDEX and MATCH; "
+        "three inputs are checked by default and the other constants stay fixed; "
+        "expect a Faithful run with no difference found on the cases tested."
+    ) in _text(_landing(client))
+def test_measured_runs_say_local_run_and_that_the_live_site_is_slower():
+    from web import app as webapp
+    runs = webapp.load_measured_runs()
+    assert set(runs) == {"discount", "haunted", "scenarios"}
+    for sid, r in runs.items():
+        assert "local" in r["measured_on"].lower() and "live site is slower" in r["measured_on"], sid
+        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", r["date"]), sid
 def test_load_measured_runs_reads_web_package_file():
     from web import app as webapp
     assert webapp.MEASURED_RUNS_FILE.parent.name == "web"

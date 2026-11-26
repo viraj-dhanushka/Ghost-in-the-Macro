@@ -69,7 +69,8 @@ SAMPLE_BLURBS: dict[str, str] = {
         "but free delivery only above 50; expect Finding F-001 and a Faithful run with no difference found."
     ),
     "scenarios": (
-        "A model with ten tax scenarios that picks the lowest net cost with INDEX and MATCH. The workbook has four input cells and three are checked by default; "
+        "A model with ten tax scenarios that picks the lowest net cost with INDEX and MATCH; "
+        "three inputs are checked by default and the other constants stay fixed; "
         "expect a Faithful run with no difference found on the cases tested."
     ),
 }

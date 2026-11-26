@@ -12,7 +12,7 @@
       <p class="verdict {{ 'pass' if report.passed is true else ('fail' if report.passed is false else 'unavailable') }}" role="status">
         {{ report.verdict_text }}
         ({{ report.mode }} mode, {% if report.cases_text == "not checked" %}cases: not checked{% else %}{{ report.cases_text }} cases{% endif %}, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).
-        Excel cross-check: {{ report.excel_check }}.
+        {% if report.excel_check == "not cross-checked against Excel" %}Not cross-checked against Excel.{% else %}Excel cross-check: {{ report.excel_check }}.{% endif %}
       </p>
       {% if report.mutation %}
       <p class="mutation mutation-summary">Mutation self-check: {{ report.mutation.killed }}/{{ report.mutation.total }} mutants killed.</p>
