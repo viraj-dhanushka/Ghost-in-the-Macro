@@ -204,7 +204,8 @@ def test_file_rejected_card_413(tmp_path):
     r = c.post("/upload", files={"file": ("big.xlsx", big)}, headers=HX)
     assert r.status_code == 413
     _assert_card(r.text, "file_rejected",
-                 f"File is larger than the {MAX_FILE_BYTES // (1024 * 1024)} MB limit.", tmp_path)
+                 f"File is larger than the {MAX_FILE_BYTES // (1024 * 1024)} MB limit: too large for the public demo; "
+                 "run Ghost locally with: ghost route <file>", tmp_path)
 
 
 # -- Requirements 10.6 and 4.3 ------------------------------------------------

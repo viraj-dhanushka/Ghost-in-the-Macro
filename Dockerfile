@@ -24,6 +24,8 @@ COPY ghost ghost
 COPY mcp_server mcp_server
 COPY web web
 COPY samples samples
+# The router reads its thresholds from this one file (see .dockerignore: nothing else under .kiro is let in).
+COPY .kiro/steering/routing-thresholds.md .kiro/steering/routing-thresholds.md
 
 # Editable install keeps the /app layout that web/app.py uses to find samples,
 # templates and static files.

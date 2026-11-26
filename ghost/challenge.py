@@ -22,6 +22,7 @@ from typing import Any
 from ghost import cli
 from ghost.converter.mapping import generate_mapping, read_mapping, write_mapping
 from ghost.rules.spec_writer import write_spec
+from ghost.repair_brief import build_brief
 from ghost.verifier.run import load_compute
 
 __all__ = ["run_challenge", "EXIT_ERROR"]
@@ -96,7 +97,7 @@ def _prepare(workbook: Path, mapping_file: Path | None, mdir: Path):
     write_spec(mdir, a.rules, a.findings)
     cli._write_source(mdir, workbook)
     write_mapping(mapping, mdir / cli.MAPPING_FILE)
-    return a.rules, mapping, mapping_file is not None
+    return a.rules, mapping, mapping_file is not None, a.wb
 
 
 def _describe_mapping(mapping, given: bool) -> list[str]:
@@ -175,15 +176,15 @@ def _challenge(workbook: Path, code: Path, mapping_file: Path | None, out: Path 
         mdir = out
         mdir.mkdir(parents=True, exist_ok=True)
         hide += [str(mdir), str(mdir.resolve())]
-        return _in_folder(workbook, text, mapping_file, mdir, seed, cases, hide)
+        return _in_folder(workbook, text, mapping_file, mdir, seed, cases, hide, keep=True)
     with tempfile.TemporaryDirectory(prefix="ghost-challenge-") as tmp:
         hide += [tmp, str(Path(tmp).resolve())]
         return _in_folder(workbook, text, mapping_file, Path(tmp), seed, cases, hide)
 
 
 def _in_folder(workbook: Path, text: str, mapping_file: Path | None, mdir: Path,
-               seed: int, cases: int, hide: list[str]) -> tuple[int, list[str]]:
-    rules, mapping, given = _prepare(workbook, mapping_file, mdir)
+               seed: int, cases: int, hide: list[str], keep: bool = False) -> tuple[int, list[str]]:
+    rules, mapping, given, wb = _prepare(workbook, mapping_file, mdir)
     (mdir / cli.LOGIC_FILE).write_text(text, encoding="utf-8", newline="\n")
     sink = io.StringIO()
     try:
@@ -203,6 +204,12 @@ def _in_folder(workbook: Path, text: str, mapping_file: Path | None, mdir: Path,
     if missing:
         raise ChallengeError(f"candidate did not return output {missing}")
     lines = _describe_mapping(mapping, given) + _verdict_lines(report, rules)
+    # The engine writes the repair brief from the proof report (the same content as scripts/repair_brief.py).
+    rules_text = (mdir / "rules.md").read_text(encoding="utf-8") if (mdir / "rules.md").is_file() else ""
+    brief = build_brief(report, rules_text, lambda cell: (wb.cells[cell].formula if cell in wb.cells else None))
+    (mdir / "repair-brief.json").write_text(json.dumps(brief, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if keep:
+        lines.append("repair brief: repair-brief.json in the --out folder")
     return (0 if report["passed"] else 1), lines
 
 

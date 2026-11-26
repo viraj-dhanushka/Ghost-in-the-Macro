@@ -22,7 +22,7 @@ MismatchClass = Literal[
     "expected by decision",
 ]
 Mode = Literal["faithful", "intended"]
-RouteName = Literal["Ghost converts", "AWS Transform custom", "Split"]
+RouteName = Literal["Ghost converts", "AWS Transform custom", "Split", "Over Ghost's limits"]
 
 
 class _Model(BaseModel):
@@ -317,3 +317,5 @@ class Route(_Model):
     reasons: list[str]
     metrics: Metrics
     atx_command: str | None = None
+    # What happens to each part (VBA, formulas), in words; filled by the router. Empty for a hand-built Route.
+    parts: list[str] = Field(default_factory=list)

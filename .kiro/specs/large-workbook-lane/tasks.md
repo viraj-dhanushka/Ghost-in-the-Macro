@@ -1,0 +1,12 @@
+# Implementation Plan: large-workbook-lane
+- [x] 0. Step 0: `docs/AWS_TRANSFORM_FACTS.md` from the AWS pages (no AWS or `atx` command run).
+- [x] 1. Fixes to `ghost challenge` approved by the Owner (raising `compute()` is exit 1, `BaseException` is exit 2, missing output name is exit 2); committed `64977e7`.
+- [x] 2. Part A: `scan_sizes`, optional thresholds, the route with sizes, `ghost route`, `recommend_route`; tests first (Properties 1, 2, 5).
+- [x] 3. Part B: the command builder, steering and `route-migration` skill; tests first (Property 4).
+- [x] 4. Part A.5: web route card and the over-5-MB message; tests first.
+- [x] 5. Part C: `ghost handoff`, MCP `prepare_handoff`; tests first (Property 3).
+- [x] 6. Part D: engine-written repair brief in `ghost challenge`; the macro spike test; the receipt runner (Property 6).
+- [x] 7. `.dockerignore` and its test.
+- [x] 8. Docs: README, `docs/KIRO_OWNER_CHECKLIST.md` rows, the Feature 4 wording, `docs/KIRO_USAGE.md`.
+- [ ] 9. Part E (optional): not built (see the usage log).
+- [x] 10. Final checkpoint: `scripts/demo.sh`, full suite, Skeptic, local commit.

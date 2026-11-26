@@ -6,7 +6,7 @@ from ghost.router.explain import (
     with_atx_command,
     write_route_explanation,
 )
-from ghost.router.route import recommend_route
+from ghost.router.route import over_limits, recommend_route, route_for_sizes, route_workbook
 from ghost.router.thresholds import (
     DEFAULT_THRESHOLDS,
     RoutingThresholds,
@@ -24,6 +24,9 @@ __all__ = [
     "atx_dry_run_command",
     "explain_route",
     "recommend_route",
+    "route_for_sizes",
+    "route_workbook",
+    "over_limits",
     "with_atx_command",
     "write_route_explanation",
 ]

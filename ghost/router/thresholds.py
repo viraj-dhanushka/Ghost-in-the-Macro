@@ -8,6 +8,8 @@ from pathlib import Path
 
 import yaml
 
+from ghost.ingest.limits import MAX_CELLS, MAX_FILE_BYTES, MAX_FORMULAS
+
 _FENCE = re.compile(r"```ya?ml\s*\n(.*?)\n```", re.DOTALL)
 _KEYS = (
     "vba_line_threshold",
@@ -21,6 +23,8 @@ class ThresholdError(ValueError):
     """The thresholds file is missing, malformed or has invalid values."""
 
 
+_OPTIONAL_INT_KEYS = ("max_file_bytes", "max_cells", "max_formulas")
+DEFAULT_DEFINITION = "AWS/vba-to-python-migration"
 @dataclass(frozen=True)
 class RoutingThresholds:
     vba_line_threshold: int = 2000
@@ -28,6 +32,11 @@ class RoutingThresholds:
     declare_threshold: int = 5
     batch_size_threshold: int = 10
     version: int = 1
+    # Optional keys. A size threshold never raises Ghost's ingest limit: the effective value is the smaller.
+    max_file_bytes: int = MAX_FILE_BYTES
+    max_cells: int = MAX_CELLS
+    max_formulas: int = MAX_FORMULAS
+    transform_definition: str = DEFAULT_DEFINITION
 
 
 DEFAULT_THRESHOLDS = RoutingThresholds()
@@ -59,6 +68,17 @@ def parse_thresholds(text: str) -> RoutingThresholds:
             version = block.get("version", 1)
             if isinstance(version, bool) or not isinstance(version, int):
                 raise ThresholdError("version must be an integer")
+            for key in _OPTIONAL_INT_KEYS:
+                if key in block:
+                    value = block[key]
+                    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                        raise ThresholdError(f"{key} must be a positive integer")
+                    values[key] = value
+            if "transform_definition" in block:
+                name = block["transform_definition"]
+                if not isinstance(name, str) or not name.strip():
+                    raise ThresholdError("transform_definition must be a non-empty string")
+                values["transform_definition"] = name.strip()  # type: ignore[assignment]
             return RoutingThresholds(version=version, **values)
     raise ThresholdError("no fenced YAML block with routing_thresholds found")
 

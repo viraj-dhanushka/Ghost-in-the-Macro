@@ -13,7 +13,7 @@ Ghost migrates business logic out of an Excel workbook into plain-English EARS r
 - Referee: `evaluate_original`
 - Verify: `verify_implementation`, `mutation_check`
 - Record and report: `record_decision`, `generate_proof_report`
-- Route: `recommend_route`
+- Route: `recommend_route`; hand-off kit for AWS Transform custom (writes files, runs nothing): `prepare_handoff`
 ## Skill order
 1. `autopsy`: examine the workbook first.
 2. `write-rules-spec`: write the EARS rules, each traced to a source cell.

@@ -1,12 +1,14 @@
 ---
 name: route-migration
-description: Recommend whether Ghost converts a workbook, AWS Transform custom does, or both (Split), and hand off to the AWS Transform power.
+description: Recommend whether Ghost converts a workbook, AWS Transform custom does, or both (Split), and prepare a hand-off for AWS Transform custom.
 ---
 
 # Route a migration
 
 1. Call `recommend_route` with `workbook`, optional `batch_size` and `migration_dir`.
 2. Report the `route` and its `reasons`. The plain-English explanation is written into the migration `design.md` when `migration_dir` is given.
-3. For "AWS Transform custom" and "Split", the result includes `atx_command`. It is a dry run for review, not a verified invocation. Never execute it yourself. It needs the transformation definition `excel-vba-to-python` to exist in the user's AWS Transform registry first (`atx custom def list`), and `-t` is required with `-x`.
-4. If AWS credentials exist and the official AWS Transform Kiro power is installed, hand `atx_command` to that power. Otherwise show the command to the user.
-5. After either path, run `verify_implementation` or `generate_proof_report`. Ghost verifies the result against the original workbook in both cases.
+3. For "AWS Transform custom" and "Split", the result includes `atx_command`. Always label it "suggested command, not run": it is for review, not a verified invocation, and nothing in Ghost has been run against AWS. Never execute it yourself, and run no `atx` or `aws` command without the user's approval in this session. It names the AWS-managed definition `AWS/vba-to-python-migration` (Early access; `atx custom def list` shows what the registry offers), carries `-g atx-config.yaml` (written by `ghost handoff`), and `-p` must be a Git repository. `-t` approves all tool calls; a non-interactive run exits 0 even when the transformation failed, so never read the exit code as a result. Node.js 22 or later is required. Facts and sources: `docs/AWS_TRANSFORM_FACTS.md`.
+4. "Over Ghost's limits" means the workbook was measured and not loaded (`parts` says what happens to each part). AWS Transform custom migrates VBA code only. Never say that it converts formulas or handles workbook size, and never promise that Ghost converts a workbook over its limits.
+5. For a workbook with VBA that goes to AWS Transform, call `prepare_handoff` (or run `ghost handoff <workbook> --out <empty folder>`). It writes the kit and runs nothing. Tell the user to read `RUN.md`, and to review `vba/` for passwords, connection strings and file paths before uploading anything. If AWS credentials exist and an official AWS Transform power is installed (its existence is not verified), hand the kit folder to it only after the user approves; otherwise show the command to the user.
+6. After the code comes back, `ghost challenge <workbook> --code logic.py --mapping mapping.yaml --out <empty folder>` referees it (it runs the code on this machine; a looping candidate hangs it), and `ghost receipt` records the result. A VBA-fed output cannot be refereed: the Referee reads such a cell as `#MACRO?` even with macros trusted.
+7. After Ghost converts, run `verify_implementation` or `generate_proof_report`. Returned AWS Transform code can be refereed only while the workbook is within Ghost's limits and the output is not fed by a VBA function (see step 6).

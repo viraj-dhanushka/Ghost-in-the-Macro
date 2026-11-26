@@ -1,6 +1,9 @@
 .git
 .github
-.kiro
+.kiro/*
+!.kiro/steering
+.kiro/steering/*
+!.kiro/steering/routing-thresholds.md
 .venv
 .pytest_cache
 .hypothesis

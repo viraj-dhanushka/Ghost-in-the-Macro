@@ -25,12 +25,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ghost.ingest.limits import ACCEPTED_FORMATS, MAX_FILE_BYTES, IngestError
+from ghost.ingest.limits import ACCEPTED_FORMATS, MAX_FILE_BYTES, IngestError, TooManyCells, TooManyFormulas
 from ghost.ingest.workbook import load_workbook
 from ghost.referee.client import RefereeClient, RefereeError
 from ghost.referee.locate import RefereeUnavailable, locate_soffice
 
-from .flow import build_flow_router, reset_state
+from .flow import build_flow_router, over_limit_route, reset_state
 from .jobs import JobRunner, build_router as build_jobs_router
 from .paths import scrub_paths
 from .sessions import (
@@ -240,6 +240,11 @@ def create_app(
                 resp: Response = templates.TemplateResponse(
                     request, "_upload_result.html", {"ok": ok, **payload}, status_code=status
                 )
+            elif payload.get("route"):
+                resp = templates.TemplateResponse(
+                    request, "_route_card.html", {"error": payload.get("error", ""), "route": payload["route"]},
+                    status_code=status,
+                )
             else:
                 kind = {404: "not_found", 503: "referee_unavailable"}.get(status, "file_rejected")
                 resp = templates.TemplateResponse(
@@ -354,11 +359,21 @@ def create_app(
         display = os.path.basename(file.filename or "upload")
         if too_big:
             dest.unlink(missing_ok=True)
-            msg = f"File is larger than the {MAX_FILE_BYTES // (1024 * 1024)} MB limit."
+            msg = (f"File is larger than the {MAX_FILE_BYTES // (1024 * 1024)} MB limit: too large for the public demo; "
+                   "run Ghost locally with: ghost route <file>")
             return respond(request, session, is_new, False, {"error": msg}, 413)
         try:
             # Uploads are read statically; macros are never executed.
             wb = await asyncio.to_thread(load_workbook, str(dest))
+        except (TooManyCells, TooManyFormulas) as exc:
+            # Under the byte cap but over a limit: show the route from the measured sizes, not a bare error.
+            payload: dict = {"error": str(exc)}
+            try:
+                payload["route"] = await asyncio.to_thread(over_limit_route, dest)
+            except IngestError:
+                pass
+            dest.unlink(missing_ok=True)
+            return respond(request, session, is_new, False, payload, 422)
         except IngestError as exc:
             dest.unlink(missing_ok=True)
             return respond(request, session, is_new, False, {"error": str(exc)}, 422)

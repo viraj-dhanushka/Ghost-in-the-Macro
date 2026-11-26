@@ -142,8 +142,8 @@ def _vba_dicts(wb) -> list[dict]:
 
 
 def _route_for(metrics):
-    """The router's recommendation for the autopsy metrics. The thresholds file is not in the Docker image
-    (.kiro is excluded), so the built-in defaults are used when it cannot be read; a test pins that they
+    """The router's recommendation for the autopsy metrics. The image ships the thresholds file (one negated
+    .dockerignore pattern); the built-in defaults are still used if it cannot be read, and a test pins that they
     equal the file. No workbook path is passed, so the suggested command carries a placeholder."""
     try:
         thresholds = load_thresholds()
@@ -151,6 +151,25 @@ def _route_for(metrics):
         logging.getLogger("ghost.web").warning("routing thresholds not read, using the built-in defaults: %s", exc)
         thresholds = DEFAULT_THRESHOLDS
     return with_atx_command(recommend_route(metrics, thresholds=thresholds))
+
+
+WEB_COUNT_TIMEOUT_S = 5.0  # a hostile upload cannot hold the public app for the full 60 s while it is counted
+
+
+def over_limit_route(path) -> dict:
+    """The route card for a workbook that is over a limit, from measured sizes; the workbook is not loaded.
+    No server path is in it: the suggested command carries the fixed placeholder."""
+    from ghost.ingest.limits import Limits
+    from ghost.ingest.triage import scan_sizes
+    from ghost.router import route_for_sizes
+    try:
+        thresholds = load_thresholds()
+    except ThresholdError:
+        thresholds = DEFAULT_THRESHOLDS
+    route = with_atx_command(route_for_sizes(scan_sizes(path, Limits(timeout_s=WEB_COUNT_TIMEOUT_S)), thresholds), None, thresholds.transform_definition)
+    view = route_view(route)
+    view["parts"] = list(route.parts)
+    return view
 
 
 def _describe(session: Session) -> dict:

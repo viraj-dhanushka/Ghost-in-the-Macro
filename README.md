@@ -163,6 +163,26 @@ The workbook, recalculated by LibreOffice, referees a `compute(inputs) -> dict` 
 - Without `--out` the migration folder is temporary. With `--out DIR` (new or empty) the folder and the proof report are kept.
 - It is a command-line tool only: the web app and the MCP server do not offer it. Macros stay off. Generated Ghost code is refused, because the verifier would regenerate it.
 
+## Large workbooks and the AWS Transform hand-off
+
+AWS Transform custom migrates VBA code. Its documentation says nothing about worksheet formulas, cell counts or workbook size, so Ghost never sends formulas to it and never says it converts them. Two kinds of "large" are kept apart:
+
+- **Large in VBA:** the VBA goes to AWS Transform custom. `ghost handoff` prepares the kit; `ghost challenge` and `ghost receipt` referee the Python that comes back.
+- **Large in cells or formulas** (over 5 MB, 200,000 cells or 20,000 formulas): Ghost does not load or convert the workbook. `ghost route <file>` measures it by streaming the sheet XML and answers with a route, the measured sizes, the reasons, and what happens to each part (VBA, formulas). A number that could not be counted is shown as "not counted" or "at least N", never guessed. A file over 5 MB cannot be uploaded to the public demo ("too large for the public demo; run Ghost locally"); the upload cap is unchanged.
+
+```
+ghost route big.xlsx                                  # route and sizes; the workbook is not loaded if it is over a limit
+ghost handoff discount_vba.xlsm --out kit             # writes the kit; runs nothing, calls no AWS service
+ghost challenge wb.xlsx --code kit/logic.py --mapping kit/mapping.yaml --out result
+ghost receipt wb.xlsx --kit kit --definition AWS/vba-to-python-migration --log <path> --out receipt
+```
+
+The kit holds `vba/` (each module as text, read statically), `GHOST_CONTRACT.md`, `mapping.yaml`, `rules.md`, `excel-semantics.md`, `atx-config.yaml` (the `-g` file) and `RUN.md`, which starts with a warning to review `vba/` for passwords, connection strings and file paths and states AWS's documented position on using content for service improvement. The suggested `atx` command is labelled "suggested command, not run". **Nothing has been run against AWS**: no `atx` command and no AWS call was made while building this; the facts and their sources are in `docs/AWS_TRANSFORM_FACTS.md` (some could not be verified and are marked). A non-interactive `atx` run exits 0 even when the transformation failed, so the exit code is never read as a result.
+
+`ghost receipt` runs `ghost challenge` in a separate process with an absolute `--out` under the receipt's own folder, from a working directory it owns, under a timeout. It reads the exit code and the proof report only, never the candidate's printed output. It records a pass only when the exit code is 0, the report exists, its `passed` is true, `cases_tested` is above 0 and the seed is the expected one; exit 0 with no report is an error. The definition name and the log path are recorded as "stated by the owner, not verified by Ghost". The candidate runs in the verifier's own process, so the result holds for code that is not trying to defeat the check.
+
+**Known limits of `ghost challenge` and `ghost receipt`:** no sandbox; a candidate must be one self-contained file; recorded Decisions are not consulted; the Referee is LibreOffice, nothing is checked in Excel; the mapping is derived from the workbook unless you give one, and a derived mapping is not confirmed by a person. **VBA-fed outputs are "not verifiable by the Referee":** in a local test with macros trusted the VBA project loads, but a cell that calls a VBA function still reads `#MACRO?` (LibreOffice 26.8; Excel not checked), so `ghost challenge` refuses such an output with exit 2 and there is no `--trust-macros`.
+
 ## Use the Kiro Power
 
 The `plugin/` folder is a Kiro Power: `plugin.json`, `mcp.json` (an MCP server over stdio, started with `uvx --from git+https://github.com/viraj-dhanushka/Ghost-in-the-Macro ghost-mcp`) and eight skills in `plugin/skills/`: `getting-started` (onboarding), `autopsy`, `write-rules-spec`, `implement-from-rules`, `verify-migration`, `record-decision`, `route-migration` and `guardrails` (which carries copies of the two steering files in its `references/` folder). There is no `POWER.md` and no `plugin/steering/`; the Power follows the documented `plugin.json` format.

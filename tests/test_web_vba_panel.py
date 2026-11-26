@@ -156,8 +156,10 @@ def test_the_command_flags_are_explained_as_aws_transform_options_not_ghost_trus
     cmd = "atx custom def exec -n excel-vba-to-python -p '<workbook-directory>' -x -t"
     t = _text(_render(route=route("Split", ["r"], cmd)))
     assert "-x -t are AWS Transform options (non-interactive, trust all tools). Ghost never runs this command." in t
-    assert ("excel-vba-to-python is a placeholder definition name: it must already exist in your AWS Transform "
-            "registry. This command is a starting point to review, not a verified command.") in t
+    assert ("The definition named by -n must exist in your AWS Transform registry (the default, "
+            "AWS/vba-to-python-migration, is AWS-managed and in Early access). The -g file, atx-config.yaml, is "
+            "written by ghost handoff, which you run locally. This command is a starting point to review, not a "
+            "verified command; nothing here has been run against AWS.") in t
 
 
 def test_no_route_panel_when_the_route_is_not_available():

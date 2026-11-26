@@ -533,21 +533,29 @@ def recommend_route(a: RecommendRouteArgs) -> dict[str, Any]:
     from ghost.router import (
         ThresholdError,
         explain_route,
-        recommend_route as route_for,
+        route_workbook,
         with_atx_command,
         write_route_explanation,
     )
+    from ghost.router.thresholds import load_thresholds
 
     if not a.workbook:
         raise _bad("workbook", "required argument 'workbook' is missing")
-    wb = _load_workbook(a.workbook)
     try:
-        route = with_atx_command(route_for(compute_metrics(wb), a.batch_size), a.workbook)
+        thresholds = load_thresholds()
+        # Triage first: a workbook over a limit is routed from its measured sizes and is not loaded.
+        route = with_atx_command(
+            route_workbook(a.workbook, a.batch_size, thresholds, load=_load_workbook),
+            a.workbook, thresholds.transform_definition,
+        )
     except ThresholdError as exc:
         raise ToolFailure("invalid_thresholds", str(exc)) from exc
+    except IngestError as exc:
+        raise _bad("workbook", str(exc)) from exc
     out: dict[str, Any] = {
         "route": route.route,
         "reasons": route.reasons,
+        "parts": route.parts,
         "metrics": route.metrics,
         "atx_command": route.atx_command,
         "atx_command_executed": False,
@@ -556,6 +564,28 @@ def recommend_route(a: RecommendRouteArgs) -> dict[str, Any]:
     if a.migration_dir:
         out["design_md"] = str(write_route_explanation(a.migration_dir, route))
     return out
+class PrepareHandoffArgs(_Args):
+    workbook: str | None = None
+    out: str | None = Field(default=None, description="New or empty folder for the kit.")
+    definition: str | None = Field(default=None, description="AWS Transform definition name (default: from the thresholds file).")
+
+
+def prepare_handoff(a: PrepareHandoffArgs) -> dict[str, Any]:
+    """Write the hand-off kit. Executes nothing, calls no AWS service, runs no macro."""
+    from ghost.handoff import HandoffError, write_kit
+
+    if not a.workbook:
+        raise _bad("workbook", "required argument 'workbook' is missing")
+    if not a.out:
+        raise _bad("out", "required argument 'out' is missing")
+    try:
+        res = write_kit(a.workbook, a.out, a.definition)
+    except HandoffError as exc:
+        raise _bad("out", str(exc)) from exc
+    except IngestError as exc:
+        raise _bad("workbook", str(exc)) from exc
+    return {"files": res.files, "route": res.route, "vba_modules": res.vba_modules,
+            "vba_error": res.vba_error, "mapping_written": res.mapping_written, "executed": False}
 
 
 # --------------------------------------------------------------------------
@@ -614,6 +644,11 @@ TOOLS: dict[str, tuple[type[_Args], Callable[[Any], dict[str, Any]], str]] = {
     "generate_proof_report": (
         GenerateProofReportArgs, generate_proof_report,
         "Verify a migration directory against the Referee and write the proof report (HTML and JSON).",
+    ),
+    "prepare_handoff": (
+        PrepareHandoffArgs, prepare_handoff,
+        "Write a hand-off kit for AWS Transform custom (VBA as text, contract, mapping, rules, config, RUN.md). "
+        "Executes nothing and calls no AWS service.",
     ),
     "recommend_route": (
         RecommendRouteArgs, recommend_route,

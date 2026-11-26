@@ -1,0 +1,17 @@
+{#- Route card for an upload that is over Ghost's limits. Context: error (the ingest message), route (route_view plus parts). -#}
+<section class="route-card" data-route="{{ route.route }}">
+  <h2 class="route-title">{{ route.route }}</h2>
+  <p class="error" role="alert">{{ error }}</p>
+  <p>Ghost did not load this workbook. It measured it and chose a route.
+    {% if route.route == "AWS Transform custom" %}AWS Transform custom's documentation describes migrating VBA code and says nothing about worksheet formulas or workbook size: the formulas are not sent to it, and Ghost does not convert them at this size.
+    {% else %}Ghost does not convert or verify a workbook over its limits here. AWS Transform custom's documentation describes migrating VBA code and says nothing about worksheet formulas or workbook size, so the formulas are not sent to it.{% endif %}</p>
+  <h3>Why</h3>
+  <ul>{% for r in route.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+  <h3>What happens to each part</h3>
+  <ul>{% for p in route.parts %}<li>{{ p }}</li>{% endfor %}</ul>
+  {% if route.command %}
+  <p>Suggested command, not run:</p>
+  <pre><code class="route-command">{{ route.command }}</code></pre>
+  {% endif %}
+  <p class="failure-next-step">To route a file of any size, run Ghost locally: <code>ghost route &lt;file&gt;</code>.</p>
+</section>

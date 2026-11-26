@@ -845,29 +845,38 @@ def cmd_mutate(args: argparse.Namespace) -> int:
 def cmd_route(args: argparse.Namespace) -> int:
     from ghost.router import (
         ThresholdError,
-        recommend_route,
+        route_workbook,
         with_atx_command,
         write_route_explanation,
     )
+    from ghost.router.thresholds import load_thresholds
 
-    wb = _load(args.target)
     try:
+        thresholds = load_thresholds()
+        # Triage first: a workbook over a limit gets its route from its measured sizes and is not loaded.
         route = with_atx_command(
-            recommend_route(compute_metrics(wb), args.batch_size), args.target
+            route_workbook(args.target, args.batch_size, thresholds, load=_load),
+            args.target, thresholds.transform_definition,
         )
     except ThresholdError as exc:
         raise CliError(f"routing thresholds: {exc}") from exc
     print(f"Route: {route.route}")
     for reason in route.reasons:
         print(f"  - {reason}")
+    if route.parts:
+        print("What happens to each part:")
+        for part in route.parts:
+            print(f"  - {part}")
     if route.atx_command:
-        print("Dry run (not executed):")
+        print("Suggested command, not run:")
         print(f"  {route.atx_command}")
+        from ghost.router.explain import is_git_repository
+        target_dir = Path(args.target).parent
+        if not is_git_repository(target_dir):
+            print("  (the target folder is not a Git repository: run 'git init' there first)")
     if args.migration_dir:
         print(f"Wrote route explanation to {write_route_explanation(args.migration_dir, route)}")
     return 0
-
-
 # --------------------------------------------------------------------------
 # demo
 # --------------------------------------------------------------------------
@@ -964,6 +973,35 @@ def cmd_challenge(args: argparse.Namespace) -> int:
     return run_challenge(args)
 
 
+def cmd_handoff(args: argparse.Namespace) -> int:
+    from ghost.handoff import HandoffError, write_kit
+
+    try:
+        res = write_kit(args.workbook, args.out, args.definition)
+    except HandoffError as exc:
+        raise CliError(str(exc)) from exc
+    print(f"Wrote the kit ({len(res.files)} files) to {args.out}")
+    print(f"  route: {res.route}; VBA modules: {res.vba_modules}" + (" (VBA: not readable)" if res.vba_error else ""))
+    if not res.mapping_written:
+        print("  mapping.yaml and rules.md were not written: the workbook is over Ghost's limits and was not loaded")
+    print("Nothing was run: no atx command, no AWS call, no macro. Read RUN.md first.")
+    return 0
+
+
+def cmd_receipt(args: argparse.Namespace) -> int:
+    from ghost import receipt as receipt_mod
+
+    try:
+        r = receipt_mod.run_receipt(args.workbook, args.kit, args.definition, args.log, args.out,
+                                    seed=args.seed, timeout=args.timeout)
+    except receipt_mod.ReceiptError as exc:
+        print(f"ghost: error: {exc}", file=sys.stderr)
+        return 2
+    print(f"receipt: {r['result']} ({r['reason']})")
+    print(f"Wrote transform-receipt.json in {args.out}")
+    return {"pass": 0, "difference found": 1}.get(r["result"], 2)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="ghost", description="Ghost in the Macro")
     sub = p.add_subparsers(dest="command", required=True)
@@ -1040,6 +1078,32 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--seed", type=int, default=DEFAULT_SEED)
     s.add_argument("--cases", type=int, default=DEFAULT_CASES)
     s.set_defaults(func=cmd_challenge)
+
+    s = sub.add_parser(
+        "handoff", help="write a hand-off kit for AWS Transform custom (runs nothing, calls no AWS service)",
+        description="Write a folder ready to become a Git repository: the VBA as text, GHOST_CONTRACT.md, "
+                    "mapping.yaml, rules.md, excel-semantics.md, atx-config.yaml and RUN.md. Executes nothing.",
+    )
+    s.add_argument("workbook")
+    s.add_argument("--out", required=True, help="new or empty folder for the kit")
+    s.add_argument("--definition", help="AWS Transform definition name (default: from the thresholds file)")
+    s.set_defaults(func=cmd_handoff)
+
+    s = sub.add_parser(
+        "receipt", help="referee the code that came back from AWS Transform and write transform-receipt.json",
+        description="Run `ghost challenge` on the kit's logic.py in a separate process and record the result. "
+                    "WARNING: this runs the candidate's code on this machine, and a candidate that loops will hang it "
+                    "(a timeout stops it). The definition name and the log path are recorded as stated by the owner. "
+                    "Exit 0: pass; 1: a difference; 2: anything else.",
+    )
+    s.add_argument("workbook")
+    s.add_argument("--kit", required=True, help="the hand-off folder holding the returned logic.py (and mapping.yaml)")
+    s.add_argument("--definition", required=True, help="the AWS Transform definition name, as you ran it")
+    s.add_argument("--log", required=True, help="the conversation log path, as you saw it")
+    s.add_argument("--out", required=True, help="new or empty folder for the receipt")
+    s.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    s.add_argument("--timeout", type=float, default=900.0, help="seconds before the challenge is stopped")
+    s.set_defaults(func=cmd_receipt)
 
     s = sub.add_parser("demo", help="run the full flow on samples (a) and (b)")
     s.add_argument("--out", default="demo-out")

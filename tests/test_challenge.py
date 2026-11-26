@@ -388,3 +388,43 @@ def test_property_2_a_counterexample_reproduces(haunted, tmp_path, capsys, suspe
     assert referee == float(m["expected"]["total"])
     assert candidate == float(m["actual"]["total"])
     assert f"{float(m['expected']['total'])!r}" in out
+
+
+# -- the engine-written repair brief (large-workbook-lane, Requirement 6.1) ----------------------
+@needs_soffice
+def test_a_failed_challenge_writes_the_repair_brief_into_out(haunted, tmp_path, capsys):
+    out_dir = tmp_path / "kept"
+    code, out, err = _run(capsys, haunted, "--code", SUSPECTS / "haunted" / "tidied.py", "--out", out_dir)
+    assert code == 1
+    brief = json.loads((out_dir / "repair-brief.json").read_text(encoding="utf-8"))
+    assert brief["status"] == "failed" and brief["found_by"] == "targeted boundary case"
+    assert brief["counterexample"]["inputs"]["quantity"] in (50, "50")
+    assert brief["rule"]["rule_id"].startswith("R-") and brief["rule"]["rule_text"] != "not available"
+    assert brief["rule"]["source_formula"].startswith("=")
+    text = json.dumps(brief)
+    assert str(tmp_path) not in text and "/Users" not in text and "/tmp" not in text
+    assert "repair brief" in out.lower() and str(out_dir) not in out
+
+
+@needs_soffice
+def test_the_brief_equals_the_one_scripts_repair_brief_writes_from_the_same_report(haunted, tmp_path, capsys):
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import repair_brief
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+    out_dir = tmp_path / "kept"
+    _run(capsys, haunted, "--code", SUSPECTS / "haunted" / "tidied.py", "--out", out_dir)
+    engine = json.loads((out_dir / "repair-brief.json").read_text(encoding="utf-8"))
+    assert repair_brief.write_brief(out_dir) == engine
+
+
+@needs_soffice
+def test_a_pass_writes_the_passed_brief_and_an_error_writes_none(haunted, tmp_path, capsys):
+    ok = tmp_path / "ok"
+    assert _run(capsys, haunted, "--code", SUSPECTS / "haunted" / "honest.py", "--out", ok)[0] == 0
+    assert json.loads((ok / "repair-brief.json").read_text(encoding="utf-8")) == {"status": "passed"}
+    bad = tmp_path / "bad"
+    code_file = _write(tmp_path, "def compute(inputs):\n    return {}\n")
+    assert _run(capsys, haunted, "--code", code_file, "--out", bad)[0] == 2
+    assert not (bad / "repair-brief.json").exists()

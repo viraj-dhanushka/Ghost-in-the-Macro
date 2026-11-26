@@ -20,7 +20,7 @@ EXPECTED_TOOLS = {
     "analyze_workbook", "list_rules", "get_dependencies", "find_inconsistencies",
     "extract_vba", "evaluate_original", "boundary_cases", "check_against_excel_cache",
     "verify_implementation", "mutation_check", "record_decision", "generate_proof_report",
-    "recommend_route",
+    "recommend_route", "prepare_handoff",
 }
 
 
@@ -49,7 +49,7 @@ def _have_soffice() -> bool:
         return False
 
 
-def test_all_thirteen_tools_registered():
+def test_all_fourteen_tools_registered():
     assert set(srv.TOOLS) == EXPECTED_TOOLS
 
 
