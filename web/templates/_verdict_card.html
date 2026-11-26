@@ -8,13 +8,13 @@
   <h3 id="vc-h-{{ job_id }}" class="vc-headline">{{ v.headline }}</h3>
   {% if v.counterexample %}{% set c = v.counterexample %}
   <div class="counterexample">
-    <h4 class="ce-title">Counterexample</h4>
+    <h4 class="ce-title">{{ c.title }}</h4>
     <dl class="ce-inputs">
       {% for i in c.inputs %}<div><dt>{{ i.name }}</dt> <dd>{{ i.value }}</dd></div>{% endfor %}
     </dl>
     <p class="ce-output">Output: <code>{{ c.output }}</code></p>
     <p class="ce-says">workbook says {{ says(c.workbook_says) }}; new code says {{ says(c.new_code_says) }}</p>
-    {% if c.cases %}<p class="ce-cases">{{ v.numbers.counterexample_cases }} generated cases differ in this way.</p>{% endif %}
+    {% if c.cases_line %}<p class="ce-cases">{{ c.cases_line }}</p>{% endif %}
     <p class="ce-class">{% if c.plain and c.plain != c.class %}{{ c.plain }} ({{ c.class }}){% else %}{{ c.class }}{% endif %}{% if c.decision_id %}. Decision {{ c.decision_id }}{% endif %}{% if c.finding_id and c.finding_id not in (c.plain or "") %}. Finding {{ c.finding_id }}{% endif %}</p>
   </div>
   {% endif %}
@@ -27,6 +27,7 @@
         <li>{% if it.value is none %}{{ name }}: {{ it.text }}{% else %}{{ it.text }} {{ name }}{% endif %}</li>
         {% endfor %}
       </ul>
+      {% if t.inputs.note %}<p class="tile-note">{{ t.inputs.note }}</p>{% endif %}
     </section>
     <section class="tile tile-disagreements" aria-labelledby="vc-dis-{{ job_id }}">
       <h4 class="tile-title" id="vc-dis-{{ job_id }}">Disagreements</h4>
@@ -58,6 +59,7 @@
     {% if n.rules_not_seen %}<p class="tile-sub">Rule conditions not seen both ways</p><ul class="tile-list">{% for r in n.rules_not_seen %}<li>{{ r.rule_id }}, {{ r.condition_id }}: never {{ r.side }}</li>{% endfor %}</ul>{% endif %}
     {% if n.not_converted %}<p class="tile-sub">Not converted</p><ul class="tile-list">{% for e in n.not_converted %}<li><code>{{ e.cell }}</code>: {{ e.reason }}</li>{% endfor %}</ul>{% endif %}
     <p class="excel-status">{{ n.excel }}</p>
+    <p class="lo-version">{{ n.libreoffice }}</p>
   </section>
   <div class="reproduce">
     <p class="reproduce-line"><code>{{ v.reproduce.command }}</code></p>

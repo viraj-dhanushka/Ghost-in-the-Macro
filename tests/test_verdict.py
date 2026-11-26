@@ -477,3 +477,77 @@ def test_glossary_does_not_state_an_outcome_for_faithful():
     text = {g["term"]: g["text"] for g in build_verdict(report())["glossary"]}
     assert "Aims to reproduce" in text["Faithful"] and "passes only when no difference is found" in text["Faithful"]
     assert "planted bug" in text["Mutant"]
+
+
+# -- follow-up fixes after the acceptance review (2026-11-26) ---------------------------------
+
+def test_the_box_is_titled_expected_difference_only_for_expected_by_decision():
+    c = build_verdict(intended_explained())["counterexample"]
+    assert c["title"] == "Expected difference" and c["class"] == "expected by decision" and c["decision_id"] == "D-001"
+    for cls in ("translation bug", "original workbook inconsistency", "something new"):
+        assert build_verdict(report(passed=False, mismatches=[bug(**{"class": cls})]))["counterexample"]["title"] == "Counterexample"
+
+
+@pytest.mark.parametrize("minimal, distinct, line", [
+    (True, 200, "26 of the 200 distinct cases differ in this way; the simplest is shown."),
+    (False, 200, "26 of the 200 distinct cases differ in this way."),
+    (True, None, "26 cases differ in this way; the simplest is shown."),
+])
+def test_cases_line_says_how_many_of_the_distinct_cases_differ(minimal, distinct, line):
+    d = report(passed=False, mismatches=[bug(cases=26, minimal=minimal)])
+    if distinct is None:
+        del d["distinct_cases"]
+    v = build_verdict(d)
+    assert v["counterexample"]["cases_line"] == line
+    assert v["numbers"]["counterexample_cases"] == 26
+    assert v["numbers"].get("distinct_cases") == distinct
+
+
+def test_no_cases_line_for_one_case_or_none():
+    for cases in (1, None):
+        m = bug(minimal=True)
+        if cases is None:
+            del m["cases"]
+        else:
+            m["cases"] = cases
+        assert build_verdict(report(passed=False, mismatches=[m]))["counterexample"]["cases_line"] is None
+
+
+STOP = "The run stops at the first unexplained difference, so later cases were not tried."
+
+
+@pytest.mark.parametrize("d, note", [
+    (report(passed=False, mismatches=[bug()]), STOP),
+    (report(passed=False), STOP),
+    (report(), None),
+    (intended_explained(), None),
+    (report(passed=None), None),
+    (report(mismatches=[bug()]), None),
+])
+def test_the_inputs_tile_explains_the_early_stop_only_when_not_passed(d, note):
+    assert build_verdict(d)["tiles"]["inputs"]["note"] == note
+
+
+@pytest.mark.parametrize("versions, sentence", [
+    ({"libreoffice": "LibreOffice 26.8.3.1 861effc"}, "Compared with the workbook as recalculated by LibreOffice 26.8.3.1 861effc."),
+    ({"libreoffice": "7.4.7.2"}, "Compared with the workbook as recalculated by LibreOffice 7.4.7.2."),
+    ({}, "LibreOffice version: not checked"),
+    ({"libreoffice": ""}, "LibreOffice version: not checked"),
+    ({"libreoffice": 7}, "LibreOffice version: not checked"),
+    (None, "LibreOffice version: not checked"),
+])
+def test_the_libreoffice_line_is_always_there(versions, sentence):
+    d = report()
+    if versions is None:
+        del d["versions"]
+    else:
+        d["versions"] = versions
+    assert build_verdict(d)["not_proven"]["libreoffice"] == sentence
+
+
+def test_the_libreoffice_line_does_not_change_the_headline_or_the_excel_sentence():
+    d = report(versions={"libreoffice": "LibreOffice 7.4"})
+    v = build_verdict(d)
+    assert v["headline"] == "Passed: no difference found on 311 cases"
+    assert v["not_proven"]["excel"] == "Not cross-checked against Excel."
+    assert "Excel" not in v["not_proven"]["libreoffice"]

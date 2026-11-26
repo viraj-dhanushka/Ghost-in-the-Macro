@@ -73,6 +73,9 @@ Open: **Analyze Requirements.** The feature prompt asks for Kiro's Analyze Requi
 Recorded now, not to be fixed by this feature.
 
 - **Labels come only from the constant text cell directly to the left of a cell** (Requirement 8). Most cells of the scenarios table (columns C to H of rows 6 to 15) have a number or a formula on their left, or no left neighbour, and so show the address alone. The cells of column B in that table take the scenario name from column A as their label.
+- **A pass on 0 cases.** A report with `passed` true, no mismatches and `cases_tested` of 0 reads "number of cases: not checked" and still counts as agreement (Requirement 2.8 says "positive integer"). Left as it is by the Owner's decision of 2026-11-26.
+- **Tile numbers that disagree with the mutant list.** The planted-bugs tile shows the recorded `killed` and `total` as they are, and lists the survivors from the `mutants` list, with no flag when the two disagree (Requirement 3.6). Left as it is.
+- **Operators inside string literals.** `formula_segments` can take a comparison inside a text literal such as `">=50"` for the operator it marks. It marks an operator only when it sits next to the Finding's constant or is the only one in the formula, so the effect is limited to the highlight. Left as it is.
 - **`Model!E3` in the scenarios sample** feeds `B19` and `B20` but is classified as a parameter because its label contains "allowance", so it is not checked by default. No engine change is made.
 
 ## Requirements
@@ -123,6 +126,7 @@ Recorded now, not to be fixed by this feature.
 8. WHEN a surviving mutant has no recorded reason, THE Planted_Bugs_Tile SHALL show "no reason recorded" for it.
 9. THE Planted_Bugs_Tile SHALL show `survivor_explanation` when the Mutation_Block has one.
 10. THE state of each Tile SHALL be shown by text or an icon as well as by colour.
+11. WHEN the state is not passed, THE Inputs_Tile SHALL carry the line "The run stops at the first unexplained difference, so later cases were not tried." (Added 2026-11-26; the engine sets `failed` on the first mismatch no Decision explains, skips the generated search if a targeted case failed, and ends the search there.)
 
 ### Requirement 4: Counterexample
 
@@ -137,9 +141,10 @@ Recorded now, not to be fixed by this feature.
    - `translation bug`: "the new code differs from the workbook, and no Finding or Decision accounts for it";
    - `original workbook inconsistency`: "the new code differs from the workbook where the workbook's own formulas disagree (Finding <id>)", leaving out "(Finding <id>)" when the mismatch has no `finding_id`;
    - `expected by decision`: "expected by decision", shown once, with the Decision id.
-5. (Optional) WHEN the mismatch has `cases` greater than 1, THE Counterexample SHALL say how many generated cases it stands for.
+5. (Optional) WHEN the mismatch has `cases` greater than 1, THE Counterexample SHALL say "N of the M distinct cases differ in this way", with N the mismatch's `cases` and M the report's `distinct_cases` ("N cases differ in this way" when `distinct_cases` is missing), followed by "; the simplest is shown" when the mismatch is marked `minimal`. (Amended 2026-11-26.)
 6. WHEN `passed` is `false`, THE Verdict_Card SHALL use the failure style of the existing `.verdict.fail` (a heavy edge, the "not equal" icon and the words "Not passed"), so that the state is not shown by colour alone.
 7. WHEN the Proof_Report holds no mismatch, THE Verdict_Card SHALL show no Counterexample and SHALL NOT invent one.
+8. WHEN the Counterexample's class is `expected by decision`, THE box SHALL be titled "Expected difference" and SHALL keep the class string and the Decision id in its text; for every other class it SHALL be titled "Counterexample". (Added 2026-11-26.)
 
 ### Requirement 5: What was not proven
 
@@ -155,6 +160,7 @@ Recorded now, not to be fixed by this feature.
 6. (Optional) WHEN none of the lists of criteria 2 to 4 and 8 has an entry, THE Not_Proven_Strip SHALL say so in words for each list and SHALL NOT be omitted.
 7. THE word "Excel" SHALL NOT appear in a sentence that claims agreement (the Headline while `claims_agreement` is true) unless `sanity.status` is "matched".
 8. THE Not_Proven_Strip SHALL list each entry of the report's `not_converted` array with its `cell` and its `reason`, and SHALL NOT supply a reason that an entry lacks.
+9. THE Not_Proven_Strip SHALL always show, beside the Excel status, the line "Compared with the workbook as recalculated by LibreOffice <versions.libreoffice>." (a leading "LibreOffice" in the recorded value is not repeated), or "LibreOffice version: not checked" when the field is missing, empty or not text. It SHALL NOT change the Headline. (Added 2026-11-26.)
 
 ### Requirement 6: Reproduce line and glossary
 

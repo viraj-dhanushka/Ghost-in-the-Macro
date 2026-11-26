@@ -55,12 +55,14 @@ def _next_to_constant(formula: str, m: re.Match, constant: str) -> bool:
 def formula_segments(formula: str, op: str, constant: str) -> list[tuple[str, bool]]:
     """Split ``formula`` into (text, is_marked_operator) pieces that join back to the formula.
 
-    Marks the first comparison token equal to ``op`` that sits next to ``constant``, else the first
-    token equal to ``op``, else nothing. The leading "=" of the formula is not a comparison.
+    Marks the first comparison token equal to ``op`` that sits next to ``constant``; failing that,
+    the token equal to ``op`` only when it is the only one in the formula; otherwise nothing is
+    marked (with two such comparisons and none next to the constant, a guess could point at the
+    wrong one). The leading "=" of the formula is not a comparison.
     """
     start = 1 if formula.startswith("=") else 0
     hits = [m for m in _TOKEN.finditer(formula, start) if m.group() == op]
-    chosen = next((m for m in hits if _next_to_constant(formula, m, constant)), hits[0] if hits else None)
+    chosen = next((m for m in hits if _next_to_constant(formula, m, constant)), hits[0] if len(hits) == 1 else None)
     if chosen is None:
         return [(formula, False)]
     pieces = [(formula[:chosen.start()], False), (chosen.group(), True), (formula[chosen.end():], False)]

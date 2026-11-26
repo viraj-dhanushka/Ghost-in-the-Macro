@@ -16,6 +16,7 @@ NO_REASON = "no reason recorded"
 EXPLAINED = "expected by decision"
 CLASSES = ("translation bug", "original workbook inconsistency", EXPLAINED)
 CAPTION = "Run from the migration folder; add --mutation-cases to repeat the planted-bug check."
+STOP_NOTE = "The run stops at the first unexplained difference, so later cases were not tried."
 
 _PLAIN = {
     "translation bug": "the new code differs from the workbook, and no Finding or Decision accounts for it",
@@ -152,7 +153,7 @@ def _tiles(d: dict, ms: list[dict] | None, numbers: dict) -> dict:
     return {"inputs": inputs, "disagreements": disagreements, "planted_bugs": planted}
 
 
-def _counterexample(ms: list[dict] | None) -> dict | None:
+def _counterexample(ms: list[dict] | None, d: dict) -> dict | None:
     if not ms:
         return None
     m = next((x for x in ms if x.get("minimal") is True), ms[0])
@@ -176,9 +177,17 @@ def _counterexample(ms: list[dict] | None) -> dict | None:
         plain = f"{plain} (Finding {fid})"
     output = out if isinstance(out, str) and out else (
         m["cell"] if isinstance(m.get("cell"), str) and m["cell"] else NOT_CHECKED)
-    return {"inputs": inputs, "output": output, "workbook_says": says, "new_code_says": got,
+    cases = m["cases"] if _is_int(m.get("cases")) and m["cases"] > 1 else None
+    cases_line = None
+    if cases is not None:
+        simplest = "; the simplest is shown" if m.get("minimal") is True else ""
+        distinct = d.get("distinct_cases")
+        cases_line = (f"{cases} of the {distinct} distinct cases differ in this way{simplest}."
+                      if _count(distinct) else f"{cases} cases differ in this way{simplest}.")
+    return {"title": "Expected difference" if cls == EXPLAINED else "Counterexample",
+            "inputs": inputs, "output": output, "workbook_says": says, "new_code_says": got,
             "class": cls, "plain": plain, "decision_id": did, "finding_id": fid,
-            "cases": m["cases"] if _is_int(m.get("cases")) and m["cases"] > 1 else None}
+            "cases": cases, "cases_line": cases_line}
 
 
 def _not_proven(d: dict, numbers: dict) -> dict:
@@ -205,6 +214,14 @@ def _not_proven(d: dict, numbers: dict) -> dict:
         excel = f"Excel cross-check: {status}."
     else:
         excel = f"Excel cross-check: {NOT_CHECKED}."
+    versions = d.get("versions")
+    lo = versions.get("libreoffice") if isinstance(versions, dict) else None
+    if isinstance(lo, str) and lo.strip():
+        lo = lo.strip()
+        lo = lo[len("LibreOffice"):].strip() if lo.lower().startswith("libreoffice") else lo
+        libreoffice = f"Compared with the workbook as recalculated by LibreOffice {lo}." if lo else f"LibreOffice version: {NOT_CHECKED}"
+    else:
+        libreoffice = f"LibreOffice version: {NOT_CHECKED}"
     nc = d.get("not_converted")
     converted = []
     for e in nc if isinstance(nc, list) else []:
@@ -223,7 +240,7 @@ def _not_proven(d: dict, numbers: dict) -> dict:
     numbers["boundary_notes"], numbers["domains_not_tested"] = len(notes), len(not_tested)
     numbers["not_converted"] = len(converted)
     return {"boundary_notes": notes, "domains_not_tested": not_tested, "rules_not_seen": rules,
-            "excel": excel, "not_converted": converted, "empty": empty}
+            "excel": excel, "libreoffice": libreoffice, "not_converted": converted, "empty": empty}
 
 
 def build_verdict(report: dict) -> dict:
@@ -239,7 +256,8 @@ def build_verdict(report: dict) -> dict:
         explained = sum(1 for m in ms if m.get("class") == EXPLAINED)
         numbers["expected_by_decision"], numbers["differences"] = explained, len(ms) - explained
     tiles = _tiles(d, ms, numbers)
-    counterexample = _counterexample(ms)
+    tiles["inputs"]["note"] = STOP_NOTE if state == "not_passed" else None
+    counterexample = _counterexample(ms, d)
     if counterexample and counterexample["cases"] is not None:
         numbers["counterexample_cases"] = counterexample["cases"]
     mode, seed = d.get("mode"), d.get("seed")

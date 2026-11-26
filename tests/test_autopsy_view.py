@@ -102,3 +102,17 @@ def test_module_is_pure():
         elif isinstance(n, ast.ImportFrom) and n.module:
             names.add(n.module.split(".")[0])
     assert not names & {"ghost", "fastapi", "starlette", "jinja2", "os", "sys", "time", "pathlib", "subprocess"}
+
+
+def test_two_comparisons_with_the_same_operator_and_none_next_to_the_constant_mark_nothing():
+    formula = "=IF(A1>=E2,IF(B1>=E3,1,2),3)"
+    assert seg(formula, ">=", "50") == [(formula, False)]
+
+
+def test_two_comparisons_mark_the_one_next_to_the_constant():
+    s = seg("=IF(A1>=E2,IF(B1>=50,1,2),3)", ">=", "50")
+    assert marked(s) == [">="] and s[0][0] == "=IF(A1>=E2,IF(B1"
+
+
+def test_a_single_operator_is_marked_even_when_it_is_not_next_to_the_constant():
+    assert marked(seg("=IF(B2>=E2,ROUND(B6*E3,2),0)", ">=", "50")) == [">="]

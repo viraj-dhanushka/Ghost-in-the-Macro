@@ -238,7 +238,7 @@ def test_the_panel_route_shows_no_card_for_an_unparseable_report(tmp_path):
 def test_cases_line_and_none_sentences_are_rendered():
     t = _text(_card(_render(report(passed=False, mismatches=[{**HAUNTED_MISMATCH, "class": "translation bug",
                                                               "cases": 26}]))))
-    assert "26 generated cases differ in this way." in t
+    assert "26 of the 200 distinct cases differ in this way; the simplest is shown." in t
     t = _text(_card(_render(report())))
     assert "The report lists no boundary notes." in t and "The report lists no cell as not converted." in t
     t = _text(_card(_render(report(boundary_notes=["a note"]))))
@@ -276,6 +276,52 @@ def test_every_number_printed_in_the_card_is_in_the_numbers_field(d):
     card = _card(_render(d))
     card = re.sub(r'<div class="counterexample">.*?(?=<div class="tiles">)', "", card, flags=re.S)
     card = re.sub(r'<div class="reproduce">.*?</div>', "", card, flags=re.S)
+    card = re.sub(r'<p class="lo-version">.*?</p>', "", card, flags=re.S)
     printed = {int(n) for n in _NUMBER.findall(_text(card))}
     assert printed <= set(build_verdict(d)["numbers"].values()), printed
     assert printed  # the check looked at something
+
+
+def test_the_intended_card_titles_its_box_expected_difference():
+    card = _card(_render(report(mode="intended", mismatches=[HAUNTED_MISMATCH])))
+    assert re.search(r'<h4 class="ce-title">Expected difference</h4>', card) and "Counterexample" not in card
+    t = _text(card)
+    assert "expected by decision" in t and "D-001" in t and "F-001" in t
+
+
+def test_other_classes_keep_the_counterexample_title():
+    bug = {**HAUNTED_MISMATCH, "class": "translation bug", "decision_id": None, "finding_id": None}
+    card = _card(_render(report(passed=False, mismatches=[bug])))
+    assert re.search(r'<h4 class="ce-title">Counterexample</h4>', card) and "Expected difference" not in card
+
+
+STOP = "The run stops at the first unexplained difference, so later cases were not tried."
+
+
+def test_the_early_stop_line_sits_under_the_inputs_tile_of_a_failing_card_only():
+    bug = {**HAUNTED_MISMATCH, "class": "translation bug", "decision_id": None, "finding_id": None}
+    failing = _card(_render(report(passed=False, mismatches=[bug])))
+    tile = re.search(r'<section class="tile tile-inputs".*?</section>', failing, re.S).group(0)
+    assert STOP in _text(tile)
+    for ok in (report(), report(mode="intended", mismatches=[HAUNTED_MISMATCH])):
+        assert STOP not in _text(_card(_render(ok)))
+
+
+@pytest.mark.parametrize("d", [
+    report(),
+    report(mode="intended", mismatches=[HAUNTED_MISMATCH]),
+    report(passed=False, mismatches=[{**HAUNTED_MISMATCH, "class": "translation bug"}]),
+    report(passed=None),
+])
+def test_the_libreoffice_line_is_always_visible_beside_the_excel_status(d):
+    card = _card(_render(d))
+    strip = re.search(r'<section class="tile not-proven".*?</section>', card, re.S).group(0)
+    assert "LibreOffice version: not checked" in _text(strip) and 'class="excel-status"' in strip
+    assert strip.index('class="excel-status"') < strip.index('class="lo-version"')
+
+
+def test_the_libreoffice_line_prints_the_recorded_version_without_doubling_the_name():
+    d = report(versions={"libreoffice": "LibreOffice 26.8.3.1 861effc", "python": "3", "ghost": "0.1.0"})
+    t = _text(_card(_render(d)))
+    assert "Compared with the workbook as recalculated by LibreOffice 26.8.3.1 861effc." in t
+    assert "LibreOffice LibreOffice" not in t

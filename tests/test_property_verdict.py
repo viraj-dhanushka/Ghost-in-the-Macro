@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from hypothesis import given, seed, settings, strategies as st
+from hypothesis import example, given, seed, settings, strategies as st
 from jsonschema import Draft202012Validator
 
 from web.verdict import build_verdict
@@ -89,6 +89,42 @@ def reports(draw):
 
 _SETTINGS = dict(max_examples=200, deadline=None, derandomize=False)
 
+def _example_report(**over):
+    d = {"schema_version": "1", "ghost_version": "0.1.0", "seed": 20261204,
+         "versions": {"libreoffice": "LO", "python": "3", "ghost": "0.1.0"}, "mode": "faithful",
+         "cases_tested": 311, "passed": True, "mismatches": [], "boundaries": [], "findings": [],
+         "decisions": [], "rule_coverage": [], "mutation": {"status": "not checked"},
+         "sanity": {"status": "not checked"}}
+    d.update(over)
+    return d
+
+
+def _mismatch_example(cls):
+    return {"inputs": {"quantity": 50}, "expected": {"total": 6.0}, "actual": {"total": "0"}, "class": cls,
+            "output": "total", "minimal": True, "cases": 2}
+
+
+# Explicit examples, run whichever test files are collected and whatever the generator draws:
+AGREEMENT = _example_report()
+INTENDED_ALL_EXPLAINED = _example_report(mode="intended", mismatches=[_mismatch_example("expected by decision")])
+PASSED_WITH_UNEXPLAINED = _example_report(mismatches=[_mismatch_example("translation bug")])
+
+
+def _with_examples(fn):
+    for ex in (PASSED_WITH_UNEXPLAINED, INTENDED_ALL_EXPLAINED, AGREEMENT):
+        fn = example(report=ex)(fn)
+    return fn
+
+
+def test_the_explicit_examples_are_schema_valid_and_cover_the_three_branches():
+    for ex in (AGREEMENT, INTENDED_ALL_EXPLAINED, PASSED_WITH_UNEXPLAINED):
+        assert not list(VALIDATOR.iter_errors(ex))
+    assert build_verdict(AGREEMENT)["claims_agreement"] is True
+    assert build_verdict(INTENDED_ALL_EXPLAINED)["claims_agreement"] is False
+    assert build_verdict(INTENDED_ALL_EXPLAINED)["headline"].startswith("Passed: no unexplained difference")
+    assert build_verdict(PASSED_WITH_UNEXPLAINED)["claims_agreement"] is False
+
+
 
 @seed(SEED)
 @settings(max_examples=100, deadline=None, derandomize=False)
@@ -100,6 +136,7 @@ def test_every_generated_report_is_schema_valid(report):
 # Feature: readable-proof, Property 1: The Headline claims agreement only for a passed report with no mismatches
 @seed(SEED)
 @settings(**_SETTINGS)
+@_with_examples
 @given(reports())
 def test_property_1_claims_agreement_only_for_passed_and_no_mismatches(report):
     """**Validates: Requirements 2.2, 2.3, 13.2**"""
@@ -146,6 +183,7 @@ def allowed_numbers(report: dict) -> set[int]:
 # Feature: readable-proof, Property 2: Every number is traceable
 @seed(SEED)
 @settings(**_SETTINGS)
+@_with_examples
 @given(reports())
 def test_property_2_every_number_is_traceable(report):
     """**Validates: Requirements 1.7, 12.5, 13.3**"""
@@ -179,6 +217,7 @@ def test_property_4_every_surviving_mutant_is_listed(report):
 # Feature: readable-proof, Property 5: "Excel" never appears in a sentence that claims agreement unless the cross-check matched
 @seed(SEED)
 @settings(**_SETTINGS)
+@_with_examples
 @given(reports())
 def test_property_5_excel_only_with_a_matched_cross_check(report):
     """**Validates: Requirements 5.7, 13.6**"""
@@ -203,6 +242,7 @@ def test_property_6_deterministic_and_does_not_modify_its_argument(report):
 # Feature: readable-proof, Property 2 (named): each number equals its definition, not just some allowed value
 @seed(SEED)
 @settings(**_SETTINGS)
+@_with_examples
 @given(reports())
 def test_property_2_named_numbers_equal_their_definition(report):
     """**Validates: Requirements 1.7, 12.5**"""
@@ -243,6 +283,7 @@ def _strings(x):
 # Feature: readable-proof, Property 5 (strengthened): "Excel" appears only in the cross-check sentence, which follows sanity.status
 @seed(SEED)
 @settings(**_SETTINGS)
+@_with_examples
 @given(reports())
 def test_property_5_excel_only_in_the_cross_check_sentence(report):
     """**Validates: Requirements 5.1, 5.5, 5.7, 13.6**"""

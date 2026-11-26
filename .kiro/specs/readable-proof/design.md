@@ -166,7 +166,7 @@ def checkbox_text(cell, label, value=None, formula=None) -> str
 ```
 
 - `consequence` builds `at exactly 50, B7 uses >= and B9 uses >` from the Finding's own fields. With three or more locations the parts are joined with commas and a final `and`. A macro location is named `module:line`. It contains no outcome (Requirement 9.3, 9.4).
-- `formula_segments` splits a formula into `(text, is_operator)` pieces so that the template can wrap the conflicting operator in `<mark class="op">` and escape every piece. It scans comparison tokens left to right (`<>`, `<=`, `>=`, `=`, `<`, `>`) and marks the first token equal to `op` that sits next to the constant, else the first token equal to `op`, else none. The haunted `B7` compares with `E2`, not with a literal 50, so the fallback applies there.
+- `formula_segments` splits a formula into `(text, is_operator)` pieces so that the template can wrap the conflicting operator in `<mark class="op">` and escape every piece. It scans comparison tokens left to right (`<>`, `<=`, `>=`, `=`, `<`, `>`) and marks the first token equal to `op` that sits next to the constant; failing that, the token equal to `op` when it is the only one in the formula; otherwise nothing (changed 2026-11-26: with two such comparisons and none next to the constant, marking the first could point at the wrong one). The haunted `B7` compares with `E2`, not with a literal 50, and has one `>=`, so the single-token rule applies there.
 - `checkbox_text` is `label (address)` or the address alone, then `, value in the workbook: V` for an input with a stored value, or `, formula: F` for an output (Requirement 8.1 to 8.4).
 
 ### `ghost/autopsy/classify.py`
