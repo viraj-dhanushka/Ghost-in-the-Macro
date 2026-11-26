@@ -63,12 +63,13 @@
     },
     {
       "count": 33,
+      "detail": "19 contain a seed call",
       "label": "Test files that use Hypothesis",
       "source": "tests/**/*.py"
     },
     {
       "count": 68,
-      "detail": "covered 38, ambiguous 11, not covered 19",
+      "detail": "covered 41, ambiguous 8, not covered 19",
       "label": "Property ledger rows",
       "source": "docs/KIRO_PROPERTY_LEDGER.md"
     }

@@ -18,6 +18,7 @@ formulas = st.builds(lambda a, op, b: f"={a}{op}{b}", st.sampled_from(["A1", "B2
                      st.sampled_from(["+", "-", "*", "/", ">", ">="]), st.sampled_from(["A1", "B2", "50", "0.1", "C3"]))
 
 
+# Feature: ghost-in-the-macro, Property 9: Rule determinism and stable identifiers
 @settings(max_examples=200, deadline=None)
 @given(cells, formulas)
 def test_property_9_rule_id_is_stable_and_has_the_documented_shape(cell, formula):

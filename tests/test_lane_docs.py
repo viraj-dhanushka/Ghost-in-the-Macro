@@ -97,3 +97,8 @@ def test_the_design_and_requirements_follow_the_corrections():
     assert "Ghost does not send formulas to AWS Transform" not in r
     assert "rules.md" in r and "mapping_equals_ghost_derived" in r and "mode" in r
     assert "-p <kit-folder>" in d or "`-p` is always the kit folder" in d
+
+
+def test_the_readme_names_the_xml_element_cap_next_to_the_other_upload_limits():
+    t = text("README.md")
+    assert "2,000,000 XML start tags" in t and "Workbook has too many XML elements; rejected." in t

@@ -24,6 +24,7 @@ text = st.text(alphabet=st.characters(min_codepoint=32, max_codepoint=126, black
 @settings(max_examples=60, deadline=None)
 @given(text, text, text, st.dates(min_value=date(2020, 1, 1), max_value=date(2030, 12, 31)),
        st.one_of(st.none(), st.just("F-001")))
+# Feature: ghost-in-the-macro, Property 11: Spec file round trip
 def test_property_11_a_decision_survives_write_and_read(tmp_path_factory, behaviour, reason, author, when, finding):
     mdir = tmp_path_factory.mktemp("d")
     made = record(mdir, {"behaviour": behaviour, "reason": reason, "author": author, "date": when,
@@ -60,7 +61,6 @@ def test_property_11_findings_and_traceability_survive_yaml(tmp_path):
     a = cli._analyse(make_haunted.build(tmp_path / "h.xlsx"))
     assert a.findings and a.rules
     for data in (findings_data(a.findings), traceability_data(a.rules)):
-        assert yaml.safe_load(yaml.safe_dump(data, sort_keys=False)) == yaml.safe_load(yaml.safe_dump(data, sort_keys=False))
         assert yaml.safe_load(yaml.safe_dump(data, sort_keys=False)) == _plain(data)
     mapping = generate_mapping(a.wb, a.roles)
     write_mapping(mapping, tmp_path / "m.yaml")

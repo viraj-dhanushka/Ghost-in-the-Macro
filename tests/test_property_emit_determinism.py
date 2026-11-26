@@ -17,6 +17,7 @@ from ghost.runtime.excel import to_decimal
 ROOT = Path(__file__).resolve().parent.parent
 
 
+# Feature: ghost-in-the-macro, Property 18: Decimal conversion and emit determinism
 @settings(max_examples=500, deadline=None)
 @given(st.floats(allow_nan=False, allow_infinity=False))
 def test_property_18_a_float_converts_through_repr(x):

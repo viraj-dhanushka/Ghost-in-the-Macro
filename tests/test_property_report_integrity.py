@@ -33,6 +33,7 @@ def results(draw):
     )
 
 
+# Feature: ghost-in-the-macro, Property 30: Report integrity
 @settings(max_examples=120, deadline=None)
 @given(results())
 def test_property_30_the_report_validates_and_keeps_every_engine_field(r):

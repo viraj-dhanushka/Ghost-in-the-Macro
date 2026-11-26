@@ -22,7 +22,7 @@ These come from `docs/KIRO_FIX_PROMPT_2026-11-24.md` and apply to each task belo
   - Run `.venv/bin/python -m pytest -q` and confirm `192 passed, 19 xfailed`
   - Run `.venv/bin/python -m pytest -q -rx tests/test_review_proof_strength.py tests/test_review_semantics.py tests/test_review_autopsy_and_packaging.py` and record which `reason=` IDs xfail: R-01 to R-05 (5), R-07 twice and R-08 once (3), R-09, R-10 twice, R-11, R-12, R-03, R-13 twice, R-14, R-15, R-16 (11)
   - **EXPECTED OUTCOME**: Every one of the 19 tests xfails (this confirms the bugs exist). Record the output in a scratch note, not in the repository
-  - Note that the two R-13 tests skip where `/Users/viraj/Downloads/ghost-in-the-macro-testbench/` is absent
+  - Note that the two R-13 tests skip where the external test bench folder is absent
   - _Requirements: 1.1, 1.2, 1.5, 1.6, 1.7, 1.8, 1.11, 1.12, 1.13, 1.14, 1.15, 1.21, 1.22, 1.26, 1.27_
 
 - [x] 2. Write preservation property tests (BEFORE implementing any fix)

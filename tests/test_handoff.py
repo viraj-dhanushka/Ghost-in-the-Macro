@@ -162,6 +162,7 @@ def test_every_module_appears_exactly_once_with_safe_distinct_names(tmp_path, mo
 names = st.text(alphabet=st.characters(blacklist_categories=("Cs",)), min_size=1, max_size=12)
 
 
+# Feature: large-workbook-lane, Property 3: The kit is byte-identical, has no absolute path, and lists each VBA module once
 @settings(max_examples=60, deadline=None)
 @given(st.lists(st.tuples(names, st.text(max_size=30)), min_size=1, max_size=8))
 def test_property_3_each_module_once_and_names_are_safe(pairs):

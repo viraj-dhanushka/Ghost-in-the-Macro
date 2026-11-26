@@ -17,6 +17,7 @@ metrics = st.builds(
 )
 
 
+# Feature: ghost-in-the-macro, Property 31: Routing is deterministic and total
 @settings(max_examples=500, deadline=None)
 @given(metrics, st.integers(1, 30), thresholds)
 def test_property_31_exactly_one_route_the_same_every_time_following_the_rules(m, batch, t):

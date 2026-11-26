@@ -18,6 +18,7 @@ from ghost.mutation.run import score
 ROOT = Path(__file__).resolve().parent.parent
 
 
+# Feature: ghost-in-the-macro, Property 29: Mutation score accounting
 @settings(max_examples=300, deadline=None)
 @given(st.lists(st.booleans(), min_size=0, max_size=40))
 def test_property_29_the_score_is_killed_over_total(flags):

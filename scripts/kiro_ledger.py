@@ -12,7 +12,8 @@ Usage:  scripts/ghost-py scripts/kiro_ledger.py            write the three files
         scripts/ghost-py scripts/kiro_ledger.py --check    exit 1 when a committed file is stale (writes nothing)
 
 Honesty rules: it counts and quotes; it does not judge. A topic with no evidence says so. Anything only the Owner can
-know is a marked placeholder `[OWNER: ...]`. A "caught" cell names a bug only where docs/KIRO_USAGE.md says a property
+know is a marked placeholder `[OWNER: ...]`, unless docs/KIRO_OWNER_NOTES.md has text for that section (sections 1 to
+8): then the Owner's text is printed, unedited, in place of the placeholder. A "caught" cell names a bug only where docs/KIRO_USAGE.md says a property
 caught it; otherwise it says "none recorded".
 """
 from __future__ import annotations
@@ -153,7 +154,8 @@ def property_test_files() -> list[dict]:
     for p in sorted((ROOT / "tests").rglob("*.py")):
         text = p.read_text(encoding="utf-8")
         if re.search(r"^\s*(from|import) hypothesis", text, re.M):
-            out.append({"file": rel(p), "given": len(re.findall(r"@given\(", text))})
+            seeded = bool(re.search(r"@seed\(|\bseed\(|derandomize\s*=\s*True|hyp_seed|HYPOTHESIS_SEED", text))
+            out.append({"file": rel(p), "given": len(re.findall(r"@given\(", text)), "seeded": seeded})
     return out
 
 
@@ -163,8 +165,36 @@ def log_lines() -> list[str]:
 
 
 def log_mentions(words: list[str]) -> int:
-    pat = re.compile("|".join(re.escape(w) for w in words), re.I)
-    return sum(1 for ln in log_lines() if pat.search(ln))
+    """Lines of the usage log that name one of ``words``. A line that says something is "not claimed" is a statement
+    that the thing was not used, so it is not counted as a use."""
+    pat = re.compile("|".join(r"\b" + re.escape(w) + r"\b" for w in words), re.I)
+    return sum(1 for ln in log_lines() if pat.search(ln) and "not claimed" not in ln.lower())
+
+
+def vibe_entries() -> list[str]:
+    """Headings of the usage-log entries that carry a `Feature: vibe` line."""
+    out, heading = [], ""
+    for ln in log_lines():
+        if ln.startswith("#"):
+            heading = ln.lstrip("# ").strip()
+        elif re.match(r"^- Feature: vibe\b", ln) and not heading.startswith("YYYY"):
+            out.append(heading)
+    return out
+
+
+def skeptic_review_lines() -> int:
+    return sum(1 for ln in log_lines() if re.match(r"^- Skeptic\b", ln))
+
+
+def owner_notes(text: str) -> dict[int, str]:
+    """{section number: the Owner's text} from docs/KIRO_OWNER_NOTES.md. HTML comments are ignored; a section whose
+    text is empty (or only a comment) is absent, so its placeholder stays."""
+    notes: dict[int, str] = {}
+    for m in re.finditer(r"^## (\d)\b[^\n]*\n(.*?)(?=^## \d|\Z)", text, re.M | re.S):
+        body = re.sub(r"<!--.*?-->", "", m.group(2), flags=re.S).strip()
+        if body and 1 <= int(m.group(1)) <= 8:
+            notes[int(m.group(1))] = body
+    return notes
 
 
 def excerpts(regex: str, limit: int = 3, width: int = 260, where: str | None = None) -> list[str]:
@@ -204,12 +234,31 @@ def caught_in_log() -> list[dict]:
 
 
 # --------------------------------------------------------------------------------------------- property ledger
+NOT_EVIDENCE = {"tests/test_kiro_ledger.py", "tests/test_judge_kit_docs.py"}  # they quote property names as data
+EXPLICIT_RE = re.compile(r"Feature:\s*([A-Za-z0-9._-]+),\s*Property\s+(\d+)")
+
+
+def explicit_bindings(text: str) -> list[tuple[str, int]]:
+    """(spec, property number) for every `Feature: <spec>, Property N` comment in a test file."""
+    return [(m.group(1), int(m.group(2))) for m in EXPLICIT_RE.finditer(text)]
+
+
 def property_ledger(spec_list: list[dict]) -> list[dict]:
     test_files = sorted(p for p in (ROOT / "tests").rglob("*.py"))
+    explicit: dict[tuple[str, int], list[str]] = {}
+    explicit_files: set[str] = set()
+    for p in test_files:
+        for key in explicit_bindings(p.read_text(encoding="utf-8")):
+            explicit.setdefault(key, [])
+            if rel(p) not in explicit[key]:
+                explicit[key].append(rel(p))
+            explicit_files.add(rel(p))
     spec_text = {s["name"]: " ".join(read(f"{s['path']}/{n}") for n in ("tasks.md", "design.md", "requirements.md", "bugfix.md"))
                  for s in spec_list}
     mentions = []
     for p in test_files:
+        if rel(p) in explicit_files or rel(p) in NOT_EVIDENCE:
+            continue  # bound by its own comments, or a file that only quotes properties as data: never guessed
         text = p.read_text(encoding="utf-8")
         nums = {int(n) for n in re.findall(r"Property\s+(\d+)", text)}
         for group in re.findall(r"Properties\s+([0-9][0-9, and\u2013\-to]*)", text):
@@ -226,9 +275,10 @@ def property_ledger(spec_list: list[dict]) -> list[dict]:
     rows = []
     for s in spec_list:
         for n, title in s["properties"]:
-            covering = sorted(m["file"] for m in mentions if m["spec"] == s["name"] and n in m["nums"])
-            maybe = sorted(m["file"] for m in mentions
-                           if m["spec"] is None and n in m["nums"] and (not m["candidates"] or s["name"] in m["candidates"]))
+            bound = sorted(explicit.get((s["name"], n), []))
+            covering = bound or sorted(m["file"] for m in mentions if m["spec"] == s["name"] and n in m["nums"])
+            maybe = [] if bound else sorted(m["file"] for m in mentions
+                                            if m["spec"] is None and n in m["nums"] and (not m["candidates"] or s["name"] in m["candidates"]))
             if covering:
                 status = "covered: " + ", ".join(covering)
             elif maybe:
@@ -273,8 +323,10 @@ def render_ledger(f: dict) -> str:
         "Generated by `scripts/kiro_ledger.py` from the working tree. Do not edit by hand.",
         "",
         "One row per (spec, property number): each spec numbers its own properties from 1, so the key is the pair. "
-        "A property is \"covered\" when a test file that names that property number also names that spec (or is "
-        "listed in that spec's tasks, design or requirements). \"ambiguous\" means a test file names the number but "
+        "A row is bound first by an explicit comment in a test file, `Feature: <spec>, Property N`; only if there is "
+        "none, a test file that names the number and also names that spec (or is listed in that spec's tasks, design "
+        "or requirements) covers it. In this table covered means a test names the property; it may be an example test, "
+        "not a Hypothesis one. \"ambiguous\" means a test file names the number but "
         "nothing ties it to this spec. \"caught\" holds a bug only where `docs/KIRO_USAGE.md` says the property caught "
         "it; otherwise \"none recorded\". A covered row means a test cites the property; it does not mean the test is "
         "strong. It was counted from `.kiro/specs/*/design.md` and `tests/**/*.py`.",
@@ -321,7 +373,8 @@ def facts(f: dict) -> dict:
              "detail": ", ".join(a["name"] for a in f["agents"])},
             {"label": "MCP tools", "count": len(f["tools"]), "source": "mcp_server/server.py (TOOLS)"},
             {"label": "Power skills", "count": len(f["skills"]), "source": "plugin/skills/*/SKILL.md"},
-            {"label": "Test files that use Hypothesis", "count": len(f["ptests"]), "source": "tests/**/*.py"},
+            {"label": "Test files that use Hypothesis", "count": len(f["ptests"]), "source": "tests/**/*.py",
+             "detail": f"{sum(1 for p in f['ptests'] if p['seeded'])} contain a seed call"},
             {"label": "Property ledger rows", "count": len(rows), "source": "docs/KIRO_PROPERTY_LEDGER.md",
              "detail": "covered %d, ambiguous %d, not covered %d" % (
                  sum(1 for r in rows if r["status"].startswith("covered")),
@@ -331,17 +384,32 @@ def facts(f: dict) -> dict:
     }
 
 
+_OWNER_NOTES: dict[int, str] = {}
+
+
 def section(title: str, facts_lines: list[str], log: list[str], not_used: list[str], owner: list[str]) -> list[str]:
     out = [f"## {title}", "", "**Counted from the working tree**", ""]
     out += [f"- {x}" for x in facts_lines]
     out += ["", "**From docs/KIRO_USAGE.md** (quoted, not paraphrased)", ""]
     out += [f"- {x}" for x in log] if log else ["- No entry in the usage log matches this topic."]
     out += ["", "**Not used, or not verified**", ""] + [f"- {x}" for x in not_used]
-    out += [""] + [f"{x}" for x in owner] + [""]
+    n = int(title.split(".", 1)[0])
+    if n in _OWNER_NOTES:
+        out += ["", f"**Owner's words** (docs/KIRO_OWNER_NOTES.md, section {n}, unedited)", "", _OWNER_NOTES[n], ""]
+    else:
+        out += [""] + [f"{x}" for x in owner] + [""]
     return out
 
 
+def _dup_sentence(dup: dict[str, list[str]]) -> str:
+    groups = sorted(sorted(v) for v in dup.values())
+    parts = [" and ".join(g) + (" share one specId" if i == 0 else " share another") for i, g in enumerate(groups)]
+    return "; ".join(parts) + " (.kiro/specs/*/.config.kiro). Reported to the Owner, not changed."
+
+
 def render_story(f: dict) -> str:
+    global _OWNER_NOTES
+    _OWNER_NOTES = owner_notes(read("docs/KIRO_OWNER_NOTES.md"))
     sp = f["specs"]
     kiro_specs = [s for s in sp if s["type"] in ("feature", "bugfix")]
     not_specs = [s for s in sp if s["type"] not in ("feature", "bugfix")]
@@ -379,8 +447,9 @@ def render_story(f: dict) -> str:
         "2. Custom agents",
         [f"{len(f['agents'])} custom agents (.kiro/agents/*.json): {', '.join(a['name'] for a in f['agents'])}"]
         + [f"{a['name']}: {a['description']} (tools: {', '.join(a['tools']) if a['tools'] else 'not listed'}; {a['file']})"
-           for a in f["agents"]],
-        excerpts(r"custom agents|`skeptic`|sub-agent", 3, where="agents"),
+           for a in f["agents"]]
+        + [f"{skeptic_review_lines()} lines in the usage log open a Skeptic review (a line that starts with \"Skeptic\", {LOG})"],
+        excerpts(r"custom agents|`skeptic`|sub-agent", 2, where="agents") + excerpts(r"^- Skeptic \(real", 3),
         ["Whether each agent loads and answers in the Kiro IDE is a row in docs/KIRO_OWNER_CHECKLIST.md with an empty Result "
          "cell: not checked in Kiro.",
          "The Skeptic reviews named in the usage log were run by a sub-agent that could read files but not run commands; "
@@ -393,8 +462,8 @@ def render_story(f: dict) -> str:
         [f"{len(hk)} hooks (.kiro/hooks/*.json): " + ", ".join(f"{h['name']} ({h['trigger']}, {h['action']} action)" for h in hk)],
         excerpts(r".", 2, where="Hooks confirmed firing") + excerpts(r"Property 2 caught", 1),
         ["The usage log records that four of the five original hooks were seen to fire in the Kiro IDE (shown by side effects) "
-         "and that the agent-action hook was not checked. The guard hook (PreToolUse) was observed blocking a shell command "
-         "once in this IDE; a real `atx` or `aws` block was not tried (docs/KIRO_SURFACES_FORMATS.md).",
+         "and that the agent-action hook was not checked. The guard hook (PreToolUse) blocked the agent's own shell commands "
+         "twice in this IDE; a real `atx` or `aws` block was not tried (docs/KIRO_SURFACES_FORMATS.md).",
          "Hook output was not attached to the agent's tool results in this IDE (docs/KIRO_SURFACES_FORMATS.md), although "
          "Kiro's documentation says stdout is added to the context."],
         ["[OWNER: what hooks changed about how you worked, and which one you would keep.]"])
@@ -407,16 +476,17 @@ def render_story(f: dict) -> str:
          f"{sum(1 for s in kiro_specs if s['type'] == 'bugfix')} bugfix (.kiro/specs/*/.config.kiro)",
          f"{sum(s['requirements'] for s in sp)} requirements headings (.kiro/specs/*/requirements.md), "
          f"{sum(len(s['properties']) for s in sp)} correctness properties (.kiro/specs/*/design.md), "
-         f"{tdone} tasks done and {topen} open (.kiro/specs/*/tasks.md)"]
+         f"{tdone} tasks done and {topen} open (.kiro/specs/*/tasks.md)",
+         f"{len(vibe_entries())} usage-log {'entry is' if len(vibe_entries()) == 1 else 'entries are'} marked `Feature: vibe` "
+         f"(a free-form session with no spec task; {LOG})"]
         + [f"{s['name']}: {s['type']}, {s['requirements']} requirements, {len(s['properties'])} properties, "
            f"{s['tasks_done']} done / {s['tasks_open']} open ({s['path']})" for s in kiro_specs]
         + ([f"Folders in .kiro/specs that are not Kiro specs: {', '.join(s['name'] for s in not_specs)} (no .config.kiro)"]
            if not_specs else []),
-        excerpts(r"test-first|spec task execution", 2),
-        ["The log has no vibe-coded run of the same work to compare against, so it makes no measured comparison of the two.",
+        excerpts(r"^- Feature: vibe\b", 3) + excerpts(r"test-first|spec task execution", 2),
+        ["The log has no pair of runs of the same work, one vibe-coded and one spec-driven, so it makes no measured comparison of the two.",
          "Not checked: Analyze Requirements (a Kiro IDE action left to the Owner; named as not run in the usage log)."]
-        + ([f"Two or more specs share one specId in .kiro/specs/*/.config.kiro: {sorted(map(sorted, dup.values()))}. "
-            "Reported to the Owner, not changed."] if dup else []),
+        + ([_dup_sentence(dup)] if dup else []),
         ["[OWNER: how spec-driven work felt compared with vibe coding, in your words.]"])
     # 5 steering
     st = f["steering"]
@@ -443,6 +513,8 @@ def render_story(f: dict) -> str:
     L += section(
         "7. Property-based testing, and whether it caught issues unit tests missed",
         [f"{len(pt)} test files use Hypothesis (tests/**/*.py), with {sum(p['given'] for p in pt)} `@given` decorators (tests/**/*.py)",
+         f"{sum(1 for p in pt if p['seeded'])} of those {len(pt)} files contain a seed call (`seed(`, `derandomize=True`; tests/**/*.py); "
+         "the verifier itself uses the fixed seed 20261204 (ghost/verifier/run.py)",
          f"{len(rows)} correctness properties (.kiro/specs/*/design.md), {cov} covered by a test file that names them "
          f"(docs/KIRO_PROPERTY_LEDGER.md)",
          ("Property rows with a recorded catch: " + "; ".join(f"{r['spec']} property {r['n']} ({r['title']})" for r in caught))

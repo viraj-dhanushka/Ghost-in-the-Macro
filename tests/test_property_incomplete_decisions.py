@@ -14,6 +14,7 @@ FULL = {"behaviour": "keep the original", "reason": "bulk means 50 or more", "au
         "date": date(2026, 11, 26), "finding_id": "F-001"}
 
 
+# Feature: ghost-in-the-macro, Property 12: Incomplete decisions are rejected
 @settings(max_examples=60, deadline=None)
 @given(st.sets(st.sampled_from(REQUIRED), min_size=1), st.sampled_from(["absent", "blank", "none"]))
 def test_property_12_a_decision_missing_required_fields_is_rejected_naming_them(tmp_path_factory, drop, how):

@@ -112,6 +112,7 @@ outcomes = st.fixed_dictionaries({
 })
 
 
+# Feature: large-workbook-lane, Property 6: The receipt records a pass only when all conditions hold
 @settings(max_examples=400, deadline=None)
 @given(outcomes)
 def test_property_6_pass_only_when_all_five_conditions_hold(o):

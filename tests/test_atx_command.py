@@ -30,6 +30,7 @@ def test_the_placeholder_directory_is_quoted_and_carries_no_path():
     assert "'<kit-folder>'" in atx_dry_run_command(None)
 
 
+# Feature: large-workbook-lane, Property 4: The printed command always carries -g and the not-run label
 @given(st.text(min_size=1, max_size=40).filter(lambda s: s.strip()))
 def test_property_4_every_printed_command_has_g_and_the_not_run_label(name):
     """Property 4: the printed command always carries -g and never appears without the label."""

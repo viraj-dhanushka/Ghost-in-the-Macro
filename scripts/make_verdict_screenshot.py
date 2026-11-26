@@ -74,10 +74,8 @@ def main(argv: list[str]) -> int:
         out = ROOT / "docs" / "img" / "verdict-card.png"
         out.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run([chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
-                        "--window-size=760,760", f"--screenshot={out}", src.as_uri()],
+                        "--window-size=720,580", f"--screenshot={out}", src.as_uri()],
                        check=True, capture_output=True, timeout=120)
-        # The window is square; trim the empty part below and right of the card (macOS `sips`, skipped elsewhere).
-        subprocess.run(["sips", "-c", "1150", "1420", str(out)], capture_output=True)
         print(f"wrote {out.relative_to(ROOT)} ({out.stat().st_size} bytes)")
     return 0
 

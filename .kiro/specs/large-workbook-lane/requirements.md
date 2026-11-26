@@ -3,7 +3,7 @@
 Feature 7 (source: `docs/KIRO_FEATURE_PROMPT_2026-11-25.md`, "Feature 7: large-workbook lane with a refereed AWS Transform custom hand-off"). Facts about AWS Transform custom come from `docs/AWS_TRANSFORM_FACTS.md` (Step 0, read 2026-11-26), not from memory. Nothing in this feature runs `atx` or any AWS command, and nothing has been run against AWS.
 
 **What this feature is, stated honestly.** AWS Transform custom migrates VBA code. Its documentation says nothing about worksheet formulas, cell counts or workbook size. "Large" is therefore handled in two separate ways, and every screen and document keeps them apart:
-- **Large in VBA:** the VBA goes to AWS Transform custom. Ghost prepares the hand-off kit and referees the Python that comes back.
+- **Large in VBA:** the VBA goes to AWS Transform custom. Ghost prepares the hand-off kit and referees the formula-fed outputs of the Python that comes back (the check covers only outputs calculated by worksheet formulas; a pass says nothing about the migrated VBA).
 - **Large in cells or formulas:** Ghost does not convert the formulas at that size. It gives a route and says what is and is not covered, instead of a bare ingest error. (A kit for a workbook that was loaded carries `rules.md`, which restates the formulas in English and is uploaded with the kit; the workbook file and its cell values are never in it.)
 
 Owner decisions made on 2026-11-26 that shape this spec:
@@ -34,7 +34,7 @@ Owner decisions made on 2026-11-26 that shape this spec:
 2. WHEN no limit is exceeded THE route, reasons and metrics SHALL be identical to today's (the workbook is loaded as before).
 3. FOR any size profile and thresholds THE router SHALL return exactly one route, and every limit exceeded SHALL appear in the reasons.
 4. IF an over-limit workbook has VBA above the VBA threshold, or UserForms or Declares above theirs, THEN THE route SHALL be "AWS Transform custom" for the VBA part. OTHERWISE it SHALL be a new route, "Over Ghost's limits", which says Ghost does not convert this workbook here and that the formulas are not sent to AWS Transform.
-5. THE route output SHALL always say what happens to each part: "VBA: N lines, sent to AWS Transform custom" (or "VBA: N lines, not sent" / "VBA: none" / "VBA: not readable"), and "Formulas: N, not sent, converted by Ghost" or "Formulas: N, not sent, not converted by Ghost (over the limit)" or "Formulas: not counted", whichever is true.
+5. THE route output SHALL always say what happens to each part: "VBA: N lines, goes to AWS Transform custom (suggested command, not run)" (or "VBA: N lines, read statically, not converted by Ghost" / "VBA: none" / "VBA: not readable"), and, whichever is true, "Formulas: N, converted by Ghost where it can; the kit's rules.md restates them in English and is uploaded with the kit" (an AWS route within the limits), "Formulas: N, converted by Ghost (supported functions only; ...)" (Ghost converts), "Formulas: N, not converted by Ghost (over the limit); a kit for this workbook has no rules.md, so they are not in it" (over the limits) or "Formulas: not counted".
 6. THE size thresholds SHALL be optional keys of the YAML block in `.kiro/steering/routing-thresholds.md` (`max_file_bytes`, `max_cells`, `max_formulas`, `transform_definition`) with defaults, and a file with only the four original keys SHALL load with the defaults. A size threshold above Ghost's ingest limit SHALL NOT raise the limit: the effective value is the smaller one.
 ### Requirement 3: The web app
 #### Acceptance Criteria
@@ -44,7 +44,7 @@ Owner decisions made on 2026-11-26 that shape this spec:
 ### Requirement 4: A truthful AWS Transform command
 #### Acceptance Criteria
 1. THE command builder in `ghost/router/explain.py` SHALL name the definition from configuration (`transform_definition`, default `AWS/vba-to-python-migration`, the AWS-managed Early-access definition), SHALL carry `-g <config file>`, `-p <directory>`, `-c <build command>`, `-x` and `-t`, and SHALL never be printed without the label "suggested command, not run".
-2. THE builder SHALL check whether the target directory is inside a Git repository (by looking for `.git`, running nothing) and SHALL say "not a Git repository: run `git init` first" when it is not.
+2. (Superseded by 11.5, 2026-11-26.) THE builder no longer checks the workbook's folder for a Git repository: `-p` is always `<kit-folder>`, the folder that `ghost handoff` writes, and the CLI hint says to run `ghost handoff` first. `RUN.md` tells the owner to run `git init` in the kit.
 3. THE text SHALL say that `-t` approves all tool calls, that a non-interactive run exits 0 even when the transformation failed (CLI 3.22.1 or later), and that Node.js 22 or later is required.
 4. `plugin/skills/route-migration/SKILL.md` and the steering file SHALL match.
 5. THE text SHALL NEVER say that AWS Transform converts formulas or handles workbook size.

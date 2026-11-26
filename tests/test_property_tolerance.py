@@ -16,6 +16,7 @@ texts = st.text(alphabet=st.characters(min_codepoint=33, max_codepoint=126), max
 codes = st.sampled_from(["#DIV/0!", "#VALUE!", "#N/A", "#REF!", "#NAME?", "#NUM!", "#NULL!"])
 
 
+# Feature: ghost-in-the-macro, Property 22: Tolerance comparison
 @settings(max_examples=300, deadline=None)
 @given(numbers, numbers)
 def test_property_22_numbers_are_symmetric_and_reflexive(a, b):

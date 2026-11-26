@@ -31,6 +31,7 @@ def profile(**o):
 
 
 # -- thresholds (Property 5) -------------------------------------------------------------------
+# Feature: large-workbook-lane, Property 5: A thresholds file with only the four original keys loads with the defaults
 def test_a_file_with_only_the_four_original_keys_loads_with_the_defaults():
     t = parse_thresholds(FOUR_KEYS)
     assert t == DEFAULT_THRESHOLDS
@@ -139,6 +140,7 @@ thresholds = st.builds(
 )
 
 
+# Feature: large-workbook-lane, Property 2: Exactly one route; every limit exceeded is in the reasons
 @settings(max_examples=300, deadline=None)
 @given(sizes, thresholds, st.integers(1, 15))
 def test_property_2_exactly_one_route_and_every_limit_exceeded_is_in_the_reasons(s, t, batch):

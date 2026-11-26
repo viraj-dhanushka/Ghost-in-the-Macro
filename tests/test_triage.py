@@ -52,6 +52,7 @@ def test_the_formula_count_equals_what_the_ingest_loader_counts(tmp_path):
     assert scan_sizes(p).formulas == sum(1 for c in wb.cells.values() if c.formula)
 
 
+# Feature: large-workbook-lane, Property 1: Triage never loads the workbook
 def test_triage_never_loads_the_workbook(tmp_path, monkeypatch):
     p = make_book(tmp_path / "a.xlsx")
     import ghost.ingest.workbook as ingest

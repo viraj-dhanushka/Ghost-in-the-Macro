@@ -54,7 +54,10 @@ def test_the_story_has_one_section_per_topic_and_an_owner_placeholder_each():
     joined = " ".join(t.lower() for _, t in titles)
     for topic in ("surfaces", "custom agents", "hooks", "spec-driven", "steering", "mcp", "property-based", "powers"):
         assert topic in joined, topic
-    assert len(re.findall(r"^\[OWNER: .+\]$", story, re.M)) == 8
+    # each section ends with the Owner's placeholder or, once docs/KIRO_OWNER_NOTES.md has text for it, the Owner's words
+    placeholders = len(re.findall(r"^\[OWNER: .+\]$", story, re.M))
+    owner_texts = len(re.findall(r"^\*\*Owner's words\*\*", story, re.M))
+    assert placeholders + owner_texts == 8
     for forbidden in ("I loved", "I felt", "my favourite", "amazing"):
         assert forbidden not in story
 
@@ -122,3 +125,115 @@ def test_every_relative_link_in_the_readme_first_screen_exists():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for target in re.findall(r"\]\((?!http|#)([^)#\s]+)", readme):
         assert (ROOT / target).exists(), target
+
+
+# -- corrections of 2026-11-26 (judge-kit items 11 and 12) -------------------------------------------
+FAKE_LOG = """# Usage log
+### 2026-11-20: a vibe session
+- Feature: vibe (free-form session, no spec task; checked against the pinned tests only afterwards).
+- Used the Kiro IDE for this.
+### 2026-11-21: a review
+- Skeptic (real, read-only): PASS WITH CORRECTIONS. Applied: one thing.
+- Kiro Web is not claimed here, and neither is Kiro CLI.
+- The Kiro CLI was used once.
+"""
+
+
+def _with_log(monkeypatch, log, notes=None):
+    real = kiro_ledger.read
+
+    def fake(rel):
+        if rel == "docs/KIRO_USAGE.md":
+            return log
+        if rel == "docs/KIRO_OWNER_NOTES.md":
+            return notes or ""
+        return real(rel)
+
+    monkeypatch.setattr(kiro_ledger, "read", fake)
+
+
+def test_lines_that_say_not_claimed_are_not_counted_as_naming_a_surface(monkeypatch):
+    _with_log(monkeypatch, FAKE_LOG)
+    assert kiro_ledger.log_mentions(["Kiro CLI"]) == 1  # the real use, not the "not claimed" line
+    assert kiro_ledger.log_mentions(["Kiro Web"]) == 0
+    assert kiro_ledger.log_mentions(["Kiro IDE"]) == 1
+
+
+def test_the_story_says_crew_is_not_claimed_in_the_required_words():
+    story = (ROOT / "docs/KIRO_STORY.md").read_text(encoding="utf-8")
+    assert "Kiro Crew: no entry in the usage log names it, so it is not claimed" in story
+
+
+def test_explicit_feature_property_comments_bind_a_row_before_any_guess():
+    assert kiro_ledger.explicit_bindings("# Feature:" + " kiro-surfaces, Property 3: names\n# Feature:" + " front-door, Property 12: x") == [
+        ("kiro-surfaces", 3), ("front-door", 12)]
+    assert kiro_ledger.explicit_bindings("no comment, but Property 4 and the main spec") == []
+    by = {(r["spec"], r["n"]): r for r in kiro_ledger.collect()["ledger"]}
+    for n in (1, 2, 3):
+        assert by[("kiro-surfaces", n)]["status"] == "covered: tests/test_kiro_config.py"
+    # a file that names a number but not its spec stays "ambiguous": it is not guessed into a spec
+    assert by[("review-fixes-2026-11-24", 3)]["status"].startswith("ambiguous")
+
+
+def test_a_file_with_explicit_comments_is_not_guessed_onto_other_specs():
+    rows = kiro_ledger.collect()["ledger"]
+    for r in rows:
+        if r["status"].startswith("ambiguous"):
+            assert "tests/test_kiro_config.py" not in r["status"] and "tests/test_property_progress_module.py" not in r["status"]
+
+
+def test_the_ledger_header_says_what_covered_means():
+    text = (ROOT / "docs/KIRO_PROPERTY_LEDGER.md").read_text(encoding="utf-8")
+    assert "covered means a test names the property; it may be an example test" in " ".join(text.split())
+
+
+def test_the_vibe_session_is_in_section_4_and_the_skeptic_entries_in_section_2(monkeypatch):
+    _with_log(monkeypatch, FAKE_LOG)
+    story = kiro_ledger.render_story(kiro_ledger.collect())
+    s2 = story.split("## 2. ")[1].split("## 3. ")[0]
+    s4 = story.split("## 4. ")[1].split("## 5. ")[0]
+    assert "Feature: vibe (free-form session" in s4 and "1 usage-log entry is marked `Feature: vibe`" in s4
+    assert "Skeptic (real, read-only): PASS WITH CORRECTIONS" in s2
+
+
+def test_the_real_story_has_both():
+    story = (ROOT / "docs/KIRO_STORY.md").read_text(encoding="utf-8")
+    assert "Feature: vibe" in story.split("## 4. ")[1].split("## 5. ")[0]
+    assert "Skeptic" in story.split("## 2. ")[1].split("## 3. ")[0]
+
+
+def test_duplicate_spec_ids_are_printed_as_prose_not_as_a_python_list():
+    story = (ROOT / "docs/KIRO_STORY.md").read_text(encoding="utf-8")
+    assert "[[" not in story and "['front-door'" not in story
+    assert "front-door and kiro-surfaces share one specId" in story
+    assert "live-fixes-2026-11-24 and review-fixes-2026-11-24 share one specId" in story or "share another" in story
+    assert "Reported to the Owner, not changed" in story
+
+
+def test_the_owners_notes_replace_the_placeholder_of_their_section_only(monkeypatch):
+    notes = """# Notes
+<!-- a comment that is ignored -->
+## 1. Surfaces
+I used the IDE.
+
+Second paragraph.
+## 3. Hooks
+   <!-- only a comment: this section stays a placeholder -->
+## 7. Property tests
+They changed how I wrote the tolerance code.
+"""
+    _with_log(monkeypatch, FAKE_LOG, notes)
+    story = kiro_ledger.render_story(kiro_ledger.collect())
+    sec = lambda n, m: story.split(f"## {n}. ")[1].split(f"## {m}. ")[0] if m else story.split(f"## {n}. ")[1]
+    assert "**Owner's words**" in sec(1, 2) and "I used the IDE.\n\nSecond paragraph." in sec(1, 2)
+    assert "[OWNER:" not in sec(1, 2)
+    assert "[OWNER:" in sec(3, 4) and "**Owner's words**" not in sec(3, 4)
+    assert "They changed how I wrote the tolerance code." in sec(7, 8) and "[OWNER:" not in sec(7, 8)
+    assert len(re.findall(r"^\[OWNER: .+\]$", story, re.M)) == 6
+    assert len(re.findall(r"^\*\*Owner's words\*\*", story, re.M)) == 2
+
+
+def test_the_notes_file_exists_as_a_template_with_eight_sections_and_changes_nothing_while_empty():
+    text = (ROOT / "docs/KIRO_OWNER_NOTES.md").read_text(encoding="utf-8")
+    assert [int(n) for n in re.findall(r"^## (\d)\.", text, re.M)] == list(range(1, 9))
+    assert kiro_ledger.owner_notes(text) == {}
