@@ -266,6 +266,8 @@ A judge who opens `.kiro/` and finds config that cannot load will score this cri
 
 Added 25 November. Build it after Feature 5, because it reuses `ghost challenge` and the repair brief. Estimate: 1.5 days for parts A to D; part E is optional. STOP-AND-ASK before starting if Features 3 to 5 are not finished, so I can choose what to drop.
 
+**Carried over from Feature 4 (Owner decision, 2026-11-26).** (1) `.dockerignore` excludes `.kiro`, so the deployed image has no `.kiro/steering/routing-thresholds.md`; `ghost.router.load_thresholds()` raises there, which would break `ghost route` and the MCP route tool in the container. The web app already falls back to `DEFAULT_THRESHOLDS` (a test pins that they equal the file). Decide in this feature whether to ship the file in the image or read the thresholds from the package. (2) The `atx` command builder (`ghost/router/explain.py`) uses a placeholder definition name, `excel-vba-to-python`, that must already exist in the user's AWS Transform registry, and the command is unverified. The web page now says so beside the suggested command; the builder itself is left for this feature.
+
 **Problem.**
 
 - A workbook over the ingest limits (5 MB, 200,000 cells, 20,000 formulas, 60 s) never reaches the router. `ghost route` and the MCP tool `recommend_route` load the workbook first, so the user gets an ingest error, not a route.

@@ -144,9 +144,11 @@ def test_aws_routes_show_the_command_labelled_not_run(name):
 
 def test_ghost_converts_with_vba_says_the_vba_is_not_translated():
     r = route("Ghost converts", ["23 VBA lines are within the threshold of 2000"])
-    r["vba_note"] = "Ghost converts the formulas; it does not translate the VBA."
+    note = ("Ghost converts the formulas it supports. It does not translate the VBA: a cell that calls a VBA "
+            "function is listed above as not converted.")
+    r["vba_note"] = note
     t = _text(_render(route=r))
-    assert "Ghost converts the formulas; it does not translate the VBA." in t
+    assert note in t and "Ghost converts" in t  # the engine's route name is kept
     assert "does not translate the VBA" not in _text(_render(route=route("Ghost converts", ["x"])))
 
 
@@ -154,6 +156,8 @@ def test_the_command_flags_are_explained_as_aws_transform_options_not_ghost_trus
     cmd = "atx custom def exec -n excel-vba-to-python -p '<workbook-directory>' -x -t"
     t = _text(_render(route=route("Split", ["r"], cmd)))
     assert "-x -t are AWS Transform options (non-interactive, trust all tools). Ghost never runs this command." in t
+    assert ("excel-vba-to-python is a placeholder definition name: it must already exist in your AWS Transform "
+            "registry. This command is a starting point to review, not a verified command.") in t
 
 
 def test_no_route_panel_when_the_route_is_not_available():
@@ -337,3 +341,31 @@ def test_the_macro_sample_shows_no_false_finding_and_no_decision_form(tmp_path):
     assert "No operator conflicts found." in page
     assert 'class="finding"' not in page and 'hx-post="/decision"' not in page and "F-001" not in page
     assert "Record decision" not in page
+
+
+def test_the_vba_module_summary_has_a_visible_expand_marker_that_changes_when_open():
+    css = (ROOT / "web" / "static" / "style.css").read_text(encoding="utf-8")
+    closed = re.search(r"details\.vba-module summary::before \{[^}]*content: \"([^\"]+)\"", css)
+    opened = re.search(r"details\.vba-module\[open\] summary::before \{[^}]*content: \"([^\"]+)\"", css)
+    assert closed and opened and closed.group(1) != opened.group(1)
+    assert "details.vba-module summary::-webkit-details-marker" in css and "list-style: none" in css
+    # still collapsed by default: nothing in the markup opens a block
+    assert "open" not in re.findall(r"<details\b([^>]*vba-module[^>]*)>", _render(vba_blocks=[block()]))[0].split()
+
+
+def test_modules_that_are_not_listed_are_counted_in_a_visible_notice():
+    page = _render(vba_blocks=[block()], vba_notice="10 more modules not shown.")
+    assert "10 more modules not shown." in _text(page)
+    assert "more module" not in _text(_render(vba_blocks=[block()]))
+
+
+@needs_soffice
+def test_with_macros_off_the_cell_that_calls_the_vba_function_reads_the_macro_error(tmp_path):
+    from ghost.referee.client import RefereeClient
+    c = TestClient(create_app(session_root=tmp_path / "s"))
+    assert c.post("/sample/macros").status_code == 200
+    wb = next((tmp_path / "s").rglob("discount_vba.xlsm"))
+    with RefereeClient(None, wb, run_macros=False, job_dir=str(tmp_path)) as ref:
+        got = ref.eval({}, ["Calculator!B13", "Calculator!B11"])
+    assert got["Calculator!B13"] == {"error": "#MACRO?"}
+    assert isinstance(got["Calculator!B11"], (int, float))  # the formula cells beside it still calculate

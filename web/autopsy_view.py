@@ -82,45 +82,86 @@ def checkbox_text(cell: str, label: str | None, value: Any = None, formula: str 
 MAX_VBA_LINES_PER_MODULE = 400
 MAX_VBA_LINES_TOTAL = 2000
 MAX_VBA_CHARS_PER_MODULE = 60000
+MAX_VBA_CHARS_TOTAL = 200000
+MAX_VBA_MODULES = 50
+
+
+def _whole_lines_within(lines: list[str], budget: int) -> list[str]:
+    """The leading lines whose text, joined by newlines, fits in ``budget`` characters."""
+    kept: list[str] = []
+    used = 0
+    for line in lines:
+        add = len(line) + (1 if kept else 0)
+        if used + add > budget:
+            break
+        kept.append(line)
+        used += add
+    return kept
 
 
 def vba_blocks(modules: list[dict]) -> list[dict]:
     """The VBA modules as the VBA_Panel shows them: name, recorded line count, the text to show and a note.
 
-    At most 400 lines of a module and 2000 in all are shown; a cut module says how much is shown, and a
-    module that gets no lines is still listed with the reason. The source is returned as it is: the
-    template escapes it.
+    Limits: 400 lines and 60000 characters per module, 2000 lines and 200000 characters in all, and 50 modules
+    (``vba_notice`` counts the rest). A cut is made at a whole line, and the note says how many lines are
+    actually shown; a module that gets nothing is still listed with the reason. The source is returned as it
+    is: the template escapes it.
     """
-    remaining = MAX_VBA_LINES_TOTAL
+    remaining_lines, remaining_chars = MAX_VBA_LINES_TOTAL, MAX_VBA_CHARS_TOTAL
     out = []
-    for m in modules:
+    for m in modules[:MAX_VBA_MODULES]:
         source = m.get("source") or ""
         lines = source.split("\n") if source else []
         total = len(lines)
-        take = min(MAX_VBA_LINES_PER_MODULE, remaining, total)
-        note = None
+        text, note, used_lines = "", None, 0
         if total == 0:
             note = "The module is empty."
-        elif take <= 0:
+        elif remaining_lines <= 0:
             note = (f"Not shown: the display limit of {MAX_VBA_LINES_TOTAL} lines was reached. "
                     f"The module has {total} lines.")
-        elif take < total:
-            note = f"Showing the first {take} of {total} lines."
-        text = "\n".join(lines[:max(take, 0)])
-        if len(text) > MAX_VBA_CHARS_PER_MODULE:  # a few very long lines can still make a huge page
-            chars = f"Showing the first {MAX_VBA_CHARS_PER_MODULE} characters of {len(text)}."
-            note = f"{note} {chars}" if note else chars
-            text = text[:MAX_VBA_CHARS_PER_MODULE]
+        elif remaining_chars <= 0:
+            note = (f"Not shown: the display limit of {MAX_VBA_CHARS_TOTAL} characters was reached. "
+                    f"The module has {total} lines.")
+        else:
+            take = min(MAX_VBA_LINES_PER_MODULE, remaining_lines, total)
+            shown = lines[:take]
+            budget = min(MAX_VBA_CHARS_PER_MODULE, remaining_chars)
+            text = "\n".join(shown)
+            if len(text) > budget:
+                kept = _whole_lines_within(shown, budget)
+                if kept:
+                    shown, text = kept, "\n".join(kept)
+                    note = f"Showing the first {len(shown)} of {total} lines, cut at {budget} characters."
+                elif budget < MAX_VBA_CHARS_PER_MODULE:  # only a fragment of the total budget is left
+                    shown, text = [], ""
+                    note = (f"Not shown: the display limit of {MAX_VBA_CHARS_TOTAL} characters was reached. "
+                            f"The module has {total} lines.")
+                else:  # a single line longer than the per-module limit
+                    shown, text = [lines[0][:budget]], lines[0][:budget]
+                    note = f"Showing part of line 1 (its first {budget} characters) of {total} lines."
+            elif take < total:
+                note = f"Showing the first {take} of {total} lines."
+            used_lines = len(shown)
         out.append({"name": str(m.get("name", "")), "line_count": m.get("line_count", total),
                     "text": text, "note": note})
-        remaining -= max(take, 0)
+        remaining_lines -= used_lines
+        remaining_chars -= len(text)
     return out
+
+
+def vba_notice(modules: list[dict]) -> str | None:
+    """A notice for the modules that are not listed at all (more than 50)."""
+    extra = len(modules) - MAX_VBA_MODULES
+    if extra <= 0:
+        return None
+    return f"{extra} more {'module' if extra == 1 else 'modules'} not shown."
 
 
 def route_view(route) -> dict:
     """The router's answer for the Route_Panel: name, reasons and the suggested command (or None)."""
     vba_note = None
     if route.route == "Ghost converts" and route.metrics.vba_line_count > 0:
-        vba_note = "Ghost converts the formulas; it does not translate the VBA."
+        vba_note = ("Ghost converts the formulas it supports. It does not translate the VBA: a cell that calls a VBA function "
+                    "is listed above as not converted.")
     return {"route": route.route, "reasons": list(route.reasons), "command": route.atx_command,
             "vba_note": vba_note}

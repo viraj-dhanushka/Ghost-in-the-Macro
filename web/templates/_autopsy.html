@@ -23,6 +23,7 @@
       {% if b.note %}<p class="vba-note">{{ b.note }}</p>{% endif %}
     </details>
     {% endfor %}
+    {% if vba_notice %}<p class="vba-note">{{ vba_notice }}</p>{% endif %}
   </section>
   {% endif %}
   <h3>Findings</h3>
@@ -76,6 +77,7 @@
     {% if route.vba_note %}<p class="route-vba-note">{{ route.vba_note }}</p>{% endif %}
     <p class="route-note">This route is a recommendation computed from counts in the workbook; no command was run.</p>
     {% if route.command %}<p class="route-command-label">suggested command, not run:</p><code class="route-command">{{ route.command }}</code>
+    <p class="route-note">excel-vba-to-python is a placeholder definition name: it must already exist in your AWS Transform registry. This command is a starting point to review, not a verified command.</p>
     <p class="route-note">-x -t are AWS Transform options (non-interactive, trust all tools). Ghost never runs this command.</p>{% endif %}
   </section>
   {% endif %}

@@ -280,3 +280,7 @@ pre.vba-code { margin: 0; padding: .6rem .75rem; max-height: 24rem; overflow: au
 .route-reasons { margin: .25rem 0; }
 code.route-command { display: block; padding: .5rem .6rem; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); border: 1px dashed var(--border); border-radius: .3rem; }
 .route-command-label { margin: .5rem 0 .25rem; font-weight: 600; }
+details.vba-module summary { list-style: none; }
+details.vba-module summary::-webkit-details-marker { display: none; }
+details.vba-module summary::before { content: "\25B8" / ""; flex: none; margin-right: .5rem; color: var(--accent); }
+details.vba-module[open] summary::before { content: "\25BE" / ""; }

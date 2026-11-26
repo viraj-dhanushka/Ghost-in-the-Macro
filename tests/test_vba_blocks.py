@@ -10,7 +10,8 @@ import pytest
 from ghost.models import Metrics, Route
 from ghost.router import DEFAULT_THRESHOLDS, ThresholdError, load_thresholds
 
-from web.autopsy_view import MAX_VBA_CHARS_PER_MODULE, MAX_VBA_LINES_PER_MODULE, MAX_VBA_LINES_TOTAL, route_view, vba_blocks
+from web.autopsy_view import (MAX_VBA_CHARS_PER_MODULE, MAX_VBA_CHARS_TOTAL, MAX_VBA_LINES_PER_MODULE,
+                              MAX_VBA_LINES_TOTAL, MAX_VBA_MODULES, route_view, vba_blocks, vba_notice)
 from web import flow
 
 
@@ -105,22 +106,64 @@ def test_the_built_in_thresholds_equal_the_steering_file():
     assert DEFAULT_THRESHOLDS == load_thresholds()
 
 
-def test_a_module_of_very_long_lines_is_cut_by_characters_and_says_so():
-    assert MAX_VBA_CHARS_PER_MODULE == 60000
+def test_the_character_and_module_limits_are_the_documented_ones():
+    assert (MAX_VBA_CHARS_PER_MODULE, MAX_VBA_CHARS_TOTAL, MAX_VBA_MODULES) == (60000, 200000, 50)
+
+
+def test_a_module_of_very_long_lines_is_cut_at_a_whole_line_and_the_notice_gives_the_lines_shown():
     src = "\n".join("x" * 5000 for _ in range(30))
     b = vba_blocks([{"name": "Wide.bas", "source": src, "line_count": 30}])[0]
-    assert len(b["text"]) == 60000
-    assert b["note"] == "Showing the first 60000 characters of 150029."
+    assert b["text"].count("\n") + 1 == 11 and len(b["text"]) == 11 * 5000 + 10 and len(b["text"]) <= 60000
+    assert b["note"] == "Showing the first 11 of 30 lines, cut at 60000 characters."
 
 
-def test_the_character_note_combines_with_the_line_note():
+def test_the_line_limit_and_the_character_limit_give_one_notice_with_the_lines_actually_shown():
     src = "\n".join("y" * 1000 for _ in range(450))
     b = vba_blocks([{"name": "Both.bas", "source": src, "line_count": 450}])[0]
-    assert b["note"] == "Showing the first 400 of 450 lines. Showing the first 60000 characters of 400399."
+    shown = b["text"].count("\n") + 1
+    assert shown == 59 and len(b["text"]) == 59 * 1000 + 58  # 59 whole lines fit in 60000 characters (60 would be 60,059)
+    assert b["note"] == "Showing the first 59 of 450 lines, cut at 60000 characters."
+
+
+def test_a_first_line_longer_than_the_budget_is_cut_in_the_line_and_says_so():
+    b = vba_blocks([{"name": "One.bas", "source": "z" * 70000 + "\nnext", "line_count": 2}])[0]
+    assert len(b["text"]) == 60000 and "\n" not in b["text"]
+    assert b["note"] == "Showing part of line 1 (its first 60000 characters) of 2 lines."
+
+
+def test_the_total_character_budget_cuts_a_later_module_at_a_whole_line():
+    big = "\n".join("b" * 250 for _ in range(400))  # 100,399 characters; 239 whole lines (59,988) fit in 60000
+    blocks = vba_blocks([{"name": f"B{i}.bas", "source": big, "line_count": 400} for i in range(5)])
+    assert [b["text"].count("\n") + 1 for b in blocks[:3]] == [239, 239, 239]
+    assert sum(len(b["text"]) for b in blocks[:3]) == 3 * 59988
+    # 200000 - 179964 = 20036 characters are left: 79 whole lines (19,828) fit
+    assert blocks[3]["text"].count("\n") + 1 == 79 and len(blocks[3]["text"]) == 19828
+    assert blocks[3]["note"] == "Showing the first 79 of 400 lines, cut at 20036 characters."
+
+
+def test_a_module_that_gets_no_characters_says_the_character_limit_was_reached():
+    big = "\n".join("b" * 250 for _ in range(400))  # 400 lines, 100,399 characters; cut to 60000 per module
+    mods = [{"name": f"B{i}.bas", "source": big, "line_count": 400} for i in range(5)]
+    blocks = vba_blocks(mods)
+    assert sum(len(b["text"]) for b in blocks) <= MAX_VBA_CHARS_TOTAL
+    last = blocks[-1]
+    assert last["text"] == ""
+    assert last["note"] == "Not shown: the display limit of 200000 characters was reached. The module has 400 lines."
+
+
+def test_at_most_fifty_modules_are_listed_and_the_rest_are_counted():
+    mods = [{"name": f"M{i:02d}.bas", "source": "x", "line_count": 1} for i in range(60)]
+    blocks = vba_blocks(mods)
+    assert len(blocks) == 50 and blocks[0]["name"] == "M00.bas" and blocks[-1]["name"] == "M49.bas"
+    assert vba_notice(mods) == "10 more modules not shown."
+    assert vba_notice(mods[:51]) == "1 more module not shown."
+    assert vba_notice(mods[:50]) is None and vba_notice([]) is None
 
 
 def test_route_view_adds_the_vba_note_only_when_ghost_converts_a_workbook_with_vba():
     from ghost.router import recommend_route
-    assert route_view(recommend_route(metrics()))["vba_note"] == "Ghost converts the formulas; it does not translate the VBA."
+    assert route_view(recommend_route(metrics()))["vba_note"] == (
+        "Ghost converts the formulas it supports. It does not translate the VBA: a cell that calls a VBA function "
+        "is listed above as not converted.")
     assert route_view(recommend_route(metrics(vba_line_count=0, module_count=0)))["vba_note"] is None
     assert route_view(recommend_route(metrics(vba_line_count=2500)))["vba_note"] is None  # Split names the VBA path itself
