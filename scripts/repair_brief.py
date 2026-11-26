@@ -62,9 +62,19 @@ def build_brief(report: dict, rules_text: str, formula_of: Callable[[str], str |
     rule = parse_rules(rules_text).get(rule_id)
     cell = rule["cell"] if rule else None
     formula = formula_of(cell) if cell else None
+    extra = {}
+    ids = [d.get("decision_id") for d in (report.get("decisions") or []) if isinstance(d, dict) and d.get("decision_id")]
+    if ids and report.get("mode") == "faithful":
+        extra = {
+            "decision_ids": ids,
+            "warning": ("This migration has recorded Decisions (" + ", ".join(ids) + "). The difference may be "
+                        "intended behaviour, not a bug in logic.py. Ask the user before changing the code."),
+        }
     return {
         **head,
-        "found_by": "targeted boundary case" if not report.get("cases_generated") else "search (shrunk)",
+        **extra,
+        "found_by": (NOT_AVAILABLE if not isinstance(report.get("cases_generated"), int) else
+                     "targeted boundary case" if report["cases_generated"] == 0 else "search (shrunk)"),
         "counterexample": {
             "inputs": m.get("inputs"),
             "output": m.get("output") or NOT_AVAILABLE,

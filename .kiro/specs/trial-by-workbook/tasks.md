@@ -20,7 +20,7 @@
 - [x] 6. `graveyard/haunted.xlsx` and the `.gitignore` exception.
 - [x] 7. The agent migration: rules spec, a fresh agent writes `logic.py` and `mapping.yaml`, verification, the log; record the prompt and what happened.
 - [x] 8. The repair demonstration: if the first attempt passed, plant one labelled bug and let the loop find and repair it.
-- [ ] 9. **Gated:** `ghost/challenge.py` and the `challenge` subparser; tests first.
-- [ ] 10. **Gated:** switch `scripts/lineup.py` to `ghost challenge`; Properties 1 and 2.
-- [ ] 11. Stretch: read-only web line-up (only if time remains).
+- [x] 9. **Gated:** `ghost/challenge.py` and the `challenge` subparser; tests first.
+- [x] 10. **Gated:** switch `scripts/lineup.py` to `ghost challenge`; Properties 1 and 2.
+- [ ] 11. (Skipped by the Owner, 2026-11-26.) Stretch: read-only web line-up (only if time remains).
 - [ ] 12. Final checkpoint: `scripts/demo.sh`, full suite, Skeptic review, usage log, local commit.

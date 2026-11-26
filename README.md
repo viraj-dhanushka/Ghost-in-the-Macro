@@ -150,6 +150,19 @@ docker run --rm -p 8080:8080 -e GHOST_MAX_JOBS=1 -e GHOST_COOKIE_SECURE=1 \
 
 `scripts/deploy_ecs_express.sh` and `docs/DEPLOY_ECS_EXPRESS.md` deploy the image to Amazon ECS Express Mode. Read the guide first: it lists the IAM permissions and roles and what each command creates. Use `scripts/deploy_ecs_express.sh --dry-run` to print every command without running anything.
 
+## Check someone else's rewrite: `ghost challenge`
+
+```
+.venv/bin/python -m ghost.cli challenge workbook.xlsx --code candidate.py [--mapping mapping.yaml] [--out DIR]
+```
+
+The workbook, recalculated by LibreOffice, referees a `compute(inputs) -> dict` that someone else wrote (a person, or an AI agent). The command runs in Faithful mode and prints the cases tried, the seed, the LibreOffice version and either "no difference found on N cases" or one counterexample with the rule it belongs to. Exit 0: no difference found. Exit 1: a difference found. Exit 2: anything else (unreadable candidate, a candidate that raises or calls `exit`, missing file, Referee unavailable), with one line saying why. There is no sandbox: the command defends against a careless candidate, not a hostile one.
+
+- `ghost challenge` runs the candidate's code on this machine, with your permissions. A candidate that loops will hang it. Do not challenge code you do not trust.
+- Without `--mapping` the input and output names are derived from the workbook, and the command says they were not confirmed by a person.
+- Without `--out` the migration folder is temporary. With `--out DIR` (new or empty) the folder and the proof report are kept.
+- It is a command-line tool only: the web app and the MCP server do not offer it. Macros stay off. Generated Ghost code is refused, because the verifier would regenerate it.
+
 ## Use the Kiro Power
 
 The `plugin/` folder is a Kiro Power: `plugin.json`, `mcp.json` (an MCP server over stdio, started with `uvx --from git+https://github.com/viraj-dhanushka/Ghost-in-the-Macro ghost-mcp`) and eight skills in `plugin/skills/`: `getting-started` (onboarding), `autopsy`, `write-rules-spec`, `implement-from-rules`, `verify-migration`, `record-decision`, `route-migration` and `guardrails` (which carries copies of the two steering files in its `references/` folder). There is no `POWER.md` and no `plugin/steering/`; the Power follows the documented `plugin.json` format.

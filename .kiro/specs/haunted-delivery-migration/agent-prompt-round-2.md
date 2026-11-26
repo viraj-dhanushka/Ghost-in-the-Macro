@@ -1,3 +1,5 @@
+> Note added 2026-11-26: the statement below that "the user confirms" the input domains was not true when it was written; no human was asked. See `README.md` in this folder for the correction and the Owner's later confirmation.
+
 # Prompt for round 2 of the agent migration
 
 Written 2026-11-26 and passed to a fresh agent session (no earlier conversation). The only other text the agent

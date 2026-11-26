@@ -193,3 +193,13 @@ def test_property_3_the_brief_holds_no_value_absent_from_the_report_and_no_path(
         assert any(leaf in set(_leaves(m)) | {"not available"} for m in chosen)
     blob = json.dumps(b)
     assert not re.search(r"(/Users/|/tmp/|/private/|[A-Za-z]:\\\\)", blob)
+# -- decisions in a faithful report (Owner condition 9) ---------------------------------------------
+def test_a_faithful_report_with_decisions_warns_the_agent_to_ask_the_user():
+    rep = report(decisions=[{"decision_id": "D-001", "behaviour": "x", "reason": "y", "author": "z",
+                             "date": "2026-11-27", "finding_id": "F-001"}])
+    b = brief(rep)
+    assert b["decision_ids"] == ["D-001"]
+    assert "intended" in b["warning"].lower() and "ask the user" in b["warning"].lower()
+    assert "decision_ids" not in brief(report(decisions=[]))
+    assert "warning" not in brief(report(decisions=[]))
+    assert "warning" not in brief(report(decisions=[{"decision_id": "D-001"}], mode="intended"))

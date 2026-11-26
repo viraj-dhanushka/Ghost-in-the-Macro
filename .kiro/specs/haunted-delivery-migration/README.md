@@ -25,9 +25,11 @@ written; the module was written by an AI agent session, not by a person.
   fractional quantity, where the Referee's binary floating-point result differs from exact Decimal arithmetic by
   about 2e-6 at a magnitude of 1e10 (over the 1e-6 tolerance). The agent did not change `logic.py` and asked for a ruling.
 - **Round 2, PASS.** `agent-prompt-round-2.md` says "the user confirms" the input domains (quantity an integer,
-  minimum 0; the other two decimals, minimum 0). That is not accurate: no human was asked. The repository owner's
+  minimum 0; the other two decimals, minimum 0). That is not accurate: no human was asked at the time of the run. The repository owner's
   assistant supplied the values that `ghost convert` writes into its own generated mapping for this workbook, and
-  the Owner has not confirmed them. The pass covers the tested domain, 0 to 10000 for each input
+  at the time of the run the Owner had not confirmed them. **Confirmation, 2026-11-26:** the Owner confirmed these
+  domains after the run: quantity is an integer of at least 0; unit price and delivery distance are decimals of at
+  least 0. The confirmation does not change what was tested (0 to 10000 for each input). The pass covers the tested domain, 0 to 10000 for each input
   (`tested_domains` in `proof-report.json`); negative and unbounded inputs are not tested. A second fresh session
   changed only `mapping.yaml` to declare the domains; `logic.py` was not changed (same
   SHA-256 before and after: `058494df6abee8bf238fd402d8346e358bf81055fbfbe3e6dcc65867aa9708ff`).

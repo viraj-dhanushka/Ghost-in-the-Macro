@@ -40,15 +40,21 @@ Baseline for this feature: after the VBA panel follow-up (local commit `1caf372`
 
 #### Acceptance Criteria
 
-1. WHEN the Owner has approved the engine addition, THE `ghost` CLI SHALL provide `ghost challenge <workbook> --code candidate.py [--mapping mapping.yaml]`, implemented in a new module `ghost/challenge.py` with one registration line in `ghost/cli.py`.
+1. WHEN the Owner has approved the engine addition, THE `ghost` CLI SHALL provide `ghost challenge <workbook> --code candidate.py [--mapping mapping.yaml]`, implemented in a new module `ghost/challenge.py` with one subparser and a three-line `cmd_challenge` in `ghost/cli.py`.
 2. THE command SHALL verify the Candidate against the Referee in Faithful mode, on a temporary migration folder, and SHALL NOT modify the workbook, the Candidate or any migration's `reports/` folder.
 3. IF the Candidate starts with the generated-code marker, THEN THE command SHALL refuse with a message that it would be regenerated, and SHALL NOT verify it.
 4. THE command SHALL print: cases generated, targeted and distinct; the seed; the LibreOffice version; and either "no difference found on N cases" or one counterexample.
 5. THE counterexample SHALL show the inputs, the Referee value, the Candidate value, the output cell, the rule id and the EARS rule text, and SHALL write "not available" for a rule id or text the report does not have.
 6. THE command SHALL print "shrunk" only when the counterexample came from the Hypothesis search, and "targeted boundary case, not shrunk" when a targeted case failed first.
-7. THE command SHALL exit 0 for no difference and 1 for a difference, and a different non-zero code for an error (workbook not found, Referee unavailable, Candidate unreadable).
+7. THE command SHALL exit 0 (no difference) or 1 (a difference) only when a proof report was written, and SHALL exit 2 in every other case (workbook not found, mapping file not found, Candidate file not found, unreadable, a syntax error, an import that raises or calls `sys.exit`, no `compute`, a `compute` that raises, the Referee unavailable, the report not written, a generated-code refusal), with one line on standard error giving the reason. THE command SHALL catch `SystemExit` around the Candidate load and around the run.
 8. THE output SHALL NOT contain the words "correct", "proven" or "proved".
 9. THE command SHALL NOT run a macro and SHALL accept a macro workbook only with the engine's existing macro handling (macros off).
+10. WHEN `--out DIR` is given, THE command SHALL keep the migration folder and the proof report in DIR (which SHALL NOT exist or SHALL be empty, otherwise exit 2); without it the folder SHALL be temporary and removed.
+11. WHEN `--mapping` is omitted, THE command SHALL derive the mapping from the workbook and SHALL print that the mapping was not confirmed by a person, with the input and output names and cells.
+12. THE command SHALL capture the output of `ghost verify`'s run so that no absolute path of the temporary folder appears in its own output.
+13. THE command SHALL NOT be reachable from `web/` or from a new MCP tool; a test SHALL fail if anything under `web/` imports `ghost.challenge` or `load_compute`.
+14. `--help` and the README SHALL say that the command runs the Candidate's code on this machine and that a Candidate that loops will hang it.
+15. THE command is additive: THE verifier, the report schema and every existing command SHALL be unchanged. Left for Feature 7: a receipt file, `--trust-macros`, an engine-written repair brief.
 
 ### Requirement 2: Suspects and the line-up
 

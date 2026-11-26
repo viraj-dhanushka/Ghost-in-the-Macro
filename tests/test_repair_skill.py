@@ -68,3 +68,9 @@ def test_the_skill_tells_the_agent_to_ask_for_the_domain_and_not_to_narrow_it_to
 def test_the_repair_loop_allows_a_mapping_change_only_when_the_user_asks_for_it():
     s = section()
     assert "change `mapping.yaml` only when the user tells you to" in s.lower()
+
+
+def test_step_1_tells_the_agent_to_stop_on_not_converged_and_to_ask_when_a_brief_lists_decisions():
+    step1 = " ".join(section().split("2. Change only")[0].split())
+    assert '"not converged"' in step1 and "stop" in step1.lower()
+    assert "decision_ids" in step1 and "ask the user" in step1.lower()

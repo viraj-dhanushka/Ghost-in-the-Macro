@@ -229,3 +229,26 @@ def test_the_verify_kind_logs_nothing_for_an_error_code_or_when_no_new_report_wa
     monkeypatch.setattr(ghost_hook, "PATTERNS", {**ghost_hook.PATTERNS, "verify": r"mig(?=/logic\.py)"})
     assert ghost_hook.main() == rc
     assert not (m / "repair-log.md").exists()
+# -- the attempt cap is enforced (Owner condition 8) -----------------------------------------------
+def test_at_five_failed_rounds_the_brief_says_not_converged_with_no_counterexample(tmp_path, capsys):
+    m = folder(tmp_path)
+    for i in range(5):
+        write_report(m, FAIL)
+        result = step(m)
+        brief = json.loads((m / "repair-brief.json").read_text())
+        if i < 4:
+            assert brief["status"] == "failed" and brief["counterexample"]
+            assert result == "logged"
+    assert brief["status"] == "not converged"
+    assert "counterexample" not in brief and "rule" not in brief
+    assert brief["failed_rounds"] == 5
+    assert "not converged" in result
+    # the log still records what that fifth round showed
+    assert "- counterexample: delivery_distance_km=12, quantity=50" in (m / "repair-log.md").read_text().split("## Round 5")[1]
+    # the verify kind prints the same status line
+    write_report(m, FAIL)
+    assert "not converged" in step(m)
+    # a pass resets it
+    write_report(m, PASS)
+    step(m)
+    assert json.loads((m / "repair-brief.json").read_text()) == {"status": "passed"}

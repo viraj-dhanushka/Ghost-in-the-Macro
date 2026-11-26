@@ -121,6 +121,8 @@ def test_logic_py_is_byte_for_byte_the_one_the_readme_names():
 
 def test_the_readme_corrects_the_prompt_that_said_the_user_confirmed_the_domains():
     text = (M / "README.md").read_text(encoding="utf-8")
-    assert "no human was asked" in text and "the Owner has not confirmed" in text
+    assert "no human was asked at the time of the run" in text and "the Owner had not confirmed" in text
+    assert "Confirmation, 2026-11-26" in text and "integer of at least 0" in text
+    assert "the user confirms" in (M / "agent-prompt-round-2.md").read_text(encoding="utf-8").split("\n")[0] and "was not true when it was written" in (M / "agent-prompt-round-2.md").read_text(encoding="utf-8").split("\n")[0]
     assert "evaluate_original" in text and "not blind" in text and "mutation: not checked" in text
     assert "0 to 10000" in text  # the scope of the round-2 pass

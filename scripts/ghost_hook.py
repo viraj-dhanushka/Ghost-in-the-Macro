@@ -82,7 +82,7 @@ def repair_step(mdir, now=None, env=None, newer_than_ns=None) -> str:
                     "(verification wrote no new report)")
     import repair_brief
     report = json.loads(report_path.read_text(encoding="utf-8"))
-    brief = repair_brief.write_brief(mdir)
+    brief = repair_brief.write_brief(mdir)  # the real brief: the log below records what this round showed
     log = mdir / "repair-log.md"
     text = log.read_text(encoding="utf-8") if log.is_file() else LOG_HEADER
     results = re.findall(r"^- result: (PASS|FAIL|NOT AVAILABLE)$", text, re.M)
@@ -95,6 +95,14 @@ def repair_step(mdir, now=None, env=None, newer_than_ns=None) -> str:
     block = _round_text(report, brief, stamp, (env.get("GHOST_PLANTED") or "").strip() or None,
                         failed_before, len(results) + 1)
     log.write_text(text.rstrip("\n") + "\n\n" + block, encoding="utf-8")
+    if report.get("passed") is False and failed_before + 1 >= NOT_CONVERGED_AFTER:
+        # The cap: the agent gets a brief with no counterexample to chase, and the status is printed.
+        n = failed_before + 1
+        (mdir / "repair-brief.json").write_text(json.dumps({
+            "status": "not converged", "failed_rounds": n,
+            "note": f"{n} failed rounds in a row; stop and tell the user what the last round in repair-log.md showed",
+        }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return f"logged; status: not converged after {n} failed rounds"
     return "logged"
 
 
