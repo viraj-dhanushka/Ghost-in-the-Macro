@@ -326,3 +326,14 @@ def test_a_hostile_module_in_an_upload_is_shown_escaped(tmp_path):
     assert "VBA source: read, never run" in page
     assert "<script>alert(1)</script>" not in page and "<img src=x" not in page
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in page
+
+
+@needs_soffice
+def test_the_macro_sample_shows_no_false_finding_and_no_decision_form(tmp_path):
+    # Engine fix (2026-11-26): `If extraKm < 0 Then extraKm = 0` was read as an operator conflict.
+    c = TestClient(create_app(session_root=tmp_path / "s"))
+    assert c.post("/sample/macros").status_code == 200
+    page = c.get("/autopsy").text
+    assert "No operator conflicts found." in page
+    assert 'class="finding"' not in page and 'hx-post="/decision"' not in page and "F-001" not in page
+    assert "Record decision" not in page

@@ -138,6 +138,11 @@ _CONDITION_LINE = re.compile(
 )
 # String literals are blanked, except the argument of Range("B11").
 _STRING = re.compile(r'(?<!Range\()"[^"\n]*"', re.IGNORECASE)
+# `If <cond> Then <stmt>` on one line: only the condition, before Then, holds comparisons. The statement after
+# Then may contain an assignment such as `extraKm = 0`, which is not a comparison. (Known limit: on a
+# single-line `If ... Then ... Else If ...` the second condition is not read.)
+_IF_LINE = re.compile(r"^\s*(?:If|ElseIf)\b", re.IGNORECASE)
+_THEN = re.compile(r"\bThen\b", re.IGNORECASE)
 
 
 def _strip_comment(line: str) -> str:
@@ -169,6 +174,8 @@ def thresholds_from_vba(modules: list[VbaModule], default_sheet: str = "") -> li
             if not _CONDITION_LINE.search(line):
                 continue
             line = _STRING.sub('""', line)
+            if _IF_LINE.match(line) and (then := _THEN.search(line)):
+                line = line[: then.start()]
             hits: list[tuple[int, str | None, str, str]] = []
             for m in _LEFT_CELL.finditer(line):
                 hits.append((m.start(), _vba_operand(m.group(1), m.group(2), default_sheet), m.group(3), m.group(4)))
