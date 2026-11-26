@@ -48,11 +48,18 @@ DEFAULTS = {
     "discount": (["Calculator!B2", "Calculator!B3", "Calculator!B4"], ["Calculator!B11"]),
     "haunted": (["Calculator!B2", "Calculator!B3", "Calculator!B4"], ["Calculator!B11"]),
     "scenarios": (["Model!B2", "Model!B3", "Model!E2"], ["Model!B19", "Model!B20"]),
+    "macros": (["Calculator!B2", "Calculator!B3", "Calculator!B4"], ["Calculator!B11"]),
 }
 
 
 @pytest.mark.parametrize("sample_id", list(SAMPLES))
 def test_default_selection_and_markup_are_unchanged(tmp_path, sample_id):
+    if sample_id == "macros":
+        from ghost.referee.locate import RefereeUnavailable, locate_soffice
+        try:
+            locate_soffice()
+        except RefereeUnavailable:
+            pytest.skip("the macro sample is built through LibreOffice")
     page = _autopsy(tmp_path, sample_id)
     checked = {"inputs": [], "outputs": []}
     for kind, value, rest in _BOX.findall(page):

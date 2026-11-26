@@ -13,6 +13,7 @@ import asyncio
 import contextlib
 import hashlib
 import io
+import logging
 import json
 import shutil
 import zipfile
@@ -34,6 +35,7 @@ from ghost.cli import (
 )
 from ghost.converter.emit_python import InvalidPatch
 from ghost.autopsy.classify import cell_label, not_offerable_outputs
+from ghost.router import DEFAULT_THRESHOLDS, ThresholdError, load_thresholds, recommend_route, with_atx_command
 from ghost.converter.mapping import read_mapping
 from ghost.converter.subset import find_not_converted
 from ghost.decisions.store import DECISIONS_FILE, InvalidDecision, load_decisions, record
@@ -42,7 +44,7 @@ from ghost.report.html import describe_cases
 
 from .jobs import DONE, FAILED, TIMEOUT, SESSION_BUSY_MESSAGE, TERMINAL, Job, JobRunner, SessionBusy
 from .paths import scrub_paths
-from .autopsy_view import checkbox_text, consequence, finding_title, formula_segments
+from .autopsy_view import checkbox_text, consequence, finding_title, formula_segments, route_view, vba_blocks
 from .progress import rail_context
 from .verdict import build_verdict, verdict_text  # noqa: F401  (verdict_text is re-exported)
 from .sessions import Session
@@ -135,6 +137,18 @@ def _location_view(wb, finding, loc, op: str) -> dict:
         "formula": formula,
         "segments": formula_segments(formula, op, str(finding.constant)) if formula else None,
     }
+def _route_for(metrics):
+    """The router's recommendation for the autopsy metrics. The thresholds file is not in the Docker image
+    (.kiro is excluded), so the built-in defaults are used when it cannot be read; a test pins that they
+    equal the file. No workbook path is passed, so the suggested command carries a placeholder."""
+    try:
+        thresholds = load_thresholds()
+    except ThresholdError as exc:  # missing in the image; also hides a broken file in development, so say so
+        logging.getLogger("ghost.web").warning("routing thresholds not read, using the built-in defaults: %s", exc)
+        thresholds = DEFAULT_THRESHOLDS
+    return with_atx_command(recommend_route(metrics, thresholds=thresholds))
+
+
 def _describe(session: Session) -> dict:
     wb_info = session.workbook
     a = _analysis(session)
@@ -172,6 +186,9 @@ def _describe(session: Session) -> dict:
         "findings": findings,
         "unanswered": sum(1 for f in findings if f["decision"] is None),
         "decisions": decisions,
+        "vba_blocks": vba_blocks([{"name": v.name, "source": v.source, "line_count": v.line_count}
+                                  for v in a.wb.vba_modules]),
+        "route": route_view(_route_for(m)),
         "rules": [{"id": r.rule_id, "text": r.text, "cells": list(r.cells)} for r in a.rules],
         "not_converted": [{"cell": e.cell or "", "reason": e.reason} for e in find_not_converted(a.wb)],
         "not_verifiable": [

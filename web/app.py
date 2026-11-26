@@ -57,7 +57,15 @@ SAMPLES: dict[str, tuple[str, str, str]] = {
     "discount": ("make_discount.py", "discount.xlsx", "Discount calculator (generated)"),
     "haunted": ("make_haunted.py", "haunted.xlsx", "Haunted discount calculator (generated)"),
     "scenarios": ("make_scenarios.py", "scenarios.xlsx", "Scenario model (generated)"),
+    "macros": ("make_xlsm.py", "discount_vba.xlsm", "Macro workbook (generated)"),
 }
+# Built through LibreOffice (about 3 s on a Mac), so the bytes are kept for the life of the process.
+_CACHED_SAMPLES = {"macros"}
+_SAMPLE_CACHE: dict[str, bytes] = {}
+_SAMPLE_LOCK = threading.Lock()
+MACRO_MEDIA_TYPE = "application/vnd.ms-excel.sheet.macroEnabled.12"
+XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+REFEREE_NEEDED_MESSAGE = "The LibreOffice Referee could not start, so this sample could not be built. Try again in a minute."
 
 SAMPLE_BLURBS: dict[str, str] = {
     "discount": (
@@ -71,6 +79,11 @@ SAMPLE_BLURBS: dict[str, str] = {
     "scenarios": (
         "A model with ten tax scenarios that picks the lowest net cost with INDEX and MATCH; "
         "three inputs are checked by default and the other constants stay fixed; "
+        "expect a Faithful run with no difference found on the cases tested."
+    ),
+    "macros": (
+        "The discount calculator with a VBA module: Ghost reads the VBA, finds thresholds in it, converts the "
+        "formulas it supports and recommends a migration route, but does not translate VBA to Python; "
         "expect a Faithful run with no difference found on the cases tested."
     ),
 }
@@ -89,14 +102,34 @@ def load_measured_runs(path: Path = MEASURED_RUNS_FILE) -> dict[str, dict]:
     } if isinstance(data, dict) else {}
 
 
-def _build_sample(sample_id: str, dest: Path) -> Path:
+def _run_generator(sample_id: str, dest: Path) -> None:
+    """Run the sample's committed generator script and write the workbook at ``dest``."""
     script, _, _ = SAMPLES[sample_id]
     spec = importlib.util.spec_from_file_location(f"_ghost_sample_{sample_id}", SAMPLES_DIR / script)
     if spec is None or spec.loader is None:  # pragma: no cover
         raise RuntimeError(f"Cannot load sample generator {script}")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return Path(mod.build(dest))
+    mod.build(dest)
+
+
+def _build_sample(sample_id: str, dest: Path) -> Path:
+    """Write the sample at ``dest``. A sample built through LibreOffice is built once per process, under
+    a lock so that two requests never start two builds, and a failed build is not kept."""
+    dest = Path(dest)
+    if sample_id not in _CACHED_SAMPLES:
+        _run_generator(sample_id, dest)
+        return dest
+    with _SAMPLE_LOCK:
+        data = _SAMPLE_CACHE.get(sample_id)
+        if data is None:
+            with tempfile.TemporaryDirectory(prefix="ghost-build-") as tmp:
+                built = Path(tmp) / SAMPLES[sample_id][1]
+                _run_generator(sample_id, built)
+                data = built.read_bytes()
+            _SAMPLE_CACHE[sample_id] = data
+    dest.write_bytes(data)
+    return dest
 
 
 def _summary(wb, name: str, source: str) -> dict:
@@ -208,7 +241,7 @@ def create_app(
                     request, "_upload_result.html", {"ok": ok, **payload}, status_code=status
                 )
             else:
-                kind = "not_found" if status == 404 else "file_rejected"
+                kind = {404: "not_found", 503: "referee_unavailable"}.get(status, "file_rejected")
                 resp = templates.TemplateResponse(
                     request, "_message.html", {"error": payload.get("error", ""), "kind": kind},
                     status_code=status,
@@ -281,6 +314,13 @@ def create_app(
 
         try:
             data = await asyncio.to_thread(build)
+        except (RefereeUnavailable, RefereeError):
+            return templates.TemplateResponse(
+                request,
+                "_failure_card.html",
+                {"kind": "referee_unavailable", "message": REFEREE_NEEDED_MESSAGE},
+                status_code=503,
+            )
         except IngestError as exc:
             return templates.TemplateResponse(
                 request,
@@ -290,7 +330,7 @@ def create_app(
             )
         return Response(
             content=data,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            media_type=MACRO_MEDIA_TYPE if fname.endswith(".xlsm") else XLSX_MEDIA_TYPE,
             headers={"Content-Disposition": f'attachment; filename="{fname}"'},
         )
 
@@ -336,6 +376,8 @@ def create_app(
         try:
             await asyncio.to_thread(_build_sample, sample_id, dest)
             wb = await asyncio.to_thread(load_workbook, str(dest))
+        except (RefereeUnavailable, RefereeError):
+            return respond(request, session, is_new, False, {"error": REFEREE_NEEDED_MESSAGE}, 503)
         except IngestError as exc:
             return respond(request, session, is_new, False, {"error": str(exc)}, 422)
         reset_state(session)

@@ -16,6 +16,7 @@ import web.app as web_app
 from web.app import REPO_ROOT, SAMPLES, create_app
 
 XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+XLSM_TYPE = "application/vnd.ms-excel.sheet.macroEnabled.12"
 
 
 @pytest.fixture
@@ -36,10 +37,16 @@ def _cells(content: bytes) -> dict[tuple[str, str], object]:
 
 @pytest.mark.parametrize("sample_id", list(SAMPLES))
 def test_download_returns_workbook_with_filename_and_type(client, sample_id):
+    if sample_id == "macros":
+        from ghost.referee.locate import RefereeUnavailable, locate_soffice
+        try:
+            locate_soffice()
+        except RefereeUnavailable:
+            pytest.skip("the macro sample is built through LibreOffice")
     r = client.get(f"/sample/{sample_id}/workbook")
     assert r.status_code == 200
-    assert r.headers["content-type"].split(";")[0] == XLSX_TYPE
     fname = SAMPLES[sample_id][1]
+    assert r.headers["content-type"].split(";")[0] == (XLSM_TYPE if fname.endswith(".xlsm") else XLSX_TYPE)
     assert fname in r.headers.get("content-disposition", "")
     assert r.content[:2] == b"PK"  # a real xlsx zip, not an error page
     assert _cells(r.content)  # parses and has content

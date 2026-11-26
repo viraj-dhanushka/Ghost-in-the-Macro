@@ -100,6 +100,20 @@ def build_pair(out_dir: Path = DEFAULT_DIR, soffice_path: str | None = None) -> 
     return targets[0][0], targets[1][0]
 
 
+def build(path: Path = DEFAULT_DIR / "discount_vba.xlsm", soffice_path: str | None = None) -> Path:
+    """Build ``discount_vba.xlsm`` alone at ``path`` (one Referee start, macros off); used by the web sample."""
+    from ghost.referee.client import RefereeClient
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        base = _build_base(Path(tmp) / "base.xlsx")
+        # run_macros stays False: macros are off, nothing is executed
+        with RefereeClient(soffice_path, base, run_macros=False, job_dir=tmp) as ref:
+            ref.open(base)
+            ref.save_with_vba(path, {MODULE_NAME: FAITHFUL_SOURCE})
+    return path
+
+
 if __name__ == "__main__":
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_DIR
     for p in build_pair(out):

@@ -265,3 +265,18 @@ label.choice.decision-card { display: flex; align-items: flex-start; gap: .6rem;
 .panel.not-converted h3 { margin-top: 0; }
 .nc-kind { font-weight: 700; }
 .lo-version { margin: .25rem 0 0; font-size: .9rem; color: var(--muted); }
+
+/* VBA source and migration route (vba-on-screen) */
+.panel.vba-source, .panel.route { margin: 1rem 0; padding: .75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: .5rem; }
+.panel.vba-source { border-left: 6px dashed var(--accent); }
+.panel.route { border-left: 6px solid var(--link); }
+.panel.vba-source h3, .panel.route h3 { margin-top: 0; }
+.vba-statement, .route-note, .vba-note { color: var(--muted); }
+details.vba-module { margin: .5rem 0; background: var(--bg); border: 1px solid var(--border); border-radius: .4rem; }
+details.vba-module summary { display: flex; align-items: center; min-height: 2.75rem; padding: 0 .75rem; font-weight: 600; cursor: pointer; }
+pre.vba-code { margin: 0; padding: .6rem .75rem; max-height: 24rem; overflow: auto; font-size: .85rem; line-height: 1.45; tab-size: 4; border-top: 1px solid var(--border); }
+.vba-note { margin: 0; padding: .4rem .75rem .6rem; font-size: .9rem; }
+.route-name { margin: 0 0 .25rem; font-size: 1.25rem; font-weight: 700; }
+.route-reasons { margin: .25rem 0; }
+code.route-command { display: block; padding: .5rem .6rem; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); border: 1px dashed var(--border); border-radius: .3rem; }
+.route-command-label { margin: .5rem 0 .25rem; font-weight: 600; }

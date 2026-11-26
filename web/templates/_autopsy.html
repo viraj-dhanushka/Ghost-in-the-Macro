@@ -7,11 +7,24 @@
     <li>Sheets: {{ sheets | join(", ") }}</li>
     <li>Formulas: {{ metrics.formula_count }}</li>
     <li>VBA lines: {{ metrics.vba_line_count }} in {{ metrics.module_count }} module(s)</li>
-    {% if vba_error %}<li class="error">{{ vba_error }} (VBA: not checked)</li>{% endif %}
+    {% if vba_error %}<li class="error" role="alert">{{ vba_error }} (VBA: not checked)</li>{% endif %}
     <li>Calculator shape: {{ "yes" if metrics.calculator_shape else "no" }}</li>
     <li>Excel-saved values: {{ "present" if excel_saved else "none (reported as not cross-checked against Excel)" }}</li>
   </ul>
 
+  {% if vba_blocks %}
+  <section class="panel vba-source" aria-labelledby="vba-h">
+    <h3 id="vba-h">VBA source: read, never run</h3>
+    <p class="vba-statement">Ghost reads this VBA without running it. It does not translate VBA to Python, and a cell that calls a VBA function is listed as not converted.</p>
+    {% for b in vba_blocks %}
+    <details class="vba-module">
+      <summary>{{ b.name }}, {{ b.line_count }} lines</summary>
+      {% if b.text %}<pre class="vba-code"><code>{{ b.text }}</code></pre>{% endif %}
+      {% if b.note %}<p class="vba-note">{{ b.note }}</p>{% endif %}
+    </details>
+    {% endfor %}
+  </section>
+  {% endif %}
   <h3>Findings</h3>
   {% if not findings %}
     <p>No operator conflicts found.</p>
@@ -55,6 +68,17 @@
   </section>
   {% endif %}
 
+  {% if route %}
+  <section class="panel route" aria-labelledby="route-h">
+    <h3 id="route-h">Migration route</h3>
+    <p class="route-name">{{ route.route }}</p>
+    <ul class="route-reasons">{% for r in route.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+    {% if route.vba_note %}<p class="route-vba-note">{{ route.vba_note }}</p>{% endif %}
+    <p class="route-note">This route is a recommendation computed from counts in the workbook; no command was run.</p>
+    {% if route.command %}<p class="route-command-label">suggested command, not run:</p><code class="route-command">{{ route.command }}</code>
+    <p class="route-note">-x -t are AWS Transform options (non-interactive, trust all tools). Ghost never runs this command.</p>{% endif %}
+  </section>
+  {% endif %}
   <h3>Business rules</h3>
   {% if not rules %}<p>No rules were generated.</p>{% endif %}
   <ol class="rules">

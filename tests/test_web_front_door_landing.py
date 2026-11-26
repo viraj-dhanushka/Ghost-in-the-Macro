@@ -26,7 +26,7 @@ STEPS = [
     ("trial", "Trial", "Verification"),
     ("resurrection", "Resurrection", "Proof"),
 ]
-SAMPLE_IDS = ["discount", "haunted", "scenarios"]
+SAMPLE_IDS = ["discount", "haunted", "scenarios", "macros"]
 
 
 @pytest.fixture()
@@ -190,13 +190,13 @@ def _card(templates, sample_id: str, measured):
     ), blurb
 
 
-def test_landing_has_three_cards_in_order_with_download_links(client):
+def test_landing_has_every_card_in_order_with_download_links(client):
     html = _landing(client)
     ats = [html.index(f'href="/sample/{i}/workbook"') for i in SAMPLE_IDS]
     assert ats == sorted(ats)
     for i in SAMPLE_IDS:
         assert html.count(f'href="/sample/{i}/workbook"') == 1
-    assert html.count("Download the workbook") == 3
+    assert html.count("Download the workbook") == len(SAMPLE_IDS) == len(SAMPLES)
 
 
 def test_landing_cards_keep_run_button_target_and_generated_label(client):

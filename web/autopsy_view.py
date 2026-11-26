@@ -77,3 +77,50 @@ def checkbox_text(cell: str, label: str | None, value: Any = None, formula: str 
     if value is not None:
         return f"{text}, value in the workbook: {value}"
     return text
+
+
+MAX_VBA_LINES_PER_MODULE = 400
+MAX_VBA_LINES_TOTAL = 2000
+MAX_VBA_CHARS_PER_MODULE = 60000
+
+
+def vba_blocks(modules: list[dict]) -> list[dict]:
+    """The VBA modules as the VBA_Panel shows them: name, recorded line count, the text to show and a note.
+
+    At most 400 lines of a module and 2000 in all are shown; a cut module says how much is shown, and a
+    module that gets no lines is still listed with the reason. The source is returned as it is: the
+    template escapes it.
+    """
+    remaining = MAX_VBA_LINES_TOTAL
+    out = []
+    for m in modules:
+        source = m.get("source") or ""
+        lines = source.split("\n") if source else []
+        total = len(lines)
+        take = min(MAX_VBA_LINES_PER_MODULE, remaining, total)
+        note = None
+        if total == 0:
+            note = "The module is empty."
+        elif take <= 0:
+            note = (f"Not shown: the display limit of {MAX_VBA_LINES_TOTAL} lines was reached. "
+                    f"The module has {total} lines.")
+        elif take < total:
+            note = f"Showing the first {take} of {total} lines."
+        text = "\n".join(lines[:max(take, 0)])
+        if len(text) > MAX_VBA_CHARS_PER_MODULE:  # a few very long lines can still make a huge page
+            chars = f"Showing the first {MAX_VBA_CHARS_PER_MODULE} characters of {len(text)}."
+            note = f"{note} {chars}" if note else chars
+            text = text[:MAX_VBA_CHARS_PER_MODULE]
+        out.append({"name": str(m.get("name", "")), "line_count": m.get("line_count", total),
+                    "text": text, "note": note})
+        remaining -= max(take, 0)
+    return out
+
+
+def route_view(route) -> dict:
+    """The router's answer for the Route_Panel: name, reasons and the suggested command (or None)."""
+    vba_note = None
+    if route.route == "Ghost converts" and route.metrics.vba_line_count > 0:
+        vba_note = "Ghost converts the formulas; it does not translate the VBA."
+    return {"route": route.route, "reasons": list(route.reasons), "command": route.atx_command,
+            "vba_note": vba_note}
