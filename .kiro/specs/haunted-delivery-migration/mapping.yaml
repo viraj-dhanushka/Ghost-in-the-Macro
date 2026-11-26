@@ -1,0 +1,17 @@
+inputs:
+  quantity:
+    cell: Calculator!B2
+    type: integer
+    min: 0
+  unit_price:
+    cell: Calculator!B3
+    type: decimal
+    min: 0
+  delivery_distance_km:
+    cell: Calculator!B4
+    type: decimal
+    min: 0
+outputs:
+  total:
+    cell: Calculator!B11
+    type: decimal

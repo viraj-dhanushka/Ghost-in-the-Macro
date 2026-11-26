@@ -1,0 +1,168 @@
+{
+  "boundaries": [
+    {
+      "above": null,
+      "below": null,
+      "cell": "Calculator!B7",
+      "change_point": "50",
+      "condition_id": null,
+      "exact": null,
+      "exact_hits": [
+        {
+          "first_changed": 50,
+          "last_unchanged": 49
+        }
+      ],
+      "exact_note": null,
+      "exact_others": null,
+      "input_name": "Calculator!B2",
+      "kind": null,
+      "operator_includes": "at",
+      "threshold": "50",
+      "threshold_calculated": null,
+      "threshold_constant": null
+    },
+    {
+      "above": null,
+      "below": null,
+      "cell": "Calculator!B9",
+      "change_point": "50",
+      "condition_id": null,
+      "exact": null,
+      "exact_hits": [
+        {
+          "first_changed": 51,
+          "last_unchanged": 50
+        }
+      ],
+      "exact_note": null,
+      "exact_others": null,
+      "input_name": "Calculator!B2",
+      "kind": null,
+      "operator_includes": "above",
+      "threshold": "50",
+      "threshold_calculated": null,
+      "threshold_constant": null
+    },
+    {
+      "above": "50",
+      "below": "49",
+      "cell": "Calculator!B7",
+      "change_point": "50",
+      "condition_id": "Calculator!B7#1",
+      "exact": "50",
+      "exact_hits": [],
+      "exact_note": null,
+      "exact_others": {
+        "delivery_distance_km": "12",
+        "unit_price": "19.95"
+      },
+      "input_name": "quantity",
+      "kind": "condition flip",
+      "operator_includes": null,
+      "threshold": "50",
+      "threshold_calculated": false,
+      "threshold_constant": "50"
+    },
+    {
+      "above": "51",
+      "below": "50",
+      "cell": "Calculator!B9",
+      "change_point": "50",
+      "condition_id": "Calculator!B9#1",
+      "exact": "50",
+      "exact_hits": [],
+      "exact_note": null,
+      "exact_others": {
+        "delivery_distance_km": "12",
+        "unit_price": "19.95"
+      },
+      "input_name": "quantity",
+      "kind": "condition flip",
+      "operator_includes": null,
+      "threshold": "50",
+      "threshold_calculated": false,
+      "threshold_constant": "50"
+    }
+  ],
+  "boundary_notes": [
+    "no flip found for Calculator!B7#1 on delivery_distance_km [0, 10000], unit_price [0, 10000]",
+    "no flip found for Calculator!B9#1 on delivery_distance_km [0, 10000], unit_price [0, 10000]",
+    "flip points and exact-hit cases come from the transpiled module, not from the hand-written logic.py under test"
+  ],
+  "cases_generated": 300,
+  "cases_targeted": 11,
+  "cases_tested": 311,
+  "decisions": [],
+  "distinct_cases": 200,
+  "findings": [
+    {
+      "cell": "Calculator!B2",
+      "constant": "50",
+      "finding_id": "F-001",
+      "kind": "operator_conflict",
+      "locations": [
+        [
+          {
+            "cell": "Calculator!B7",
+            "line": null,
+            "module": null
+          },
+          ">="
+        ],
+        [
+          {
+            "cell": "Calculator!B9",
+            "line": null,
+            "module": null
+          },
+          ">"
+        ]
+      ]
+    }
+  ],
+  "ghost_version": "0.1.0",
+  "mismatches": [],
+  "mode": "faithful",
+  "mutation": {
+    "status": "not checked"
+  },
+  "passed": true,
+  "rule_coverage": [],
+  "sanity": {
+    "differences": [],
+    "matched": 0,
+    "status": "not cross-checked against Excel",
+    "total": 0
+  },
+  "schema_version": "1",
+  "seed": 20261204,
+  "tested_domains": [
+    {
+      "decimal_places": 3,
+      "input": "delivery_distance_km",
+      "max": "10000",
+      "min": "0",
+      "type": "decimal"
+    },
+    {
+      "decimal_places": 0,
+      "input": "quantity",
+      "max": "10000",
+      "min": "0",
+      "type": "integer"
+    },
+    {
+      "decimal_places": 3,
+      "input": "unit_price",
+      "max": "10000",
+      "min": "0",
+      "type": "decimal"
+    }
+  ],
+  "versions": {
+    "ghost": "0.1.0",
+    "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+    "python": "3.13.2"
+  }
+}
