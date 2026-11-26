@@ -7,9 +7,17 @@ from ghost.ingest.triage import SizeProfile
 from ghost.models import Metrics, Route
 from ghost.router.thresholds import RoutingThresholds, load_thresholds
 
-__all__ = ["over_limits", "recommend_route", "route_for_sizes", "route_workbook"]
+__all__ = ["NO_VBA_REASON", "has_vba", "over_limits", "recommend_route", "route_for_sizes", "route_workbook"]
 
 _AWS_NOW = "goes to AWS Transform custom (suggested command, not run)"
+
+
+NO_VBA_REASON = "no VBA in this workbook: nothing to hand to AWS Transform custom"
+
+
+def has_vba(m: Metrics) -> bool:
+    """True when the metrics show VBA: lines, modules, UserForms or Declares."""
+    return m.vba_line_count > 0 or m.module_count > 0 or m.userform_count > 0 or m.declare_count > 0
 
 
 def _vba_part(route: str, m: Metrics, error: str | None = None, present: bool | None = None) -> str:
@@ -93,6 +101,9 @@ def recommend_route(
 ) -> Route:
     """Return exactly one Route for the metrics of a loaded workbook, with the part sentences added."""
     route = _recommend(metrics, batch_size, thresholds)
+    if route.route in ("AWS Transform custom", "Split") and not has_vba(metrics):
+        # e.g. the batch rule on a workbook with no VBA: say why there is no command (with_atx_command checks the same)
+        route = route.model_copy(update={"reasons": [*route.reasons, NO_VBA_REASON]})
     parts = [
         _vba_part(route.route, metrics),
         _formulas_part(route.route, metrics.formula_count),

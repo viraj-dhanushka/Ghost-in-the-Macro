@@ -42,6 +42,10 @@ KNOWN_LIMITS = [
 ]
 
 
+OWN_MAPPING_NOTE = ("If you changed mapping.yaml yourself, run ghost challenge with --mapping; ghost receipt only "
+                    "referees the mapping Ghost derives.")
+
+
 class _Skipped(Exception):
     """Internal: the candidate was not run."""
 
@@ -165,7 +169,8 @@ def run_receipt(
     if equals is None:
         skip_reason = "the mapping could not be re-derived from the workbook, so nothing was refereed"
     elif equals is False:
-        skip_reason = "mapping.yaml differs from the mapping Ghost derives from the workbook, so nothing was refereed"
+        skip_reason = ("mapping.yaml differs from the mapping Ghost derives from the workbook, so nothing was refereed. "
+                       + OWN_MAPPING_NOTE)
     try:
         if skip_reason:
             raise _Skipped

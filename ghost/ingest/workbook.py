@@ -19,6 +19,7 @@ from openpyxl.worksheet.formula import ArrayFormula, DataTableFormula
 
 from ghost.ingest.limits import (
     ACCEPTED_FORMATS,
+    DEADLINE_EVERY_TAGS,
     Deadline,
     Limits,
     ProcessingTimeout,
@@ -162,28 +163,33 @@ def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
                     "Not an Excel workbook. Accepted formats: .xlsx and .xlsm."
                 )
             cells = 0
+            elements = 0
+            in_sheet = False
 
             def on_start(tag: str) -> None:
-                nonlocal cells
-                if tag == "c" or tag.endswith("}c"):
+                nonlocal cells, elements
+                elements += 1
+                if elements > limits.max_xml_elements:
+                    raise TooLarge("Workbook has too many XML elements; rejected.")
+                if elements % DEADLINE_EVERY_TAGS == 0:
+                    deadline.check()  # every start tag counts, not only cells: non-cell tags cost time too
+                if in_sheet and (tag == "c" or tag.endswith("}c")):
                     cells += 1
                     if cells > limits.max_cells:
                         raise TooManyCells(
                             f"Workbook has more than {limits.max_cells:,} cells; "
                             f"the limit is {limits.max_cells:,} cells."
                         )
-                    if cells % 5000 == 0:
-                        deadline.check()
 
             for info in infos:
                 deadline.check()
                 if not info.filename.lower().endswith((".xml", ".rels", ".vml")):
                     continue
-                is_sheet = info.filename.startswith("xl/worksheets/") and info.filename.endswith(".xml")
+                in_sheet = info.filename.startswith("xl/worksheets/") and info.filename.endswith(".xml")
                 with zf.open(info) as fh:
-                    # No tree is built: a part is parsed for safety and well-formedness only, and the sheet
-                    # parts are counted as they stream by, so memory stays flat whatever the size.
-                    scan_xml(fh, on_start if is_sheet else None)
+                    # No tree is built: every part is parsed for safety and well-formedness and its start tags
+                    # are counted as they stream by; only sheet parts count cells.
+                    scan_xml(fh, on_start)
     except DefusedXmlException as exc:
         raise UnsupportedFormat(f"Workbook XML rejected as unsafe: {exc}") from exc
     except (zipfile.BadZipFile, DET.ParseError) as exc:

@@ -63,8 +63,11 @@ def atx_dry_run_command(
         ]
     )
 def with_atx_command(route: Route, workbook: str | Path | None = None, definition: str | None = None) -> Route:
-    """Return ``route`` with ``atx_command`` set for AWS and Split routes."""
-    if route.route in _AWS_ROUTES:
+    """Return ``route`` with ``atx_command`` set for AWS and Split routes that have VBA to hand over. A workbook with
+    no VBA gets none, at any batch size: there is nothing to give AWS Transform custom."""
+    from ghost.router.route import has_vba
+
+    if route.route in _AWS_ROUTES and has_vba(route.metrics):
         return route.model_copy(update={"atx_command": atx_dry_run_command(workbook, definition)})
     return route.model_copy(update={"atx_command": None})
 def _definition_of(command: str | None) -> str | None:

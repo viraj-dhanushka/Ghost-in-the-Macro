@@ -1,0 +1,37 @@
+{
+ "discount.xlsx": {
+  "cells": 636,
+  "deps": 6,
+  "formulas": 6,
+  "sheets": [
+   "Calculator",
+   "Tests"
+  ]
+ },
+ "haunted.xlsx": {
+  "cells": 636,
+  "deps": 6,
+  "formulas": 6,
+  "sheets": [
+   "Calculator",
+   "Tests"
+  ]
+ },
+ "scenarios.xlsx": {
+  "cells": 93,
+  "deps": 23,
+  "formulas": 23,
+  "sheets": [
+   "Model"
+  ]
+ },
+ "traps.xlsx": {
+  "cells": 63,
+  "deps": 12,
+  "formulas": 12,
+  "sheets": [
+   "Traps",
+   "About"
+  ]
+ }
+}

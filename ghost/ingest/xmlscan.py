@@ -2,7 +2,12 @@
 
 ``ElementTree.iterparse`` builds elements as it goes, and even a cleared element stays attached to its parent, so
 a sheet with millions of rows grows memory with the row count. A parser *target* receives the events and builds
-nothing; the defusedxml parser still refuses entities, DTDs and external references.
+nothing: no tree is built in the pre-scan. (The figure measured for a one-million-row sheet is in
+``docs/KIRO_USAGE.md``; this module makes no promise about memory beyond that.)
+
+What the defusedxml parser refuses, and what it does not: entity declarations and external entities are refused
+(it raises ``EntitiesForbidden`` or ``ExternalReferenceForbidden``). A bare DOCTYPE with no entity declaration is
+accepted, as it was before this module existed. Well-formedness is checked because the part is parsed to the end.
 """
 from __future__ import annotations
 

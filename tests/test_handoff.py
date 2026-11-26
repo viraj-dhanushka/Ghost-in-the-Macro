@@ -108,6 +108,9 @@ def test_run_md_starts_with_the_warning_and_gives_the_steps(tmp_path):
     assert "values produced by the vba itself are not refereed, so a pass says nothing about the migrated vba" in low
     assert "file://atx-config.yaml" in text and "-g atx-config.yaml" in text
     assert "git diff" in text and "mapping.yaml GHOST_CONTRACT.md" in text and "must be empty" in text
+    step6 = text[text.index("6. Referee the result"):]
+    assert ("If you changed mapping.yaml yourself, run ghost challenge with --mapping; ghost receipt only referees the "
+            "mapping Ghost derives.") in step6
     assert text.index("must be empty") < text.index("ghost challenge <workbook>")
     assert "documented by aws; not installed or tested with ghost" in low
     assert "Execution was not successful" in text and "not in the aws user guide" in low and "not observed by ghost" in low

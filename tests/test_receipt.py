@@ -300,6 +300,8 @@ def test_an_altered_mapping_is_an_error_never_a_pass(tmp_path):
     r = go(tmp_path, FakeRunner(0, report()), kit=kit, derive=lambda w: derived)
     assert r["mapping_equals_ghost_derived"] is False
     assert r["result"] == "error" and "mapping" in r["reason"].lower()
+    assert r["reason"].endswith("If you changed mapping.yaml yourself, run ghost challenge with --mapping; "
+                                "ghost receipt only referees the mapping Ghost derives.")
     assert r["mapping_pairs"]["outputs"] == {"total": "Calculator!B9"}
 
 

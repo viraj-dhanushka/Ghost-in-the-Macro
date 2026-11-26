@@ -160,7 +160,30 @@ def test_scan_sizes_and_the_loader_precheck_build_no_tree(tmp_path):
     assert out.returncode == 0, out.stderr
     cells, formulas, counted, grown_mb = out.stdout.split()
     assert (cells, formulas, counted) == ("1000002", "1000001", "True")  # the 1M-row sheet plus the base book's second sheet (2 cells, 1 formula)
-    assert int(grown_mb) < 60, f"memory grew by {grown_mb} MB"
+    # measured 2026-11-26 (macOS, Python 3.13): 13.9 to 14.2 MB over three runs of this file; the bound is 16.
+    assert int(grown_mb) < 16, f"memory grew by {grown_mb} MB"
+
+
+def test_the_loader_precheck_also_stays_within_the_same_memory_bound(tmp_path):
+    """Same file through the loader's _check_archive (caps raised so the 4 million elements are allowed)."""
+    import subprocess
+    import sys
+    p = _big_book(tmp_path / "big.xlsx", 1_000_000)
+    code = (
+        "import resource, sys\n"
+        "from ghost.ingest.limits import Deadline, Limits\n"
+        "from ghost.ingest.workbook import _check_archive\n"
+        "unit = 1 if sys.platform == 'darwin' else 1024\n"
+        "lim = Limits(max_cells=10_000_000, max_xml_elements=20_000_000, timeout_s=300)\n"
+        "before = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * unit\n"
+        "_check_archive(sys.argv[1], lim, Deadline(300))\n"
+        "after = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * unit\n"
+        "print((after - before) // (1024 * 1024))\n"
+    )
+    out = subprocess.run([sys.executable, "-c", code, str(p)], capture_output=True, text=True, timeout=600,
+                         cwd=Path(__file__).resolve().parent.parent)
+    assert out.returncode == 0, out.stderr
+    assert int(out.stdout.split()[0]) < 16, out.stdout
 
 
 def test_the_loader_precheck_still_rejects_by_count_and_by_entity(tmp_path):
@@ -170,3 +193,40 @@ def test_the_loader_precheck_still_rejects_by_count_and_by_entity(tmp_path):
     import pytest as _pt
     with _pt.raises(TooManyCells):
         load_workbook(str(p), Limits(max_cells=10))
+
+
+# -- the deadline counts every start tag (large-workbook-lane correction 1) ----------------------
+def _sheet_of_non_cell_tags(path: Path, tags: int) -> Path:
+    """A valid workbook whose one sheet holds `tags` empty <x/> elements and no cells at all."""
+    base = make_book(path.with_suffix(".base.xlsx"), rows=1, formulas=1)
+    with zipfile.ZipFile(base) as src, zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as dst:
+        for item in src.infolist():
+            if item.filename != "xl/worksheets/sheet1.xml":
+                dst.writestr(item.filename, src.read(item.filename))
+        with dst.open("xl/worksheets/sheet1.xml", "w") as fh:
+            fh.write(b'<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>')
+            for _ in range(0, tags, 100_000):
+                fh.write(b"<x/>" * min(100_000, tags))
+            fh.write(b"</sheetData></worksheet>")
+    return path
+
+
+def test_the_deadline_is_checked_every_20000_start_tags_not_every_cell(tmp_path):
+    p = _sheet_of_non_cell_tags(tmp_path / "tags.xlsx", 2_000_000)
+    calls = []
+
+    def clock():
+        calls.append(1)
+        return len(calls) * 100.0  # every call is 100 s later
+
+    s = scan_sizes(p, Limits(timeout_s=250), clock=clock)
+    assert s.counted is False and "stopped" in s.not_counted_reason
+    # Deadline() reads the clock once, the per-part check once, then one check per 20,000 tags: it gave up at about
+    # the third check, far short of the 100 checks a full parse of 2,000,000 tags would have made.
+    assert len(calls) <= 8, len(calls)
+
+
+def test_a_sheet_with_no_cells_at_all_still_counts_normally_when_the_clock_is_fine(tmp_path):
+    p = _sheet_of_non_cell_tags(tmp_path / "tags.xlsx", 50_000)
+    s = scan_sizes(p)
+    assert s.counted is True and s.cells == 2 and s.formulas == 1  # only the base book's second sheet has cells

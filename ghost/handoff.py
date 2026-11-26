@@ -14,6 +14,7 @@ from pathlib import Path
 from ghost.ingest.limits import ACCEPTED_FORMATS
 from ghost.ingest.triage import SizeProfile, scan_sizes
 from ghost.models import VbaModule
+from ghost.receipt import OWN_MAPPING_NOTE
 from ghost.router.explain import CONFIG_FILE, DEFAULT_DEFINITION, atx_dry_run_command
 from ghost.router.route import over_limits, route_for_sizes
 from ghost.router.thresholds import DEFAULT_THRESHOLDS, RoutingThresholds, ThresholdError, load_thresholds
@@ -281,7 +282,7 @@ def _run_md(definition: str, sizes: SizeProfile, vba_names: list[str], vba_error
             "",
             "   The diff of mapping.yaml and GHOST_CONTRACT.md against the first commit must be empty. If it is not, "
             "the mapping or the contract changed after Ghost wrote it. `ghost receipt` also re-derives the mapping "
-            "and records an error, not a pass, if the two differ.",
+            "and records an error, not a pass, if the two differ. " + OWN_MAPPING_NOTE,
         ]
     lines += [
         "",

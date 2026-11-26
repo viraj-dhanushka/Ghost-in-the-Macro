@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import defusedxml.ElementTree as DET
 from defusedxml import DefusedXmlException
 
-from ghost.ingest.limits import Deadline, Limits, ProcessingTimeout, UnsupportedFormat
+from ghost.ingest.limits import DEADLINE_EVERY_TAGS, Deadline, Limits, ProcessingTimeout, UnsupportedFormat
 from ghost.ingest.xmlscan import local_name, scan_xml
 
 __all__ = ["SizeProfile", "scan_sizes"]
@@ -108,13 +108,16 @@ def scan_sizes(
                     f"{limits.max_uncompressed_bytes // (1024 * 1024)} MB"
                 )
             else:
+                tags = 0
+
                 def on_start(tag: str) -> None:
-                    nonlocal cells, formulas
+                    nonlocal cells, formulas, tags
+                    tags += 1
+                    if tags % DEADLINE_EVERY_TAGS == 0:
+                        deadline.check()  # every start tag counts, not only cells
                     name = local_name(tag)
                     if name == "c":
                         cells += 1
-                        if cells % 20000 == 0:
-                            deadline.check()
                     elif name == "f":
                         formulas += 1
 

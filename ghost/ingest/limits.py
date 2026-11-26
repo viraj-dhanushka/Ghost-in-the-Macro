@@ -10,6 +10,10 @@ MAX_FORMULAS = 20_000
 # Cells (<c> elements, all sheets), counted while streaming the sheet XML
 # before openpyxl loads anything. Bounds memory for large but legal files.
 MAX_CELLS = 200_000
+# Start tags in all XML parts of the archive, counted while streaming. Separate from MAX_CELLS: a small file of
+# non-cell elements costs the pre-scan time and gives openpyxl a huge tree to build.
+MAX_XML_ELEMENTS = 2_000_000
+DEADLINE_EVERY_TAGS = 20_000
 DEFAULT_TIMEOUT_S = 60.0
 # Guard against zip bombs: total uncompressed size of all archive parts.
 MAX_UNCOMPRESSED_BYTES = 200 * 1024 * 1024
@@ -46,6 +50,7 @@ class Limits:
     max_bytes: int = MAX_FILE_BYTES
     max_formulas: int = MAX_FORMULAS
     max_cells: int = MAX_CELLS
+    max_xml_elements: int = MAX_XML_ELEMENTS
     timeout_s: float = DEFAULT_TIMEOUT_S
     max_uncompressed_bytes: int = MAX_UNCOMPRESSED_BYTES
 
