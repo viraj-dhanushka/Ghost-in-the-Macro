@@ -5,9 +5,8 @@ Each one is verified in Faithful mode against the original workbook recalculated
 temporary migration folder; the result is written to `samples/suspects/<workbook>/lineup.json` and, with the
 other workbook's, to `samples/suspects/MEASURED.md`. Nothing is written into a migration's `reports/` folder.
 
-Until `ghost challenge` exists (it needs an engine change that is waiting for the Owner), a challenge is the
-existing `ghost verify <dir> --mode faithful` run as a subprocess; this script only builds the folder and reads
-the proof report it wrote. Every label in a suspect's header comes from this measurement.
+A challenge is `ghost challenge <workbook> --code <suspect> --mapping <pinned> --out <tmp>` run as a subprocess;
+this script only builds the workbook and reads the proof report the command wrote. Every label in a suspect's header comes from this measurement.
 
 Usage: scripts/ghost-py scripts/lineup.py [--seed N] [--no-headers] [haunted|discount ...]
 """
@@ -16,6 +15,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -51,26 +51,19 @@ def _cli(*args: str) -> subprocess.CompletedProcess:
 
 
 def challenge(name: str, suspect: str, seed: int = DEFAULT_SEED) -> dict:
-    """Verify one suspect in Faithful mode and return the verdict as a dict (no paths, no timestamps)."""
+    """Challenge one suspect with `ghost challenge` and return the verdict as a dict (no paths, no timestamps)."""
     with tempfile.TemporaryDirectory(prefix="ghost-lineup-") as tmp:
         tmp = Path(tmp)
         workbook = _build_workbook(name, tmp / "workbook.xlsx")
         mdir = tmp / "migration"
-        mdir.mkdir()
-        spec = _cli("rules", str(workbook), "--migration", str(mdir))
-        if spec.returncode != 0:
-            raise RuntimeError(f"ghost rules failed: {spec.stderr.strip() or spec.stdout.strip()}")
-        shutil.copyfile(SUSPECTS / name / "mapping.yaml", mdir / "mapping.yaml")
-        shutil.copyfile(SUSPECTS / name / f"{suspect}.py", mdir / "logic.py")  # no generated marker: run as written
-        proc = _cli("verify", str(mdir), "--mode", "faithful", "--seed", str(seed))
-        report_path = mdir / "proof-report.json"
+        proc = _cli("challenge", str(workbook), "--code", str(SUSPECTS / name / f"{suspect}.py"),
+                    "--mapping", str(SUSPECTS / name / "mapping.yaml"), "--seed", str(seed), "--out", str(mdir))
+        report_path = mdir / "reports" / "faithful" / "proof-report.json"
         if proc.returncode not in (0, 1) or not report_path.is_file():
-            raise RuntimeError(f"ghost verify failed ({proc.returncode}): {proc.stderr.strip()[-400:]}")
+            raise RuntimeError(f"ghost challenge failed ({proc.returncode}): {proc.stderr.strip()[-400:]}")
         report = json.loads(report_path.read_text(encoding="utf-8"))
-    return _verdict(suspect, proc.returncode, report)
-
-
-def _verdict(suspect: str, exit_code: int, report: dict) -> dict:
+    return _verdict(suspect, proc.returncode, report, proc.stdout)
+def _verdict(suspect: str, exit_code: int, report: dict, stdout: str = "") -> dict:
     out = {
         "suspect": suspect,
         "exit_code": exit_code,
@@ -97,8 +90,10 @@ def _verdict(suspect: str, exit_code: int, report: dict) -> dict:
             "candidate": float(m["actual"][name]),
             "rule_id": m.get("rule_id"),
         }
-        # Only a failure found by the generated search is shrunk; a targeted boundary case fails first otherwise.
-        out["how_found"] = "shrunk" if (report.get("cases_generated") or 0) > 0 else "targeted boundary case, not shrunk"
+        # The command says how it found the counterexample; read that line, do not infer it.
+        found = re.search(r"found by: (.+)", stdout)
+        out["how_found"] = ("not available" if not found else
+                            "targeted boundary case, not shrunk" if "not shrunk" in found.group(1) else "shrunk")
     return out
 
 

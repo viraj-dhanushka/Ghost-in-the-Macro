@@ -958,6 +958,12 @@ def _add_verify_flags(p: argparse.ArgumentParser) -> None:
     )
 
 
+def cmd_challenge(args: argparse.Namespace) -> int:
+    from ghost.challenge import run_challenge
+
+    return run_challenge(args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="ghost", description="Ghost in the Macro")
     sub = p.add_subparsers(dest="command", required=True)
@@ -1020,6 +1026,20 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--batch-size", type=int, default=1)
     s.add_argument("--migration-dir", help="write the explanation into its design.md")
     s.set_defaults(func=cmd_route)
+
+    s = sub.add_parser(
+        "challenge", help="check someone else's compute() against the workbook (Faithful mode)",
+        description="Verify a candidate compute() against the original workbook recalculated by LibreOffice. "
+                    "WARNING: this runs the candidate's code on this machine, and a candidate that loops will hang it. "
+                    "Exit 0: no difference found; 1: a difference found; 2: anything else, with the reason on standard error.",
+    )
+    s.add_argument("workbook")
+    s.add_argument("--code", required=True, help="candidate module defining compute(inputs) (not generated code)")
+    s.add_argument("--mapping", help="mapping.yaml naming the inputs and outputs (default: derived, not confirmed)")
+    s.add_argument("--out", help="keep the migration folder and proof report here (empty or new folder)")
+    s.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    s.add_argument("--cases", type=int, default=DEFAULT_CASES)
+    s.set_defaults(func=cmd_challenge)
 
     s = sub.add_parser("demo", help="run the full flow on samples (a) and (b)")
     s.add_argument("--out", default="demo-out")
