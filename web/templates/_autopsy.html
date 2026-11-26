@@ -14,14 +14,18 @@
 
   <h3>Findings</h3>
   {% if not findings %}
-    <p>No inconsistencies found.</p>
+    <p>No operator conflicts found.</p>
   {% endif %}
   {% for f in findings %}
   <article class="finding" aria-labelledby="{{ f.id }}-h">
-    <h4 id="{{ f.id }}-h">{{ f.id }}: operator conflict on {{ f.cell }} against {{ f.constant }}</h4>
-    <ul>
-      {% for l in f.locations %}<li>{{ l.where }} uses <code>{{ l.op }}</code></li>{% endfor %}
+    <h4 id="{{ f.id }}-h">{{ f.id }}: {{ f.title }} on {{ f.cell }} against {{ f.constant }}</h4>
+    <ul class="locations">
+      {% for l in f.locations %}<li class="location"><span class="loc-where">{{ l.where }}</span> <span class="loc-op">uses <code class="op-name">{{ l.op }}</code></span>
+        {% if l.formula %}<code class="formula">{% for text, is_op in l.segments %}{% if is_op %}<mark class="op">{{ text }}</mark>{% else %}{{ text }}{% endif %}{% endfor %}</code>
+        {% elif l.module or l.line %}<span class="macro-line">{% if l.module %}{{ l.module }}{% endif %}{% if l.line %}, line {{ l.line }}{% endif %}</span>{% endif %}</li>
+      {% endfor %}
     </ul>
+    <p class="consequence">{{ f.consequence }}</p>
     {% if f.decision %}
       <p class="decided"><strong>{{ f.decision.decision_id }}</strong> recorded by {{ f.decision.author }}: {{ f.decision.behaviour }}. Reason: {{ f.decision.reason }}</p>
     {% else %}
@@ -30,10 +34,10 @@
       <fieldset>
         <legend>What should the new implementation do?</legend>
         {% for o in f.options %}
-        <label class="choice"><input type="radio" name="choice" value="{{ o.value }}" required {% if loop.first %}checked{% endif %}> {{ o.label }}</label>
+        <label class="choice decision-card"><input type="radio" name="choice" value="{{ o.value }}" required {% if loop.first %}checked{% endif %}> <span class="dc-text">{{ o.label }}</span></label>
         {% endfor %}
       </fieldset>
-      <label>Your name <input name="author" required maxlength="100"></label>
+      <label>Your name <input name="author" required maxlength="100" autocomplete="name" data-remember="author"></label>
       <label>Reason <input name="reason" required maxlength="500"></label>
       <button type="submit">Record decision</button>
     </form>
@@ -42,11 +46,13 @@
   {% endfor %}
 
   {% if not_converted or not_verifiable %}
-  <h3>Not converted or not verifiable</h3>
-  <ul>
-    {% for e in not_converted %}<li>Not converted: {{ e.cell }}: {{ e.reason }}</li>{% endfor %}
-    {% for e in not_verifiable %}<li>Not verifiable as-is: {{ e.cell }}: {{ e.kind }} {{ e.detail }}</li>{% endfor %}
-  </ul>
+  <section class="panel not-converted" aria-labelledby="not-converted-h">
+    <h3 id="not-converted-h">Not converted or not verifiable</h3>
+    <ul>
+      {% for e in not_converted %}<li><span class="nc-kind">Not converted:</span> <code>{{ e.cell or "no cell recorded" }}</code>: {{ e.reason or "no reason recorded" }}</li>{% endfor %}
+      {% for e in not_verifiable %}<li><span class="nc-kind">Not verifiable as-is:</span> <code>{{ e.cell or "no cell recorded" }}</code>: {{ e.kind }}{% if e.detail %}, {{ e.detail }}{% endif %}</li>{% endfor %}
+    </ul>
+  </section>
   {% endif %}
 
   <h3>Business rules</h3>
@@ -59,11 +65,11 @@
   <form hx-post="/verify" hx-target="#job" hx-swap="innerHTML" aria-labelledby="confirm-h">
     <fieldset>
       <legend>Inputs (constants the new module accepts)</legend>
-      {% for c in inputs %}<label class="cell"><input type="checkbox" name="inputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.cell }}</label>{% endfor %}
+      {% for c in inputs %}<label class="cell"><input type="checkbox" name="inputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.text }}</label>{% endfor %}
     </fieldset>
     <fieldset>
       <legend>Outputs (results to compare)</legend>
-      {% for c in outputs %}<label class="cell"><input type="checkbox" name="outputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.cell }}</label>{% endfor %}
+      {% for c in outputs %}<label class="cell"><input type="checkbox" name="outputs" value="{{ c.cell }}" {% if c.checked %}checked{% endif %}> {{ c.text }}</label>{% endfor %}
     </fieldset>
     {% if decisions %}<p>Verification will run in Faithful and Intended mode ({{ decisions | length }} decision(s) recorded).</p>{% else %}<p>No decisions recorded: verification runs in Faithful mode.</p>{% endif %}
     {% if unanswered %}<p class="note">{{ unanswered }} finding(s) still unanswered. Unanswered findings keep the original behaviour and are listed in the report.</p>{% endif %}

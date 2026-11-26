@@ -9,6 +9,7 @@
   {% include "_progress_rail.html" %}
   {% if terminal %}
     {% if report %}
+      {% if verdict %}{% with v=verdict, job_id=job.id %}{% include "_verdict_card.html" %}{% endwith %}{% endif %}
       <p class="verdict {{ 'pass' if report.passed is true else ('fail' if report.passed is false else 'unavailable') }}" role="status">
         {{ report.verdict_text }}
         ({{ report.mode }} mode, {% if report.cases_text == "not checked" %}cases: not checked{% else %}{{ report.cases_text }} cases{% endif %}, {{ report.mismatches }} mismatch(es), seed {{ report.seed }}).

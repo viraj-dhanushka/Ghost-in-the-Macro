@@ -118,8 +118,10 @@ def test_malformed_mismatches_give_the_bare_label_never_no_difference(bad):
     assert verdict_text(d) == "Not passed"
 
 
-@pytest.mark.parametrize("bad", [None, [], {}])
+@pytest.mark.parametrize("bad", [[]])
 def test_empty_or_absent_mismatches_count_as_none(bad):
+    # Task 17 (Skeptic, readable-proof): only an empty list means "no mismatches". None, {} and a
+    # missing key used to count as none too; they now give the bare label (see tests/test_verdict.py).
     d = _report("faithful", True)
     d["mismatches"] = bad
     assert verdict_text(d) == "Passed: no difference found on 311 cases"

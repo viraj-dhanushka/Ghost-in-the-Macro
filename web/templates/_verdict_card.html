@@ -1,0 +1,70 @@
+{#- Verdict_Card. Context: v (web.verdict.build_verdict result), job_id. No logic: the card prints what build_verdict decided.
+    The card has no role="status": the small paragraph below it keeps being the one live announcement. -#}
+{%- macro says(entries) -%}
+  {%- if not entries -%}not recorded
+  {%- else -%}{%- for e in entries -%}{%- if e.key -%}{{ e.key }} = {% endif -%}<strong>{{ e.value }}</strong>{%- if not loop.last -%}, {% endif -%}{%- endfor -%}{%- endif -%}
+{%- endmacro -%}
+<section class="verdict-card" data-state="{{ v.state }}" aria-labelledby="vc-h-{{ job_id }}">
+  <h3 id="vc-h-{{ job_id }}" class="vc-headline">{{ v.headline }}</h3>
+  {% if v.counterexample %}{% set c = v.counterexample %}
+  <div class="counterexample">
+    <h4 class="ce-title">Counterexample</h4>
+    <dl class="ce-inputs">
+      {% for i in c.inputs %}<div><dt>{{ i.name }}</dt> <dd>{{ i.value }}</dd></div>{% endfor %}
+    </dl>
+    <p class="ce-output">Output: <code>{{ c.output }}</code></p>
+    <p class="ce-says">workbook says {{ says(c.workbook_says) }}; new code says {{ says(c.new_code_says) }}</p>
+    {% if c.cases %}<p class="ce-cases">{{ v.numbers.counterexample_cases }} generated cases differ in this way.</p>{% endif %}
+    <p class="ce-class">{% if c.plain and c.plain != c.class %}{{ c.plain }} ({{ c.class }}){% else %}{{ c.class }}{% endif %}{% if c.decision_id %}. Decision {{ c.decision_id }}{% endif %}{% if c.finding_id and c.finding_id not in (c.plain or "") %}. Finding {{ c.finding_id }}{% endif %}</p>
+  </div>
+  {% endif %}
+  <div class="tiles">
+    {% set t = v.tiles %}
+    <section class="tile tile-inputs" aria-labelledby="vc-in-{{ job_id }}">
+      <h4 class="tile-title" id="vc-in-{{ job_id }}">Inputs tried</h4>
+      <ul class="tile-list">
+        {% for name, it in (("generated", t.inputs.generated), ("targeted", t.inputs.targeted), ("distinct", t.inputs.distinct)) %}
+        <li>{% if it.value is none %}{{ name }}: {{ it.text }}{% else %}{{ it.text }} {{ name }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    <section class="tile tile-disagreements" aria-labelledby="vc-dis-{{ job_id }}">
+      <h4 class="tile-title" id="vc-dis-{{ job_id }}">Disagreements</h4>
+      <p class="tile-value">{{ t.disagreements.total.text }}</p>
+      <ul class="tile-list">
+        {% for k in t.disagreements.by_class %}<li>{{ k.class }}: {{ k.count.text }}</li>{% endfor %}
+      </ul>
+    </section>
+    <section class="tile tile-planted" aria-labelledby="vc-pb-{{ job_id }}">
+      <h4 class="tile-title" id="vc-pb-{{ job_id }}">Planted bugs caught</h4>
+      {% set p = t.planted_bugs %}
+      <p class="tile-value">{{ p.text }}</p>
+      {% if p.bar %}<progress class="tile-bar" value="{{ p.bar.killed }}" max="{{ p.bar.total }}" aria-label="Planted bugs caught">{{ p.text }}</progress>{% endif %}
+      {% if p.survivors %}
+      <p class="tile-sub">Not caught:</p>
+      <ul class="tile-list survivors-list">
+        {% for s in p.survivors %}<li><code>{{ s.mutant_id }}</code>: {{ s.reason }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% if p.explanation %}<p class="tile-note">{{ p.explanation }}</p>{% endif %}
+    </section>
+  </div>
+  {% set n = v.not_proven %}
+  <section class="tile not-proven" aria-labelledby="vc-np-{{ job_id }}">
+    <h4 class="tile-title" id="vc-np-{{ job_id }}">What was not proven</h4>
+    {% if n.boundary_notes %}<p class="tile-sub">Boundary notes</p><ul class="tile-list">{% for b in n.boundary_notes %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+    {% for key, sentence in n.empty.items() %}<p class="tile-none">{{ sentence }}</p>{% endfor %}
+    {% if n.domains_not_tested %}<p class="tile-sub">Input ranges not tested</p><ul class="tile-list">{% for x in n.domains_not_tested %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+    {% if n.rules_not_seen %}<p class="tile-sub">Rule conditions not seen both ways</p><ul class="tile-list">{% for r in n.rules_not_seen %}<li>{{ r.rule_id }}, {{ r.condition_id }}: never {{ r.side }}</li>{% endfor %}</ul>{% endif %}
+    {% if n.not_converted %}<p class="tile-sub">Not converted</p><ul class="tile-list">{% for e in n.not_converted %}<li><code>{{ e.cell }}</code>: {{ e.reason }}</li>{% endfor %}</ul>{% endif %}
+    <p class="excel-status">{{ n.excel }}</p>
+  </section>
+  <div class="reproduce">
+    <p class="reproduce-line"><code>{{ v.reproduce.command }}</code></p>
+    <p class="reproduce-caption">{{ v.reproduce.caption }}</p>
+  </div>
+  <details class="glossary">
+    <summary>Glossary</summary>
+    <dl>{% for g in v.glossary %}<dt>{{ g.term }}</dt><dd>{{ g.text }}</dd>{% endfor %}</dl>
+  </details>
+</section>

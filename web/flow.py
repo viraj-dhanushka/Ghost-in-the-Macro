@@ -33,7 +33,7 @@ from ghost.cli import (
     require_verifiable_outputs,
 )
 from ghost.converter.emit_python import InvalidPatch
-from ghost.autopsy.classify import not_offerable_outputs
+from ghost.autopsy.classify import cell_label, not_offerable_outputs
 from ghost.converter.mapping import read_mapping
 from ghost.converter.subset import find_not_converted
 from ghost.decisions.store import DECISIONS_FILE, InvalidDecision, load_decisions, record
@@ -42,7 +42,9 @@ from ghost.report.html import describe_cases
 
 from .jobs import DONE, FAILED, TIMEOUT, SESSION_BUSY_MESSAGE, TERMINAL, Job, JobRunner, SessionBusy
 from .paths import scrub_paths
+from .autopsy_view import checkbox_text, consequence, finding_title, formula_segments
 from .progress import rail_context
+from .verdict import build_verdict, verdict_text  # noqa: F401  (verdict_text is re-exported)
 from .sessions import Session
 
 SPEC_DIR = "spec"  # per-session Decisions live here; each run gets a fresh copy
@@ -116,23 +118,43 @@ def _finding_options(finding) -> list[dict]:
     return options
 
 
+def _choice_view(wb, ref: str, checked: bool, as_input: bool) -> dict:
+    """An input or output choice: the address, whether it is pre-checked, and the text beside the box."""
+    cell = wb.cells.get(ref)
+    label = cell_label(wb, ref)
+    value = cell.value if (as_input and cell is not None and cell.formula is None) else None
+    formula = cell.formula if (not as_input and cell is not None) else None
+    return {"cell": ref, "checked": checked, "label": label, "value": value, "formula": formula,
+            "text": checkbox_text(ref, label, value=value, formula=formula)}
+def _location_view(wb, finding, loc, op: str) -> dict:
+    """One Finding location for the template: a cell shows its formula, a macro line shows module and line."""
+    cell = wb.cells.get(loc.cell) if loc.cell else None
+    formula = cell.formula if cell is not None and cell.formula else None
+    return {
+        "where": _loc_text(loc), "op": op, "cell": loc.cell or None, "module": loc.module, "line": loc.line,
+        "formula": formula,
+        "segments": formula_segments(formula, op, str(finding.constant)) if formula else None,
+    }
 def _describe(session: Session) -> dict:
     wb_info = session.workbook
     a = _analysis(session)
     m = compute_metrics(a.wb)
     decisions = load_decisions(_spec_dir(session))
     by_finding = {d.finding_id: d for d in decisions if d.finding_id}
-    findings = [
-        {
+    findings = []
+    for f in a.findings:
+        locations = [_location_view(a.wb, f, loc, op) for loc, op in f.locations]
+        findings.append({
             "id": f.finding_id,
+            "kind": f.kind,
+            "title": finding_title(f.kind),
             "cell": f.cell,
             "constant": str(f.constant),
-            "locations": [{"where": _loc_text(loc), "op": op} for loc, op in f.locations],
+            "locations": locations,
+            "consequence": consequence(str(f.constant), f.cell, locations),
             "options": _finding_options(f),
             "decision": by_finding.get(f.finding_id),
-        }
-        for f in a.findings
-    ]
+        })
     in_cells = sorted(r for r, v in a.roles.items() if v in ("INPUT", "PARAMETER"))
     not_offered = not_offerable_outputs(a.wb)
     out_cells = sorted(
@@ -145,8 +167,8 @@ def _describe(session: Session) -> dict:
         "metrics": m,
         "excel_saved": a.wb.excel_saved,
         "vba_error": f"VBA present but could not be read: {a.wb.vba_error}" if a.wb.vba_error else "",
-        "inputs": [{"cell": r, "checked": a.roles[r] == "INPUT"} for r in in_cells],
-        "outputs": [{"cell": r, "checked": a.roles[r] == "OUTPUT"} for r in out_cells],
+        "inputs": [_choice_view(a.wb, r, a.roles[r] == "INPUT", as_input=True) for r in in_cells],
+        "outputs": [_choice_view(a.wb, r, a.roles[r] == "OUTPUT", as_input=False) for r in out_cells],
         "findings": findings,
         "unanswered": sum(1 for f in findings if f["decision"] is None),
         "decisions": decisions,
@@ -212,36 +234,8 @@ def _mutation_block(job: Job) -> dict | None:
     return block if isinstance(block, dict) else None
 
 
-_EXPLAINED = "expected by decision"
-def verdict_text(d: dict) -> str:
-    """The label ("Passed" / "Not passed") plus one sentence built only from the proof report.
-    N is ``cases_tested``; K and the Decision ids come from ``mismatches``. A report that
-    contradicts itself gets the bare label, never a claim the report does not support; a report
-    with no `passed` field reads "Verdict not available"."""
-    if not isinstance(d.get("passed"), bool):
-        return "Verdict not available"
-    raw = d.get("mismatches")
-    if raw not in (None, [], {}) and not (isinstance(raw, list) and all(isinstance(m, dict) for m in raw)):
-        # A mismatch list the sentence cannot count is never read as "no mismatches".
-        return "Passed" if d.get("passed") is True else "Not passed"
-    ms = raw if isinstance(raw, list) else []
-    explained = [m for m in ms if m.get("class") == _EXPLAINED]
-    unexplained = len(ms) - len(explained)
-    n = d.get("cases_tested")
-    counted = isinstance(n, int) and not isinstance(n, bool) and n > 0
-    where = f" on {n} cases" if counted else "; number of cases: not checked"
-    if d.get("passed") is True:
-        if unexplained:
-            return "Passed"
-        if d.get("mode") == "faithful" and ms:
-            return "Passed"
-        if not ms:
-            return f"Passed: no difference found{where}"
-        ids = sorted({str(m["decision_id"]) for m in explained if m.get("decision_id")})
-        tail = f"{len(explained)} expected by decision" + (f" {', '.join(ids)}" if ids else "")
-        return f"Passed: no unexplained difference found{where}; {tail}"
-    return f"Not passed: {unexplained} difference(s) found" if unexplained else "Not passed"
-def _report_summary(job: Job) -> dict | None:
+def _load_report(job: Job) -> dict | None:
+    """The job's parsed proof-report.json, or None when it is missing or not a JSON object."""
     raw = job.artifacts.get("proof-report.json")
     if raw is None:
         return None
@@ -249,8 +243,13 @@ def _report_summary(job: Job) -> dict | None:
         d = json.loads(raw)
     except ValueError:
         return None
-    sanity = d.get("sanity") or {}
-    mut = d.get("mutation") or {}
+    return d if isinstance(d, dict) else None
+def _report_summary(job: Job) -> dict | None:
+    d = _load_report(job)
+    if d is None:
+        return None
+    sanity = d.get("sanity") if isinstance(d.get("sanity"), dict) else {}
+    mut = d.get("mutation") if isinstance(d.get("mutation"), dict) else {}
     mutation = None
     if "total" in mut:
         mutation = {
@@ -415,6 +414,7 @@ def build_flow_router(
     def _job_ctx(job: Job) -> dict:
         snap = job.snapshot()
         report = _report_summary(job) if job.status in TERMINAL else None
+        parsed = _load_report(job) if job.status in TERMINAL else None
         return {
             "job": snap,
             "rail": rail_context(snap["events"], job.status, _mutation_block(job)),
@@ -422,6 +422,7 @@ def build_flow_router(
             "finished": job.status == DONE,
             "failed": job.status == FAILED,
             "report": report,
+            "verdict": build_verdict(parsed) if parsed is not None else None,
             "has_module": "logic.py" in job.artifacts,
             "has_intended": "logic_intended.py" in job.artifacts,
             "has_faithful_report": "faithful/proof-report.html" in job.artifacts,

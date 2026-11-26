@@ -89,7 +89,7 @@ Recorded now, not to be fixed by this feature.
 4. WHEN called twice with equal arguments, THE `build_verdict` function SHALL return equal results.
 5. IF a field it reads is missing or has the wrong type, THEN THE `build_verdict` function SHALL show that item as "not checked" and SHALL NOT raise.
 6. THE Web_App SHALL add no field to the Proof_Report and SHALL leave `ghost/report/` and the `proof-report-1` schema unchanged.
-7. THE result of `build_verdict` SHALL include the boolean `claims_agreement` and the mapping `numbers` (Numbers_Field), and THE Verdict_Card template SHALL print a number only by reading a Numbers_Field entry.
+7. THE result of `build_verdict` SHALL include the boolean `claims_agreement` and the mapping `numbers` (Numbers_Field). Every number the Verdict_Card prints SHALL equal an entry of the Numbers_Field, and THE template SHALL compute no number. (Amended during the build, 2026-11-26: the tiles print item text that the builder makes from the same value as its `numbers` entry, and a test on the rendered card checks that each printed number is in the Numbers_Field.)
 
 ### Requirement 2: Headline
 
@@ -103,7 +103,7 @@ Recorded now, not to be fixed by this feature.
 4. WHEN `passed` is `true`, the mode is `intended`, `mismatches` is not empty and every mismatch has class `expected by decision`, THE Headline SHALL read "Passed: no unexplained difference found on N cases; K expected by decision" followed by the Decision ids. This is a separate state and not an agreement claim, so `claims_agreement` SHALL be false. The existing `verdict_text` SHALL be changed only so that this state requires the mode to be exactly `intended`; all its other outputs and the existing tests stay as they are.
 5. WHEN `passed` is `false`, THE Headline SHALL read "Not passed: K difference(s) found", with K the number of mismatches that are not `expected by decision`, or "Not passed" when K is 0, and `claims_agreement` SHALL be false.
 6. IF `passed` is missing or is not a boolean, THEN THE Headline SHALL read "Verdict not available".
-7. IF `passed` is `true` and neither state of criteria 3 and 4 holds (a mismatch that is not `expected by decision`, mismatches with a mode other than `intended`, or a mismatch list that cannot be counted), THEN THE Headline SHALL be the bare label "Passed" and `claims_agreement` SHALL be false.
+7. IF `passed` is `true` and neither state of criteria 3 and 4 holds (a mismatch that is not `expected by decision`, mismatches with a mode other than `intended`, or a mismatch list that is missing, is not a list, or cannot be counted: only an empty list means "no mismatches", amended after the Skeptic's review), THEN THE Headline SHALL be the bare label "Passed" and `claims_agreement` SHALL be false.
 8. IF `cases_tested` is missing or is not a positive integer, THEN THE Headline SHALL write "number of cases: not checked" in place of "on N cases".
 9. THE Headline SHALL NOT contain the words "correct", "proven", "proved" or "verified".
 
@@ -240,7 +240,7 @@ Recorded now, not to be fixed by this feature.
 2. THE feature SHALL leave all existing tests passing without editing them (the change to `verdict_text` in Requirement 2.4 must make none fail) and SHALL add only new tests; the full suite SHALL show the Baseline plus only this feature's new tests, with 0 failed.
 3. THE feature SHALL add no runtime dependency and no web font or remote asset.
 4. THE feature SHALL make no change under `ghost/` other than the public label function and the delegation of Requirement 8.5, and SHALL make no change to `ghost/report/`.
-5. EVERY number the Verdict_Card prints SHALL be an entry of the Numbers_Field, and each entry SHALL be one of: a numeric value of the Proof_Report (for example `cases_tested`, `killed`, `total`); the length of one of its arrays; or the number of entries of one of its arrays that share a recorded field value (for example the mismatches of one class, or the mutants whose `killed` is false). Ids, cell addresses and the seed are not numbers for this rule, and the inputs, `expected` and `actual` values of a Counterexample are copied as recorded.
+5. EVERY number the Verdict_Card prints SHALL be an entry of the Numbers_Field, and each entry SHALL be one of: a numeric value of the Proof_Report (for example `cases_tested`, `killed`, `total`); the length of one of its arrays; or the number of entries of one of its arrays that share a recorded field value, or that do not share it (for example the mismatches of one class, the mismatches of every other class, or the mutants whose `killed` is not true). The "do not share it" form was added during the build (2026-11-26), because the Headline prints K, the number of mismatches that are not `expected by decision`, and the card prints the number of survivors; both are the complement of a shared value. Ids, cell addresses and the seed are not numbers for this rule, and the inputs, `expected` and `actual` values of a Counterexample are copied as recorded.
 6. A check that was not run SHALL read "not checked", never "pass".
 7. THE new markup SHALL keep the skip link, labels, visible focus, `role="alert"` on errors, the reduced-motion guard for every animation and the 360 px layout, and SHALL NOT use colour as the only signal for any state.
 8. THE new text SHALL NOT use the words "correct", "proven", "proved" or "verified" as a claim about the workbook.
@@ -254,7 +254,7 @@ Recorded now, not to be fixed by this feature.
 
 1. THE test suite SHALL include Hypothesis property tests, with the explicit seed 20261204, over generated schema-valid Proof_Reports, each tagged `# Feature: readable-proof, Property N: <title>`, and each testing the dict returned by `build_verdict`, not text scraped from HTML.
 2. Property 1: `claims_agreement` is true only when `passed` is true and `mismatches` is empty.
-3. Property 2: every value of the Numbers_Field is a numeric value of the report, the length of one of its arrays, or the number of entries of one array that share a recorded field value (Requirement 12.5).
+3. Property 2: every value of the Numbers_Field is a numeric value of the report, the length of one of its arrays, or the number of entries of one array that share, or do not share, a recorded field value (Requirement 12.5).
 4. Property 3: WHEN the Mutation_Block is `{"status": "not checked"}`, THE Planted_Bugs_Tile reads exactly "not checked" and has no bar.
 5. Property 4: every surviving mutant in the report's `mutants` list is listed in the Planted_Bugs_Tile; none is hidden.
 6. Property 5: WHEN `claims_agreement` is true, the Headline contains the word "Excel" only if `sanity.status` is "matched".

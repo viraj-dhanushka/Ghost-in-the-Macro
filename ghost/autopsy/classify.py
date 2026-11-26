@@ -16,7 +16,7 @@ from collections.abc import Iterable
 from ghost.converter.subset import find_not_converted
 from ghost.models import Cell, CellRef, CellRoleName, Workbook
 
-__all__ = ["classify", "input_score"]
+__all__ = ["cell_label", "classify", "input_score"]
 
 # A label containing one of these words marks the constant as a rate/fixed value.
 _RATE_WORDS = re.compile(
@@ -41,7 +41,7 @@ def _left_ref(ref: CellRef) -> CellRef | None:
     return f"{sheet}!{get_column_letter(col - 1)}{m.group(2)}"
 
 
-def _left_label(wb: Workbook, ref: CellRef) -> str | None:
+def cell_label(wb: Workbook, ref: CellRef) -> str | None:
     """Text of the immediately left-adjacent constant text cell, if any."""
     left = _left_ref(ref)
     if left is None:
@@ -52,6 +52,11 @@ def _left_label(wb: Workbook, ref: CellRef) -> str | None:
     if isinstance(cell.value, str) and cell.value.strip():
         return cell.value.strip()
     return None
+
+
+def _left_label(wb: Workbook, ref: CellRef) -> str | None:
+    """Kept for the callers in this module; delegates to the public ``cell_label``."""
+    return cell_label(wb, ref)
 
 
 def _above_below_ref(ref: CellRef, step: int) -> CellRef | None:
