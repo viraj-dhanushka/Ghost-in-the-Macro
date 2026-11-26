@@ -8,9 +8,9 @@
       "matcher": "(^|/)ghost/converter/.*\\.py$",
       "action": {
         "type": "command",
-        "command": "scripts/ghost-py scripts/ghost_hook.py golden",
-        "timeout": 180
-      }
+        "command": "scripts/ghost-py scripts/ghost_hook.py golden"
+      },
+      "timeout": 180
     }
   ]
 }

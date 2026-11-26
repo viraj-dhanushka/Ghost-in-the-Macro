@@ -8,9 +8,9 @@
       "matcher": "(^|/)graveyard/[^/]+\\.(xlsx|xlsm)$",
       "action": {
         "type": "command",
-        "command": "scripts/ghost-py scripts/ghost_hook.py autopsy",
-        "timeout": 120
-      }
+        "command": "scripts/ghost-py scripts/ghost_hook.py autopsy"
+      },
+      "timeout": 120
     }
   ]
 }

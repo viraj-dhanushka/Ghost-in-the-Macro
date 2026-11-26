@@ -8,9 +8,9 @@
       "matcher": "(^|/)\\.kiro/specs/[^/]+/(logic\\.py|mapping\\.yaml)$",
       "action": {
         "type": "command",
-        "command": "scripts/ghost-py scripts/ghost_hook.py verify",
-        "timeout": 300
-      }
+        "command": "scripts/ghost-py scripts/ghost_hook.py verify"
+      },
+      "timeout": 300
     }
   ]
 }

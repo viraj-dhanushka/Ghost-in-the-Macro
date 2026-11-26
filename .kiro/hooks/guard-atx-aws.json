@@ -4,13 +4,13 @@
     {
       "name": "Block atx and aws shell commands without the Owner's approval",
       "trigger": "PreToolUse",
-      "description": "Ground rule 6 as something Kiro enforces: a shell command that runs atx or aws is blocked (exit code 2) unless the Owner approved it for this session in a terminal with scripts/ghost-py scripts/ghost_guard.py approve <session id>.",
+      "description": "Ground rule 6 as something Kiro enforces: a shell command that names atx or aws as a program is blocked (exit code 2) unless the Owner approved it for this session in a terminal (the guard script's approve command, with the session id from the block message). It stops accidents, not a determined agent: an agent with a shell or file tools can still create the marker or disable the hook. An approval lasts until revoked and covers every atx or aws command, read-only included.",
       "matcher": "shell",
       "action": {
         "type": "command",
-        "command": "scripts/ghost-py scripts/ghost_guard.py",
-        "timeout": 10
-      }
+        "command": "scripts/ghost-py scripts/ghost_guard.py"
+      },
+      "timeout": 10
     }
   ]
 }
