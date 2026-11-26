@@ -44,6 +44,7 @@ from .sessions import (
 WEB_DIR = Path(__file__).parent
 REPO_ROOT = WEB_DIR.parent
 SAMPLES_DIR = REPO_ROOT / "samples"
+KIRO_FACTS_PATH = Path(__file__).resolve().parent / "kiro_facts.json"  # written by scripts/kiro_ledger.py; the image has no .kiro/ or docs/
 
 PRIVACY_NOTE = (
     "Your workbook is copied to a temporary folder for this session only and "
@@ -264,6 +265,15 @@ def create_app(
                 status_code=404,
             )
         return await http_exception_handler(request, exc)
+
+    @app.get("/kiro", response_class=HTMLResponse)
+    async def built_with_kiro(request: Request) -> Response:
+        """The "Built with Kiro" page: numbers counted by scripts/kiro_ledger.py, read from one JSON file. No session."""
+        try:
+            facts = json.loads(KIRO_FACTS_PATH.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            facts = None
+        return templates.TemplateResponse(request, "kiro.html", {"facts": facts})
 
     @app.get("/healthz")
     async def healthz() -> Response:

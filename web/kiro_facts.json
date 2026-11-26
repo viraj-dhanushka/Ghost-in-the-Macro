@@ -1,0 +1,77 @@
+{
+  "generated_by": "scripts/kiro_ledger.py",
+  "items": [
+    {
+      "count": 9,
+      "detail": "front-door (feature), ghost-in-the-macro (feature), kiro-surfaces (feature), large-workbook-lane (feature), live-fixes-2026-11-24 (bugfix), readable-proof (feature), review-fixes-2026-11-24 (bugfix), trial-by-workbook (feature), vba-on-screen (feature)",
+      "label": "Kiro specs",
+      "source": ".kiro/specs/*/.config.kiro"
+    },
+    {
+      "count": 1,
+      "detail": "haunted-delivery-migration",
+      "label": "Spec folders that are not specs",
+      "source": ".kiro/specs"
+    },
+    {
+      "count": 92,
+      "label": "Requirements headings",
+      "source": ".kiro/specs/*/requirements.md"
+    },
+    {
+      "count": 68,
+      "label": "Correctness properties written in design.md",
+      "source": ".kiro/specs/*/design.md"
+    },
+    {
+      "count": 305,
+      "label": "Spec tasks done",
+      "source": ".kiro/specs/*/tasks.md"
+    },
+    {
+      "count": 32,
+      "label": "Spec tasks open",
+      "source": ".kiro/specs/*/tasks.md"
+    },
+    {
+      "count": 6,
+      "detail": "always: 4, fileMatch: 1, manual: 1",
+      "label": "Steering files",
+      "source": ".kiro/steering/*.md"
+    },
+    {
+      "count": 6,
+      "detail": "triggers PostFileCreate: 2, PostFileSave: 3, PreToolUse: 1; actions agent: 1, command: 5",
+      "label": "Hooks",
+      "source": ".kiro/hooks/*.json"
+    },
+    {
+      "count": 4,
+      "detail": "clerk, coroner, medium, skeptic",
+      "label": "Custom agents",
+      "source": ".kiro/agents/*.json"
+    },
+    {
+      "count": 14,
+      "label": "MCP tools",
+      "source": "mcp_server/server.py (TOOLS)"
+    },
+    {
+      "count": 8,
+      "label": "Power skills",
+      "source": "plugin/skills/*/SKILL.md"
+    },
+    {
+      "count": 33,
+      "label": "Test files that use Hypothesis",
+      "source": "tests/**/*.py"
+    },
+    {
+      "count": 68,
+      "detail": "covered 38, ambiguous 11, not covered 19",
+      "label": "Property ledger rows",
+      "source": "docs/KIRO_PROPERTY_LEDGER.md"
+    }
+  ],
+  "note": "Counted from the working tree when the file was written. Each item names its source path."
+}

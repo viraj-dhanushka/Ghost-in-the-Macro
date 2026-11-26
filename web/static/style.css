@@ -287,3 +287,6 @@ details.vba-module[open] summary::before { content: "\25BE" / ""; }
 .route-card { max-width: 40rem; margin: 1.5rem 0; padding: 1rem 1.25rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-left: 6px solid var(--focus); border-radius: .25rem .75rem .75rem .25rem; }
 .route-card h2, .route-card h3 { margin: .2rem 0 .4rem; }
 .route-card pre { overflow-x: auto; }
+.kiro-facts { list-style: none; padding: 0; max-width: 46rem; }
+.kiro-facts li { margin: .35rem 0; }
+.fact-count { display: inline-block; min-width: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; }

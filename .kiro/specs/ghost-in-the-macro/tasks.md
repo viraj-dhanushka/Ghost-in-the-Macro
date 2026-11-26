@@ -156,12 +156,14 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - **Validates: Requirements 2.1, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8**
 
   - [ ]* 5.8 [PBT] Write property tests for rules
+
+    - Partly done (judge-kit, 2026-11-26): Property 9 is covered by `tests/test_property_rule_ids.py`; Properties 8 and 10 are not, so the task stays open.
     - **Property 8: Rule text patterns**
     - **Property 9: Rule determinism and stable identifiers**
     - **Property 10: Traceability completeness**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9**
 
-  - [ ]* 5.9 [PBT] Write property tests for decisions and spec round trips
+  - [x]* 5.9 [PBT] Write property tests for decisions and spec round trips
     - **Property 11: Spec file round trip**
     - **Property 12: Incomplete decisions are rejected**
     - **Validates: Requirements 4.1, 4.2, 4.5, 7.10**
@@ -192,6 +194,8 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - _Requirements: 4.4, 7.9_
 
   - [ ]* 6.7 [PBT] Write property tests for converter determinism and subset
+
+    - Partly done (judge-kit, 2026-11-26): Property 18 is covered by `tests/test_property_emit_determinism.py`; Property 17 is not, so the task stays open.
     - **Property 17: Unsupported constructs are never guessed**
     - **Property 18: Decimal conversion and emit determinism**
     - **Validates: Requirements 7.5, 7.7, 7.11**
@@ -238,6 +242,8 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - _Requirements: 8.10, 8.11, 8.12, 8.13, 8.14_
 
   - [ ]* 7.7 [PBT] Write property tests for compare and strategies
+
+    - Partly done (judge-kit, 2026-11-26): Property 22 is covered by `tests/test_property_tolerance.py`; Property 23 is not, so the task stays open.
     - **Property 22: Tolerance comparison**
     - **Property 23: Input generation reaches thresholds**
     - **Validates: Requirements 8.2, 8.3, 8.5, 15.10**
@@ -268,7 +274,7 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - `ghost/report/html.py`; JSON validated against schema before writing; regenerate when `decisions.yaml` changes
     - _Requirements: 10.1, 10.6_
 
-  - [ ]* 8.3 [PBT] Write property test for report integrity
+  - [x]* 8.3 [PBT] Write property test for report integrity
     - **Property 30: Report integrity**
     - **Validates: Requirements 10.2, 10.3, 10.4, 10.5**
 
@@ -357,7 +363,7 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - `ghost/mutation/run.py`: verify each Mutant, score killed/total, survivor reasons; wire into CLI `mutate`, MCP `mutation_check`, report and web flow
     - _Requirements: 9.2, 9.3, 9.4, 10.3_
 
-  - [ ]* 15.3 [PBT] Write property test for mutation accounting
+  - [x]* 15.3 [PBT] Write property test for mutation accounting
     - **Property 29: Mutation score accounting**
     - **Validates: Requirements 9.1, 9.3, 9.4**
 
@@ -374,7 +380,7 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - Output exact `atx custom def exec ...` string (never executed); write plain-English route explanation into migration `design.md`; wire into CLI `route` and MCP `recommend_route`; document hand-off to the official AWS Transform power in the skill
     - _Requirements: 16.6, 16.7, 16.8, 16.9_
 
-  - [ ]* 16.3 [PBT] Write property test for routing
+  - [x]* 16.3 [PBT] Write property test for routing
     - **Property 31: Routing is deterministic and total**
     - **Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5**
 
@@ -409,15 +415,17 @@ Cut line if behind: drop 18.x first, then 17.x, then 16.x, then 15.x. Never drop
     - **Validates: Requirements 18.1, 18.2**
 
 - [ ] 19. Documentation and release [P0]
-  - [ ] 19.1 Write the README [P0]
+  - [x] 19.1 Write the README [P0]
     - Setup (LibreOffice, venv), running locally, Docker, using the Power in Kiro, creating real-Excel fixtures with Excel for the web, safety, note that `reference/testbench/` was a feasibility spike before this spec
     - _Requirements: 21.7_
 
   - [ ] 19.2 Finalise `docs/KIRO_USAGE.md` [P0]
+
+    - Not ticked, on purpose (judge-kit, 2026-11-26): `docs/KIRO_USAGE.md` is a running log that every feature appends to, so it is never "finalised" until the last feature. This task also asks for "Analyze Requirements usage", which the log does not record (not checked). Task 19 stays open until the Owner closes the log. 19.1 is ticked (the README exists and the judge-kit feature rewrote its first screen) and 19.3 is ticked (full suite on 2026-11-26: see `docs/KIRO_USAGE.md`).
     - Complete the running log: spec workflow, steering, hooks, agents, Analyze Requirements usage, PBT usage
     - _Requirements: 21.4_
 
-  - [ ] 19.3 Final checkpoint - Ensure all tests pass
+  - [x] 19.3 Final checkpoint - Ensure all tests pass
     - Ensure all tests pass, ask the user if questions arise.
     - The demo video (30 s on how Kiro built it) and the hackathon submission are manual steps done on Day 10 and are not coding tasks.
 

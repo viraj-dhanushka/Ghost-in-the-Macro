@@ -91,12 +91,17 @@ def test_landing_links_to_repository(client):
 
 
 def test_landing_has_no_kiro_or_video_link_or_placeholder(client):
+    """The front-door rule is kept except for the one link the judge-kit feature adds on purpose: /kiro, the
+    "Built with Kiro" page (judge-kit item 4, 2026-11-26). Any other Kiro link, a video link or a placeholder fails."""
     html = _landing(client)
     hrefs = re.findall(r'<a\b[^>]*href="([^"]*)"', html)
     for href in hrefs:
         low = href.lower()
+        if href == "/kiro":
+            continue
         assert "kiro" not in low and "youtu" not in low and "video" not in low, href
-    lowered = _text(html).lower()
+    assert hrefs.count("/kiro") == 1
+    lowered = _text(html).lower().replace("built with kiro", "")
     assert "coming soon" not in lowered
     assert "kiro" not in lowered
     assert "video" not in lowered

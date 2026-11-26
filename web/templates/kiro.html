@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Built with Kiro - Ghost in the Macro</title>
+  <meta name="description" content="How Kiro was used to build Ghost in the Macro: specs, hooks, agents, steering, MCP tools, Power skills and property tests, each counted from the repository.">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/theme.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <h1>&#128123; Ghost in the Macro</h1>
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">Light mode</button>
+  </header>
+  <main id="main">
+    <h2>Built with Kiro</h2>
+    <p class="explain">Kiroween 2026, category: Resurrection. These numbers were counted from the repository by <code>scripts/kiro_ledger.py</code>; each one names the path it was counted from. Counted from the working tree when the file was written, not at request time, because the deployed container has no <code>.kiro/</code> or <code>docs/</code> folder.</p>
+    {% if facts %}
+    <ul class="kiro-facts">
+      {% for item in facts["items"] %}
+      <li><span class="fact-count">{{ item.count }}</span> {{ item.label }}
+        <small>(counted from <code>{{ item.source }}</code>{% if item.detail %}; {{ item.detail }}{% endif %})</small></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="error" role="alert">The Kiro facts file is not available in this build, so no numbers are shown.</p>
+    {% endif %}
+    <p>The story behind the numbers, with what was not used or not verified, is in <code>docs/KIRO_STORY.md</code> in the repository, and the property-by-property table is <code>docs/KIRO_PROPERTY_LEDGER.md</code>. A count says a file exists; it does not say the feature worked in Kiro.</p>
+    <footer><a href="/">Back to the start page</a> &middot; <a href="https://github.com/viraj-dhanushka/Ghost-in-the-Macro">Source code on GitHub</a></footer>
+  </main>
+</body>
+</html>

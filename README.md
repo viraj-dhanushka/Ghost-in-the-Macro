@@ -1,4 +1,49 @@
-# Ghost-in-the-Macro
+# Ghost in the Macro
+
+**Bring the business logic out of the spreadsheet and check it against the original.**
+
+**Kiroween 2026, category: Resurrection.** What is resurrected: business logic that has been trapped in one Excel workbook (and its macros) for years, brought back as plain-English rules and a Python module that a person can read, review and test.
+
+**Live:** https://gh-180dc96b077a480c8aba859ff54261f2.ecs.us-east-1.on.aws (the hosted copy will be taken down after judging)
+
+```mermaid
+flowchart LR
+  W[Workbook .xlsx / .xlsm] --> A[Autopsy: roles, thresholds, findings]
+  A --> R[Rules: plain-English EARS text, traced to cells]
+  R --> C[Code: pure-function Python module]
+  W -. recalculated by LibreOffice .-> F[Referee]
+  C --> V[Verifier: property-based tests, fixed seed]
+  F --> V
+  V --> P[Proof report: pass, or a counterexample]
+```
+
+![The verdict card for the haunted discount calculator, Intended mode with Decision D-001: passed, one expected difference at quantity 50, the workbook says 6.0 and the new code says 0](docs/img/verdict-card.png)
+
+*The verdict card from a real run of the bundled "haunted discount calculator" (made by `scripts/make_verdict_screenshot.py`, nothing typed in). Free delivery uses `>50` while the discount uses `>=50`; the autopsy raised Finding F-001, the Decision D-001 "bulk means 50 or more" was recorded, and the one remaining difference is shown as expected. A pass means "no unexplained difference found on 311 cases" against LibreOffice's recalculation of the workbook. It is not checked in Excel.*
+
+## Built with Kiro
+
+<!-- kiro-table:begin -->
+| What | Count | Counted from |
+|---|---|---|
+| Kiro specs | 9 | `.kiro/specs/*/.config.kiro` |
+| Spec folders that are not specs | 1 | `.kiro/specs` |
+| Requirements headings | 92 | `.kiro/specs/*/requirements.md` |
+| Correctness properties written in design.md | 68 | `.kiro/specs/*/design.md` |
+| Spec tasks done | 305 | `.kiro/specs/*/tasks.md` |
+| Spec tasks open | 32 | `.kiro/specs/*/tasks.md` |
+| Steering files | 6 | `.kiro/steering/*.md` |
+| Hooks | 6 | `.kiro/hooks/*.json` |
+| Custom agents | 4 | `.kiro/agents/*.json` |
+| MCP tools | 14 | `mcp_server/server.py (TOOLS)` |
+| Power skills | 8 | `plugin/skills/*/SKILL.md` |
+| Test files that use Hypothesis | 33 | `tests/**/*.py` |
+| Property ledger rows | 68 | `docs/KIRO_PROPERTY_LEDGER.md` |
+<!-- kiro-table:end -->
+
+The story behind these numbers, with what was not used or not verified, is in [`docs/KIRO_STORY.md`](docs/KIRO_STORY.md); the property-by-property table is [`docs/KIRO_PROPERTY_LEDGER.md`](docs/KIRO_PROPERTY_LEDGER.md); the web app serves the same counts at `/kiro` (on the live site after the next deploy).
+
+## What it does
 
 Ghost takes the business logic trapped in one Excel workbook (formulas first, VBA read statically) and produces three things:
 
@@ -8,11 +53,7 @@ Ghost takes the business logic trapped in one Excel workbook (formulas first, VB
 
 When the new code and the workbook disagree, the workbook may be the one that is wrong. A human records a Decision (`decisions.yaml`) and Ghost checks the migration in two modes: Faithful (reproduce the workbook, quirks included) and Intended (apply the Decisions).
 
-## Live demo
-
-https://gh-180dc96b077a480c8aba859ff54261f2.ecs.us-east-1.on.aws
-
-The hosted copy will be taken down after judging.
+## Try it
 
 The web app has no login, makes no LLM calls and needs no API keys. Pick a bundled sample, review the autopsy, confirm the inputs, and run the verification.
 
@@ -228,7 +269,7 @@ The cross-check reads the saved values with openpyxl (`data_only=True`) and comp
 - Each browser session gets its own folder, deleted after the idle timeout. There are no accounts.
 - No API keys, tokens or credentials belong in this repository or in generated reports.
 
-## Limits and known differences
+## Limits, stated honestly
 
 - Upload limits: 5 MB per file, 20,000 formulas, 200,000 cells (`MAX_CELLS`, counted while streaming the sheet XML, before the workbook is loaded; the upload is not accepted: a file under 5 MB over the cell or formula limit gets a route card after the next deploy, a file over 5 MB gets "too large for the public demo; run Ghost locally", and locally `ghost route` measures any size), and a processing timeout (60 s by default). Only `.xlsx` and `.xlsm` are accepted. The uncompressed size is capped at 200 MB. A session may have one queued or running verification at a time (a second gets 429), and `GHOST_MAX_JOBS` caps jobs across sessions.
 - Named ranges that point at one cell or one rectangular range are converted, and rule text uses the name. Names defined by `OFFSET`, `INDIRECT` or other dynamic formulas are listed as "not converted" with the cell and reason.

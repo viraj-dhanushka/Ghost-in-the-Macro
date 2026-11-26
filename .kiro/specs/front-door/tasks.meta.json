@@ -11,8 +11,7 @@
       "lastRunTimestamp": 1795592188449
     },
     "1.6 Write property test: killed/survived tombstone counts match the finished report": {
-      "status": "failed",
-      "failingExample": "Collection error: ModuleNotFoundError: No module named 'web.progress' (expected, test-first; module not yet created)",
+      "status": "passed",
       "lastRunTimestamp": 1795592241512
     }
   },
