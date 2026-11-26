@@ -277,20 +277,62 @@ def test_given_mapping_is_not_described_as_unconfirmed(haunted, capsys):
 
 
 @needs_soffice
-@pytest.mark.parametrize(
-    "body, word",
-    [
-        ("    raise ValueError('nope')\n", "raised"),
-        ("    import sys\n    sys.exit(0)\n", "exit"),
-    ],
-    ids=["compute_raises", "compute_calls_sys_exit"],
-)
-def test_candidate_that_fails_at_run_time_exits_2(haunted, tmp_path, capsys, body, word):
-    code_file = _write(tmp_path, "def compute(inputs):\n" + body)
+def test_candidate_calling_sys_exit_in_compute_exits_2(haunted, tmp_path, capsys):
+    code_file = _write(tmp_path, "def compute(inputs):\n    import sys\n    sys.exit(0)\n")
     code, out, err = _run(capsys, haunted, "--code", code_file)
     assert code == 2, out + err
     _one_line_error(err)
-    assert word in err.lower()
+    assert "exit" in err.lower()
+
+
+@needs_soffice
+def test_a_compute_that_raises_is_a_difference_with_exit_1(haunted, tmp_path, capsys):
+    """A report was written, so the verdict is exit 1 with the failing input and the exception."""
+    code_file = _write(tmp_path, "def compute(inputs):\n    raise ValueError('nope')\n")
+    out_dir = tmp_path / "kept"
+    code, out, err = _run(capsys, haunted, "--code", code_file, "--out", out_dir)
+    assert code == 1, out + err
+    assert err == ""
+    assert "result: difference found" in out
+    assert "quantity=" in out
+    assert "Candidate: raised ValueError: nope" in out
+    assert (out_dir / "reports" / "faithful" / "proof-report.json").is_file()
+
+
+@needs_soffice
+@pytest.mark.parametrize(
+    "ret", ["{}", "{'total': None}", "{'tot': 1}"], ids=["no_keys", "none_value", "misnamed_key"],
+)
+def test_a_missing_or_none_output_is_exit_2_not_a_wrong_value(haunted, tmp_path, capsys, ret):
+    code_file = _write(tmp_path, f"def compute(inputs):\n    return {ret}\n")
+    code, out, err = _run(capsys, haunted, "--code", code_file)
+    assert code == 2, out + err
+    _one_line_error(err)
+    assert "candidate did not return output total" in err
+
+
+def test_any_base_exception_from_the_run_is_exit_2_with_one_line(haunted, tmp_path, capsys, monkeypatch):
+    from ghost import challenge
+
+    class Odd(BaseException):
+        pass
+
+    def boom(*a, **k):
+        raise Odd("odd thing")
+
+    monkeypatch.setattr(challenge, "_verify", boom)
+    code, out, err = _run(capsys, haunted, "--code", _write(tmp_path, GOOD))
+    assert code == 2
+    _one_line_error(err)
+    assert "odd thing" in err and out == ""
+
+
+def test_exit_1_always_means_a_report_exists(haunted, tmp_path, capsys, monkeypatch):
+    from ghost import challenge
+
+    monkeypatch.setattr(challenge, "_verify", lambda *a, **k: False)  # claims a failure, writes nothing
+    code, out, err = _run(capsys, haunted, "--code", _write(tmp_path, GOOD))
+    assert code == 2
 
 
 @needs_soffice

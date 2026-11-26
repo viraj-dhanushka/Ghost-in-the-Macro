@@ -107,12 +107,21 @@ def _describe_mapping(mapping, given: bool) -> list[str]:
     return [head, f"  inputs: {ins}", f"  outputs: {outs}"]
 
 
-def _raised(report: dict) -> str | None:
+def _missing_output(report: dict, outputs: list[str]) -> str | None:
+    """The first mapped output name that a mismatch's candidate result lacks or holds as None.
+    A naming mistake in the candidate is not a wrong value."""
     for m in report.get("mismatches", []):
-        for v in (m.get("actual") or {}).values():
-            if isinstance(v, str) and v.startswith(_RAISED):
-                return v[1:-1].strip()
+        actual = m.get("actual") or {}
+        for name in outputs:
+            if actual.get(name) is None:
+                return name
     return None
+
+
+def _candidate_text(v: Any) -> str:
+    if isinstance(v, str) and v.startswith(_RAISED) and v.endswith(">"):
+        return v[len("<compute "):-1]  # "raised ValueError: nope"
+    return _fmt(v)
 
 
 def _pick(report: dict) -> dict:
@@ -144,7 +153,7 @@ def _verdict_lines(report: dict, rules: list) -> list[str]:
         "result: difference found",
         "  inputs: " + ", ".join(f"{k}={v}" for k, v in sorted(m["inputs"].items())),
         f"  Referee: {_fmt(m['expected'].get(out))}  (output {out}, cell {m.get('cell') or NOT_AVAILABLE})",
-        f"  Candidate: {_fmt(m['actual'].get(out))}",
+        f"  Candidate: {_candidate_text(m['actual'].get(out))}",
         "  found by: " + ("shrunk (generated search)" if shrunk else "targeted boundary case, not shrunk"),
         f"  rule: {rule_id}",
         f"  rule text: {text}",
@@ -190,9 +199,9 @@ def _in_folder(workbook: Path, text: str, mapping_file: Path | None, mdir: Path,
     report = json.loads(report_file.read_text(encoding="utf-8"))
     if not isinstance(report.get("passed"), bool):
         raise ChallengeError("the proof report has no pass or fail result")
-    why = _raised(report)
-    if why:
-        raise ChallengeError(f"candidate raised while computing: {why}")
+    missing = _missing_output(report, list(mapping.outputs))
+    if missing:
+        raise ChallengeError(f"candidate did not return output {missing}")
     lines = _describe_mapping(mapping, given) + _verdict_lines(report, rules)
     return (0 if report["passed"] else 1), lines
 
@@ -210,7 +219,7 @@ def run_challenge(args) -> int:
     except SystemExit as exc:
         print(f"ghost: error: candidate called exit (code {exc.code!r})", file=sys.stderr)
         return EXIT_ERROR
-    except Exception as exc:  # noqa: BLE001 - every other failure is exit 2 with one line
+    except BaseException as exc:  # noqa: BLE001 - exit 1 must always mean a report exists
         print(f"ghost: error: {type(exc).__name__}: {_one_line(str(exc), hide)}", file=sys.stderr)
         return EXIT_ERROR
     print(f"challenge: {Path(args.workbook).name} against {Path(args.code).name}")
