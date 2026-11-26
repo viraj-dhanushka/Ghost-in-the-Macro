@@ -296,8 +296,14 @@ def _hook_matcher(name: str) -> "re.Pattern[str]":
     return re.compile(hook["matcher"])
 
 
+# Hooks on a tool call, not on a file path: their matcher is a tool selector, so the path-matcher cases above do
+# not apply. tests/test_guard_hook.py covers them.
+TOOL_HOOKS = {"guard-atx-aws.json"}
+
+
 def test_hook_case_table_covers_every_hook_file():
-    assert {p.name for p in HOOK_FILES} == set(HOOK_CASES)
+    assert {p.name for p in HOOK_FILES} - TOOL_HOOKS == set(HOOK_CASES)
+    assert {p.name for p in HOOK_FILES} >= TOOL_HOOKS
 
 
 @pytest.mark.parametrize("path", HOOK_FILES, ids=lambda p: p.name)

@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Block atx and aws shell commands without the Owner's approval",
+      "trigger": "PreToolUse",
+      "description": "Ground rule 6 as something Kiro enforces: a shell command that runs atx or aws is blocked (exit code 2) unless the Owner approved it for this session in a terminal with scripts/ghost-py scripts/ghost_guard.py approve <session id>.",
+      "matcher": "shell",
+      "action": {
+        "type": "command",
+        "command": "scripts/ghost-py scripts/ghost_guard.py",
+        "timeout": 10
+      }
+    }
+  ]
+}
