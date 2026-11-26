@@ -162,6 +162,6 @@ def route_view(route) -> dict:
     vba_note = None
     if route.route == "Ghost converts" and route.metrics.vba_line_count > 0:
         vba_note = ("Ghost converts the formulas it supports. It does not translate the VBA: a cell that calls a VBA function "
-                    "is listed above as not converted.")
+                    "is listed above as not converted. Such a cell is not verifiable by the Referee, so it cannot be chosen as an output.")
     return {"route": route.route, "reasons": list(route.reasons), "command": route.atx_command,
             "vba_note": vba_note}

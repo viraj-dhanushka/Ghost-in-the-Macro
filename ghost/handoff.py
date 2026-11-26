@@ -26,6 +26,18 @@ PRICING_URL = "https://aws.amazon.com/transform/pricing/"
 COMMAND_URL = "https://docs.aws.amazon.com/transform/latest/userguide/custom-command-reference.html"
 
 
+MACRO_SPIKE = (
+    "On Ghost's generated macro sample a cell that calls a VBA function reads #MACRO? with macros off and with "
+    "macros trusted. The cause was not found, an Excel-saved workbook was not tried, and listing the procedures "
+    "works with macros off too."
+)
+PASS_COVERS = (
+    "The check covers only outputs calculated by worksheet formulas. Values produced by the VBA itself are not "
+    "refereed, so a pass says nothing about the migrated VBA."
+)
+POWER = "documented by AWS; not installed or tested with Ghost"
+
+
 class HandoffError(Exception):
     """A reason the kit was not written, in one line."""
 
@@ -77,6 +89,16 @@ def module_files(modules: list[VbaModule]) -> list[tuple[str, str]]:
         used.add(name.lower())
         out.append((name, m.source))
     return out
+
+
+def derive_mapping(workbook: str | Path):
+    """The mapping Ghost derives from the workbook (inputs and outputs by name, with cell, type and domain).
+    Loads the workbook, so it raises for one over Ghost's limits. Returns (mapping, analysis)."""
+    from ghost import cli
+    from ghost.converter.mapping import generate_mapping
+
+    a = cli._analyse(workbook)
+    return generate_mapping(a.wb, a.roles), a  # type: ignore[arg-type]
 
 
 def _semantics_text() -> str:
@@ -145,13 +167,13 @@ def _contract(mapping, vba_present: bool, mapping_written: bool) -> str:
         lines += [
             "## VBA",
             "",
-            "The VBA is in `vba/`. A worksheet cell that calls a VBA function cannot be calculated by the Referee: "
-            "with macros trusted the VBA project loads, but such a cell still evaluates to `#MACRO?` (observed with "
-            "LibreOffice 26.8; Excel was not checked). So an output that depends on a VBA function is not verifiable "
-            "by the Referee, and `ghost challenge` refuses it with exit 2. Choose outputs that do not.",
+            "The VBA is in `vba/`. A worksheet cell that calls a VBA function is not verifiable by the Referee. "
+            + MACRO_SPIKE + " `ghost challenge` refuses an output that depends on such a cell, with exit 2. Choose "
+            "outputs that are calculated by worksheet formulas.",
             "",
         ]
     lines += ["## What `ghost challenge` does not do", "",
+              PASS_COVERS, "",
               "It does not consult recorded Decisions, it does not sandbox your code, and it does not check against "
               "Excel (\"not checked in Excel\"). A pass means: no difference was found on the cases it tried, "
               "against LibreOffice's recalculation of the workbook.", ""]
@@ -160,28 +182,44 @@ def _contract(mapping, vba_present: bool, mapping_written: bool) -> str:
 
 def _run_md(definition: str, sizes: SizeProfile, vba_names: list[str], vba_error: str | None, route,
             mapping_written: bool, reasons: list[str]) -> str:
-    cmd = atx_dry_run_command("./RUN.md", definition)
+    cmd = atx_dry_run_command(None, definition, folder=".")
+    default = definition == DEFAULT_DEFINITION
     if vba_error:
         vba_line = "VBA: not readable"
     elif not vba_names:
         vba_line = "VBA: none"
     else:
         vba_line = f"VBA: {sizes.vba_lines} lines in {len(vba_names)} module{'s' if len(vba_names) != 1 else ''} (`vba/`)"
+    review = ("**Review `vba/`, `rules.md` and `mapping.yaml` before you upload anything.**" if mapping_written
+              else "**Review `vba/` before you upload anything** (this kit has no `rules.md` or `mapping.yaml`).")
+    if default:
+        def_note = (f"`{definition}` is the AWS-managed definition (Early access); `atx custom def list` shows what "
+                    "your registry has.")
+    else:
+        def_note = (f"`{definition}` is the definition you named; Ghost has not checked it exists. "
+                    "`atx custom def list` shows what your registry has.")
     lines = [
         "# RUN.md: hand this folder to AWS Transform custom, then referee what comes back",
         "",
-        "> **Review `vba/` before you upload anything.** Look for passwords, connection strings and file paths, and "
+        "> " + review + " Look for passwords, connection strings and file paths, and "
         "remove them. AWS says it may use content from AWS Transform, including the responses and code it "
         f"generates, for service improvement, for example model training ({IMPROVEMENT_URL}). To opt out, configure an "
         f"AI services opt-out policy in AWS Organizations ({OPT_OUT_URL}).",
+        "",
+        "Review vba/, rules.md and mapping.yaml before you upload anything." if mapping_written else "Review vba/ before you upload anything.",
+        "",
+        "The workbook file and its cell values are not in this kit. " + (
+            "rules.md restates the worksheet formulas in English so the agent can meet the contract; it is uploaded "
+            "with the rest." if mapping_written else
+            "This kit has no rules.md, because the workbook was not loaded, so no formulas are restated in it."),
         "",
         "Nothing in this folder has been run against AWS. Ghost did not run `atx` and called no AWS service to write it.",
         "",
         "## What this kit covers",
         "",
         f"- {vba_line}.",
-        "- AWS Transform custom migrates VBA code. Its documentation says nothing about worksheet formulas, cell "
-        "counts or workbook size, so the formulas are not part of what you send for conversion.",
+        "- AWS Transform custom's documentation describes migrating VBA code and says nothing about worksheet "
+        "formulas, cell counts or workbook size. Ghost asks it to migrate the VBA only.",
     ]
     if route.route == "Ghost converts":
         lines.append("- The route Ghost recommends for this workbook is \"Ghost converts\": you may not need AWS Transform.")
@@ -197,8 +235,8 @@ def _run_md(definition: str, sizes: SizeProfile, vba_names: list[str], vba_error
         "",
         "## Steps",
         "",
-        "1. Review `vba/` as above. Needs Node.js 22 or later, Git, and the `atx` CLI with AWS credentials that allow "
-        "`transform-custom:*` (see the AWS getting-started page).",
+        "1. Review the files named above. Needs Node.js 22 or later, Git, and the `atx` CLI with AWS credentials that "
+        "allow `transform-custom:*` (see the AWS getting-started page).",
         "2. Make this folder a Git repository (AWS Transform custom requires one):",
         "",
         "   ```",
@@ -207,28 +245,50 @@ def _run_md(definition: str, sizes: SizeProfile, vba_names: list[str], vba_error
         "   git commit -m \"Hand-off kit\"",
         "   ```",
         "",
-        f"3. Suggested command, not run (check it against `atx custom def exec --help` first; "
-        f"`-t` approves all tool calls, so work on a copy):",
+        "3. Suggested command, not run (check it against `atx custom def exec --help` first; "
+        "`-t` approves all tool calls, so work on a copy):",
         "",
         "   ```",
         f"   {cmd}",
         "   ```",
         "",
         f"   `{CONFIG_FILE}` is the `-g` file; its `additionalPlanContext` points the agent at `GHOST_CONTRACT.md`. "
-        f"`{definition}` is the AWS-managed definition (Early access); `atx custom def list` shows what your registry "
-        f"has. Command reference: {COMMAND_URL}.",
+        f"{def_note} AWS's own example writes the file form `--configuration file://{CONFIG_FILE}`; the command "
+        "reference only says \"path to config file\". Ghost has not tried either form: use `-g "
+        f"{CONFIG_FILE}` first, and if the CLI rejects it, try `-g file://{CONFIG_FILE}` and write down which one "
+        f"worked. Command reference: {COMMAND_URL}.",
         "4. How to tell whether the run failed: a non-interactive run exits 0 even when the transformation failed "
-        "(CLI 3.22.1 and later). Do not read the exit code as a result. Read the conversation log "
-        "(`~/.aws/atx/custom/<conversation-id>/logs/`) for the failure message. Ghost has not verified which log "
-        "line marks a failed run. Judge the returned code by step 6.",
+        "(CLI 3.22.1 and later), so do not read the exit code as a result. The steering of the AWS Transform Kiro "
+        f"Power ({POWER}) treats exit code 0 as success unless the run's captured output, `transform.log`, contains "
+        "\"Execution was not successful\". That line is not in the AWS user guide and was not observed by Ghost. "
+        "Also read the conversation log (`~/.aws/atx/custom/<conversation-id>/logs/`). Judge the returned code by "
+        "step 6, not by either.",
         f"5. Price: $0.035 per agent minute ({PRICING_URL}); idle time and builds on your machine are not charged. "
         "The `--limit` option sets an agent-minute budget. Record the minutes you used.",
         "6. Referee the result. AWS Transform will have written Python into the repository; copy the one file "
-        "that defines `compute` out as `logic.py` (it must be one self-contained file):",
+        "that defines `compute` out as `logic.py` (it must be one self-contained file).",
+    ]
+    if mapping_written:
+        lines += [
+            "",
+            "   **Before refereeing, check that the agent did not change the contract or the mapping.** This command "
+            "must print nothing (git diff against the first commit, which is the kit as Ghost wrote it; AWS "
+            "Transform adds checkpoint commits after it):",
+            "",
+            "   ```",
+            "   git diff $(git rev-list --max-parents=0 HEAD) -- mapping.yaml GHOST_CONTRACT.md",
+            "   ```",
+            "",
+            "   The diff of mapping.yaml and GHOST_CONTRACT.md against the first commit must be empty. If it is not, "
+            "the mapping or the contract changed after Ghost wrote it. `ghost receipt` also re-derives the mapping "
+            "and records an error, not a pass, if the two differ.",
+        ]
+    lines += [
         "",
         "   ```",
         "   ghost challenge <workbook> --code logic.py --mapping mapping.yaml --out <new-empty-folder>",
-        "   ghost receipt <workbook> --kit . --definition " + shlex.quote(definition) + " --log <path-to-the-conversation-log> --out <another-new-empty-folder>",
+        "   ghost receipt <workbook> --kit . --definition " + shlex.quote(definition)
+        + " --log <path-to-the-conversation-log> --out <another-new-empty-folder>",
         "   ```",
         "",
         "   `ghost challenge` runs the candidate's code on your machine, and a candidate that loops will hang it. "
@@ -237,6 +297,7 @@ def _run_md(definition: str, sizes: SizeProfile, vba_names: list[str], vba_error
         "",
         "## What the check does not show",
         "",
+        "- " + PASS_COVERS,
         "- The Referee is LibreOffice's recalculation of the workbook. Nothing is checked in Excel.",
         "- A pass does not extend to code that is trying to defeat the check: the candidate runs in the verifier's "
         "own process, with no sandbox.",
@@ -266,14 +327,11 @@ def write_kit(workbook: str | Path, out: str | Path, definition: str | None = No
     if over:
         route = route_for_sizes(sizes, thresholds)
     else:
-        from ghost import cli
         from ghost.autopsy.metrics import metrics as compute_metrics
-        from ghost.converter.mapping import generate_mapping
         from ghost.router.route import recommend_route
         from ghost.rules.spec_writer import render_rules_md
 
-        a = cli._analyse(workbook)
-        mapping = generate_mapping(a.wb, a.roles)  # type: ignore[arg-type]
+        mapping, a = derive_mapping(workbook)
         files["rules.md"] = render_rules_md(a.rules)
         route = recommend_route(compute_metrics(a.wb), 1, thresholds)
     if modules:

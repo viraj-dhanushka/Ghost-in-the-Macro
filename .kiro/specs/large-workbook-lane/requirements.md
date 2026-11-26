@@ -4,7 +4,7 @@ Feature 7 (source: `docs/KIRO_FEATURE_PROMPT_2026-11-25.md`, "Feature 7: large-w
 
 **What this feature is, stated honestly.** AWS Transform custom migrates VBA code. Its documentation says nothing about worksheet formulas, cell counts or workbook size. "Large" is therefore handled in two separate ways, and every screen and document keeps them apart:
 - **Large in VBA:** the VBA goes to AWS Transform custom. Ghost prepares the hand-off kit and referees the Python that comes back.
-- **Large in cells or formulas:** Ghost does not send formulas to AWS Transform. It gives a route and says what is and is not covered, instead of a bare ingest error.
+- **Large in cells or formulas:** Ghost does not convert the formulas at that size. It gives a route and says what is and is not covered, instead of a bare ingest error. (A kit for a workbook that was loaded carries `rules.md`, which restates the formulas in English and is uploaded with the kit; the workbook file and its cell values are never in it.)
 
 Owner decisions made on 2026-11-26 that shape this spec:
 - `ghost challenge` already exits 0, 1 (a difference, including a raising `compute()`) or 2. This feature adds an engine-written repair brief to it and a receipt runner; it adds no `--trust-macros` (see Requirement 9).
@@ -65,7 +65,7 @@ Owner decisions made on 2026-11-26 that shape this spec:
 #### Acceptance Criteria
 1. `ghost receipt <workbook> --kit DIR --definition NAME --log PATH` SHALL run `ghost challenge` as a subprocess on the kit's `logic.py` and `mapping.yaml` and write `transform-receipt.json` in a receipt folder it owns, beside the report.
 2. IT SHALL pass an absolute `--out` under the receipt's own folder and run from a working directory the command owns.
-3. IT SHALL record a pass only when ALL of these hold: the exit code is 0; `<out>/reports/faithful/proof-report.json` exists; its `passed` is true; `cases_tested` is above 0; the seed is the expected one. An exit code of 0 with no report is an error, never a pass.
+3. IT SHALL record a pass only when ALL of these hold: the exit code is 0; the report's mode is `faithful` and it names a LibreOffice version; `<out>/reports/faithful/proof-report.json` exists; its `passed` is true; `cases_tested` is above 0; the seed is the expected one. An exit code of 0 with no report is an error, never a pass.
 4. IT SHALL wrap the call in a timeout. Any exit status other than 0, 1 or 2, or a timeout, SHALL be recorded as an error.
 5. IT SHALL read the exit code and the report only, never the candidate's printed output.
 6. THE receipt SHALL state: the definition name and the log path as "stated by the owner, not verified by Ghost"; that the candidate runs in the verifier's own process, so the result holds for code that is not trying to defeat the check; whether the mapping was given or derived; and "not checked in Excel".
@@ -82,3 +82,14 @@ Owner decisions made on 2026-11-26 that shape this spec:
 2. NO test SHALL create a pretend AWS Transform output; a stand-in is a hand-written module labelled as one.
 3. THE rows for the Owner SHALL be added to `docs/KIRO_OWNER_CHECKLIST.md` with the Result left empty.
 4. `docs/KIRO_USAGE.md` SHALL record every task, including failures.
+
+### Requirement 11: Corrections of 2026-11-26
+#### Acceptance Criteria
+1. `RUN.md` SHALL say "Review vba/, rules.md and mapping.yaml before you upload anything" and "The workbook file and its cell values are not in this kit. rules.md restates the worksheet formulas in English so the agent can meet the contract; it is uploaded with the rest."
+2. THE README, `RUN.md`'s limits and the receipt's known limits SHALL say: "The check covers only outputs calculated by worksheet formulas. Values produced by the VBA itself are not refereed, so a pass says nothing about the migrated VBA."
+3. THE receipt SHALL record `mapping_sha256`, the output (and input) name-to-cell pairs and `mapping_equals_ghost_derived`; IF the mapping differs from the one Ghost derives, THEN THE result SHALL be an error, not a pass. `RUN.md` SHALL tell the owner that the `git diff` of `mapping.yaml` and `GHOST_CONTRACT.md` against the first commit must be empty before refereeing.
+4. `route_for_sizes` SHALL send VBA to "AWS Transform custom" only when VBA exists; an over-limit workbook with no VBA and a batch at the threshold SHALL be "Over Ghost's limits" with no command.
+5. THE suggested command SHALL always use `-p <kit-folder>`, and the CLI hint SHALL say to run `ghost handoff` first.
+6. THE pre-scan of the loader and of triage SHALL build no tree (a counting target through defusedxml).
+7. A candidate's exception text SHALL be on one line in the challenge output and the repair brief; the "repair brief:" line SHALL be printed only on a failure.
+8. A `--definition` other than the default SHALL be "the definition you named; Ghost has not checked it exists".

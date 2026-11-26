@@ -428,3 +428,22 @@ def test_a_pass_writes_the_passed_brief_and_an_error_writes_none(haunted, tmp_pa
     code_file = _write(tmp_path, "def compute(inputs):\n    return {}\n")
     assert _run(capsys, haunted, "--code", code_file, "--out", bad)[0] == 2
     assert not (bad / "repair-brief.json").exists()
+
+
+@needs_soffice
+def test_a_candidate_exception_text_is_one_line_in_the_output_and_the_brief(haunted, tmp_path, capsys):
+    code_file = _write(tmp_path, "def compute(inputs):\n    raise ValueError('line one\\n\\n   line two\\t\\ttabs')\n")
+    out_dir = tmp_path / "kept"
+    code, out, err = _run(capsys, haunted, "--code", code_file, "--out", out_dir)
+    assert code == 1
+    assert "Candidate: raised ValueError: line one line two tabs" in out
+    brief = json.loads((out_dir / "repair-brief.json").read_text(encoding="utf-8"))
+    assert brief["counterexample"]["actual"]["total"] == "<compute raised ValueError: line one line two tabs>"
+
+
+@needs_soffice
+def test_the_repair_brief_line_is_printed_only_on_a_failure(haunted, tmp_path, capsys):
+    _, out, _ = _run(capsys, haunted, "--code", SUSPECTS / "haunted" / "honest.py", "--out", tmp_path / "ok")
+    assert "repair brief" not in out.lower()
+    _, out, _ = _run(capsys, haunted, "--code", SUSPECTS / "haunted" / "tidied.py", "--out", tmp_path / "bad")
+    assert "repair brief: repair-brief.json in the --out folder" in out

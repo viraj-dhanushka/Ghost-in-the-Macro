@@ -1,5 +1,6 @@
 """Macro spike (large-workbook-lane, Requirement 6.3 and 9): what the Referee really does with a cell that
-calls a VBA function, with macros off and with macros trusted. LibreOffice needed; LOCAL ONLY.
+calls a VBA function, with macros off and (opt in, GHOST_MACRO_SPIKE=1) with macros trusted. LibreOffice needed;
+LOCAL ONLY. The macros-on test is skipped unless you opt in.
 
 The workbook is the bundled generated sample (samples/make_xlsm.py), a trusted source. The OBSERVED result on
 2026-11-26 (LibreOffice 26.8.3.1) is pinned here: if a LibreOffice upgrade changes it, this test fails and the
@@ -7,6 +8,7 @@ wording in the kit, the README and the web text must be revisited.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -53,8 +55,16 @@ def test_with_macros_off_the_vba_cell_is_not_calculated(macro_sample, tmp_path):
     assert isinstance(got["Calculator!B11"], float)  # the formula cell beside it still calculates
 
 
-def test_with_macros_trusted_the_vba_loads_but_the_cell_is_still_not_calculated(macro_sample, tmp_path):
-    """The observed result: the project loads (the macros are listed) and the cell still reads #MACRO?."""
+def test_listing_the_procedures_works_with_macros_off_too(macro_sample, tmp_path):
+    """So a listing of the macros is no sign that macros are enabled or that the VBA runs."""
+    with RefereeClient(None, macro_sample, run_macros=False, job_dir=tmp_path) as ref:
+        assert {m["name"] for m in ref.macros()} == {"DeliveryFee", "AwardPoints"}
+
+
+@pytest.mark.skipif(os.environ.get("GHOST_MACRO_SPIKE") != "1",
+                    reason="opt in with GHOST_MACRO_SPIKE=1: this opens the Referee with macros trusted (the bundled sample only)")
+def test_with_macros_trusted_the_cell_still_reads_macro_error(macro_sample, tmp_path):
+    """Observed 2026-11-26: with macros trusted the cell still reads #MACRO?. The cause was not found."""
     got, listed = _eval(macro_sample, tmp_path, macros=True)
     assert {m["name"] for m in listed} == {"DeliveryFee", "AwardPoints"}
     assert got["Calculator!B13"] == {"error": "#MACRO?"}

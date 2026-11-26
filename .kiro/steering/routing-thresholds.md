@@ -4,7 +4,7 @@ inclusion: manual
 
 # Routing thresholds
 
-The Router (`ghost.router`) reads the fenced YAML block below to choose between "Ghost converts", "AWS Transform custom" and "Split". Edit the numbers to tune routing. Keep the block fenced and keep the key names.
+The Router (`ghost.router`) reads the fenced YAML block below to choose between "Ghost converts", "AWS Transform custom", "Split" and "Over Ghost's limits". Edit the numbers to tune routing. Keep the block fenced and keep the key names.
 
 ```yaml
 routing_thresholds:
@@ -33,4 +33,4 @@ routing_thresholds:
 3. A workbook that mixes convertible formulas with VBA above the threshold: **Split** (Ghost converts the formulas, AWS Transform custom handles the VBA).
 
 4. A workbook over `max_file_bytes`, `max_cells` or `max_formulas` is not loaded. It gets **AWS Transform custom** (for the VBA part only) when its VBA is above the VBA, UserForm or Declare thresholds, and otherwise **Over Ghost's limits**. In both cases the formulas are not sent to AWS Transform and Ghost does not convert them at that size; AWS Transform custom's documentation describes migrating VBA code and says nothing about worksheet formulas, cell counts or workbook size.
-Routes involving AWS Transform custom produce an `atx custom def exec ... -g atx-config.yaml -x -t` command, labelled "suggested command, not run". Ghost never executes it. `-p` must be a Git repository, a non-interactive run exits 0 even when the transformation failed, and `ghost handoff` writes the kit (the `-g` file, the contract, the VBA as text) the command needs. Facts and sources: `docs/AWS_TRANSFORM_FACTS.md`. The owner may hand the kit to an official AWS Transform power only when AWS credentials exist and that power is installed (its existence is not verified; see `docs/AWS_TRANSFORM_FACTS.md`). The Verifier can referee returned code only for a workbook within Ghost's limits and an output not fed by a VBA function.
+Routes involving AWS Transform custom produce an `atx custom def exec ... -g atx-config.yaml -x -t` command, labelled "suggested command, not run". Ghost never executes it. `-p` must be a Git repository, a non-interactive run exits 0 even when the transformation failed, and `ghost handoff` writes the kit (the `-g` file, the contract, the VBA as text) the command needs. Facts and sources: `docs/AWS_TRANSFORM_FACTS.md`. The owner may hand the kit to the AWS Transform Kiro Power only when AWS credentials exist and that power is installed (it is documented by AWS; not installed or tested with Ghost; see `docs/AWS_TRANSFORM_FACTS.md`). The Verifier can referee returned code only for a workbook within Ghost's limits and an output not fed by a VBA function.

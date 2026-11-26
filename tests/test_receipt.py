@@ -13,6 +13,7 @@ import pytest
 from hypothesis import given, settings, strategies as st
 
 from ghost import cli, receipt
+from ghost.converter.mapping import read_mapping
 from ghost.referee.locate import RefereeUnavailable, locate_soffice
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -42,8 +43,8 @@ def make_kit(tmp_path: Path, logic: str = "def compute(inputs):\n    return {'to
     return kit
 
 
-def report(passed=True, cases=311, seed=SEED):
-    return {"passed": passed, "cases_tested": cases, "seed": seed, "versions": {"libreoffice": "LO 1"}, "mode": "faithful"}
+def report(passed=True, cases=311, seed=SEED, mode="faithful", lo="LO 1"):
+    return {"passed": passed, "cases_tested": cases, "seed": seed, "versions": {"libreoffice": lo}, "mode": mode}
 
 
 class FakeRunner:
@@ -67,6 +68,7 @@ def go(tmp_path, runner, **kw):
     kit = kw.pop("kit", None) or make_kit(tmp_path)
     wb = tmp_path / "w.xlsx"
     wb.write_bytes(b"workbook bytes")
+    kw.setdefault("derive", lambda w: read_mapping(kit / "mapping.yaml") if (kit / "mapping.yaml").is_file() else None)
     return receipt.run_receipt(wb, kit, "AWS/vba-to-python-migration", "~/.aws/atx/custom/abc/logs", tmp_path / "r",
                                runner=runner, **kw)
 
@@ -75,6 +77,7 @@ def go(tmp_path, runner, **kw):
 def test_a_pass_needs_all_five_conditions(tmp_path):
     r = go(tmp_path, FakeRunner(0, report()))
     assert r["result"] == "pass" and r["exit_code"] == 0
+    assert r["reason"] == "no difference found on 311 cases (the candidate ran in the verifier's process)"
 
 
 @pytest.mark.parametrize("rc, rep", [
@@ -83,10 +86,13 @@ def test_a_pass_needs_all_five_conditions(tmp_path):
     (0, report(cases=0)),
     (0, report(seed=1)),
     (0, report(passed="yes")),
+    (0, report(mode="intended")),
+    (0, report(lo="")),
+    (0, {**report(), "versions": {}}),
     (0, report(cases=True)),
     (3, report()),
     (-9, report()),
-], ids=["no_report", "not_passed", "zero_cases", "wrong_seed", "passed_not_bool", "cases_is_bool", "status_3", "signal"])
+], ids=["no_report", "not_passed", "zero_cases", "wrong_seed", "passed_not_bool", "mode_intended", "no_lo_version", "no_versions", "cases_is_bool", "status_3", "signal"])
 def test_anything_short_of_the_five_conditions_is_never_a_pass(tmp_path, rc, rep):
     runner = FakeRunner(rc, rep)
     r = go(tmp_path, runner)
@@ -101,6 +107,8 @@ outcomes = st.fixed_dictionaries({
     "passed": st.one_of(st.booleans(), st.none(), st.just("true")),
     "cases": st.one_of(st.integers(-2, 400), st.none(), st.booleans(), st.just("12")),
     "seed": st.one_of(st.just(SEED), st.integers(0, 5), st.none()),
+    "mode": st.sampled_from(["faithful", "intended", None]),
+    "lo": st.sampled_from(["LO 1", "", None]),
 })
 
 
@@ -108,12 +116,13 @@ outcomes = st.fixed_dictionaries({
 @given(outcomes)
 def test_property_6_pass_only_when_all_five_conditions_hold(o):
     """Property 6 (large-workbook-lane design). Validates Requirements 7.3 and 7.4."""
-    rep = {"passed": o["passed"], "cases_tested": o["cases"], "seed": o["seed"]} if o["has_report"] else None
+    rep = ({"passed": o["passed"], "cases_tested": o["cases"], "seed": o["seed"], "mode": o["mode"],
+            "versions": {"libreoffice": o["lo"]}} if o["has_report"] else None)
     result, _ = receipt.judge(o["rc"], rep, SEED)
     five = (
         o["rc"] == 0 and rep is not None and rep["passed"] is True
         and isinstance(o["cases"], int) and not isinstance(o["cases"], bool) and o["cases"] > 0
-        and o["seed"] == SEED
+        and o["seed"] == SEED and o["mode"] == "faithful" and o["lo"] == "LO 1"
     )
     assert (result == "pass") == five
     if o["rc"] == 0 and not five:
@@ -206,6 +215,11 @@ def test_the_receipt_states_what_it_may_not_claim(tmp_path):
     assert r["definition"] == {"value": "AWS/vba-to-python-migration", "status": "stated by the owner, not verified by Ghost"}
     assert r["log"]["status"] == "stated by the owner, not verified by Ghost"
     assert r["mapping"] == "given" and r["mapping_confirmed_by_person"] == "not recorded"
+    assert r["mapping_sha256"] == hashlib.sha256((tmp_path / "kit" / "mapping.yaml").read_bytes()).hexdigest()
+    assert r["mapping_pairs"] == {"inputs": {"quantity": "Calculator!B2"}, "outputs": {"total": "Calculator!B11"}}
+    assert r["mapping_equals_ghost_derived"] is True
+    assert "the check covers only outputs calculated by worksheet formulas" in " ".join(r["known_limits"]).lower()
+    assert "says nothing about the migrated vba" in " ".join(r["known_limits"]).lower()
     assert "derived by Ghost" in r["mapping_note"] and "has not confirmed it" in r["mapping_note"]
     assert "runs in the verifier's own process" in r["limits_statement"]
     assert "not trying to defeat the check" in r["limits_statement"]
@@ -221,8 +235,11 @@ def test_the_receipt_states_what_it_may_not_claim(tmp_path):
 def test_a_missing_mapping_is_recorded_as_derived(tmp_path):
     kit = make_kit(tmp_path, mapping=False)
     runner = FakeRunner(0, report())
-    r = go(tmp_path, runner, kit=kit)
+    (tmp_path / "other").mkdir()
+    other = make_kit(tmp_path / "other")  # only to have a mapping object to return as "derived"
+    r = go(tmp_path, runner, kit=kit, derive=lambda w: read_mapping(other / "mapping.yaml"))
     assert r["mapping"] == "derived" and "--mapping" not in runner.calls[0][0]
+    assert r["mapping_sha256"] is None and r["mapping_equals_ghost_derived"] is True
 
 
 def test_a_missing_logic_py_is_an_error_before_anything_runs(tmp_path):
@@ -243,6 +260,8 @@ def test_a_non_empty_receipt_folder_is_refused(tmp_path):
 
 def test_the_cli_exit_codes_follow_the_result(tmp_path, monkeypatch, capsys):
     kit = make_kit(tmp_path)
+    import ghost.handoff as handoff_mod
+    monkeypatch.setattr(handoff_mod, "derive_mapping", lambda wb: (read_mapping(kit / "mapping.yaml"), None))
     wb = tmp_path / "w.xlsx"
     wb.write_bytes(b"x")
     for i, (rc, rep, want) in enumerate([(0, report(), 0), (1, report(passed=False), 1), (2, None, 2), (0, None, 2)]):
@@ -262,11 +281,41 @@ def test_a_real_receipt_for_a_stand_in_that_passes_and_one_that_differs(tmp_path
     finally:
         sys.path.remove(str(ROOT / "samples"))
     wb = make_haunted.build(tmp_path / "haunted.xlsx")
+    from ghost import handoff
     for suspect, want in (("honest", "pass"), ("tidied", "difference found")):
         kit = tmp_path / f"kit_{suspect}"
-        kit.mkdir()
+        handoff.write_kit(wb, kit)  # the mapping Ghost derives, as RUN.md says
         (kit / "logic.py").write_text((SUSPECTS / "haunted" / f"{suspect}.py").read_text(encoding="utf-8"), encoding="utf-8")
-        (kit / "mapping.yaml").write_text((SUSPECTS / "haunted" / "mapping.yaml").read_text(encoding="utf-8"), encoding="utf-8")
         r = receipt.run_receipt(wb, kit, "AWS/vba-to-python-migration", "log", tmp_path / f"r_{suspect}", timeout=300)
         assert r["result"] == want, r
     assert r["report"]["passed"] is False and r["exit_code"] == 1
+
+
+def test_an_altered_mapping_is_an_error_never_a_pass(tmp_path):
+    kit = make_kit(tmp_path)
+    derived = read_mapping(kit / "mapping.yaml")
+    (kit / "mapping.yaml").write_text(
+        "version: 1\ninputs:\n  quantity:\n    cell: Calculator!B2\n    type: integer\n    min: 0\n"
+        "outputs:\n  total:\n    cell: Calculator!B9\n    type: decimal\n", encoding="utf-8")  # another output cell
+    r = go(tmp_path, FakeRunner(0, report()), kit=kit, derive=lambda w: derived)
+    assert r["mapping_equals_ghost_derived"] is False
+    assert r["result"] == "error" and "mapping" in r["reason"].lower()
+    assert r["mapping_pairs"]["outputs"] == {"total": "Calculator!B9"}
+
+
+def test_an_altered_domain_is_an_error_too(tmp_path):
+    kit = make_kit(tmp_path)
+    derived = read_mapping(kit / "mapping.yaml")
+    (kit / "mapping.yaml").write_text(
+        "version: 1\ninputs:\n  quantity:\n    cell: Calculator!B2\n    type: integer\n    min: 0\n    max: 5\n"
+        "outputs:\n  total:\n    cell: Calculator!B11\n    type: decimal\n", encoding="utf-8")
+    assert go(tmp_path, FakeRunner(0, report()), kit=kit, derive=lambda w: derived)["result"] == "error"
+
+
+def test_a_workbook_that_cannot_be_derived_is_an_error_and_nothing_ran(tmp_path):
+    def cannot(w):
+        raise ValueError("over the limits")
+    runner = FakeRunner(0, report())
+    r = go(tmp_path, runner, derive=cannot)
+    assert r["result"] == "error" and r["mapping_equals_ghost_derived"] is None
+    assert runner.calls == []

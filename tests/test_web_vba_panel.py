@@ -134,11 +134,11 @@ def test_ghost_converts_has_no_command_and_no_label():
 
 @pytest.mark.parametrize("name", ["Split", "AWS Transform custom"])
 def test_aws_routes_show_the_command_labelled_not_run(name):
-    cmd = "atx custom def exec -n excel-vba-to-python -p '<workbook-directory>' -c 'python3 -m compileall -q .' -x -t"
+    cmd = "atx custom def exec -n excel-vba-to-python -p '<kit-folder>' -c 'python3 -m compileall -q .' -x -t"
     page = _render(route=route(name, ["2500 VBA lines exceed the threshold of 2000"], cmd))
     sec = re.search(r'<section class="panel route".*?</section>', page, re.S).group(0)
     assert name in _text(sec) and "suggested command, not run" in _text(sec)
-    assert re.search(r"<code class=\"route-command\">atx custom def exec .*&lt;workbook-directory&gt;", sec)
+    assert re.search(r"<code class=\"route-command\">atx custom def exec .*&lt;kit-folder&gt;", sec)
     assert "/tmp" not in sec and "/private" not in sec
 
 
@@ -153,7 +153,7 @@ def test_ghost_converts_with_vba_says_the_vba_is_not_translated():
 
 
 def test_the_command_flags_are_explained_as_aws_transform_options_not_ghost_trust():
-    cmd = "atx custom def exec -n excel-vba-to-python -p '<workbook-directory>' -x -t"
+    cmd = "atx custom def exec -n excel-vba-to-python -p '<kit-folder>' -x -t"
     t = _text(_render(route=route("Split", ["r"], cmd)))
     assert "-x -t are AWS Transform options (non-interactive, trust all tools). Ghost never runs this command." in t
     assert ("The definition named by -n must exist in your AWS Transform registry (the default, "

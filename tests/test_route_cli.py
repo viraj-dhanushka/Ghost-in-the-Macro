@@ -52,7 +52,7 @@ def test_route_on_an_over_limit_workbook_exits_0_with_sizes_and_reasons(many_for
     out = capsys.readouterr().out
     assert "Route: Over Ghost's limits" in out
     assert f"{MAX_FORMULAS + 1:,} formulas; the limit is {MAX_FORMULAS:,} formulas" in out
-    assert f"Formulas: {MAX_FORMULAS + 1:,}, not sent, not converted by Ghost (over the limit)" in out
+    assert f"Formulas: {MAX_FORMULAS + 1:,}, not converted by Ghost (over the limit)" in out
     assert "VBA: none" in out
     assert "Not checked (the workbook was not loaded)" in out
     assert "atx" not in out  # no AWS command for a workbook with no VBA to send
@@ -84,7 +84,7 @@ def test_a_workbook_within_the_limits_gets_the_route_it_always_did(tmp_path, cap
     out = capsys.readouterr().out
     assert out.startswith("Route: Ghost converts\n")
     assert "  - 0 VBA lines are within the threshold of 2000" in out
-    assert "VBA: none" in out and "Formulas: 1, not sent, converted by Ghost" in out
+    assert "VBA: none" in out and "Formulas: 1, converted by Ghost" in out
 
 
 def test_a_file_that_is_not_a_workbook_is_still_an_error(tmp_path, capsys):
@@ -121,3 +121,17 @@ def test_a_loaded_workbook_with_unreadable_vba_says_so_not_none(tmp_path, capsys
     assert cli.main(["route", str(p)]) == 0
     out = capsys.readouterr().out
     assert "VBA: not readable" in out and "VBA: none" not in out
+
+
+def test_the_cli_hint_for_an_aws_route_says_run_ghost_handoff_first(tmp_path, capsys, monkeypatch):
+    import ghost.router as router
+    from ghost.models import Metrics
+    monkeypatch.setattr(router, "route_workbook",
+                        lambda *a, **k: router.recommend_route(Metrics(userform_count=9)))
+    p = tmp_path / "a.xlsx"
+    openpyxl.Workbook().save(p)
+    assert cli.main(["route", str(p)]) == 0
+    out = capsys.readouterr().out
+    assert "Suggested command, not run:" in out and "-p '<kit-folder>'" in out
+    assert "run 'ghost handoff <workbook> --out <kit-folder>' first" in out
+    assert "git init" not in out

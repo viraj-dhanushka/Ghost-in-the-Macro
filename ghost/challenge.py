@@ -121,7 +121,7 @@ def _missing_output(report: dict, outputs: list[str]) -> str | None:
 
 def _candidate_text(v: Any) -> str:
     if isinstance(v, str) and v.startswith(_RAISED) and v.endswith(">"):
-        return v[len("<compute "):-1]  # "raised ValueError: nope"
+        return " ".join(v[len("<compute "):-1].split())  # "raised ValueError: nope", on one line
     return _fmt(v)
 
 
@@ -208,7 +208,7 @@ def _in_folder(workbook: Path, text: str, mapping_file: Path | None, mdir: Path,
     rules_text = (mdir / "rules.md").read_text(encoding="utf-8") if (mdir / "rules.md").is_file() else ""
     brief = build_brief(report, rules_text, lambda cell: (wb.cells[cell].formula if cell in wb.cells else None))
     (mdir / "repair-brief.json").write_text(json.dumps(brief, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    if keep:
+    if keep and not report["passed"]:
         lines.append("repair brief: repair-brief.json in the --out folder")
     return (0 if report["passed"] else 1), lines
 

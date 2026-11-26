@@ -16,6 +16,7 @@ import defusedxml.ElementTree as DET
 from defusedxml import DefusedXmlException
 
 from ghost.ingest.limits import Deadline, Limits, ProcessingTimeout, UnsupportedFormat
+from ghost.ingest.xmlscan import local_name, scan_xml
 
 __all__ = ["SizeProfile", "scan_sizes"]
 
@@ -53,10 +54,6 @@ class SizeProfile:
         if self.formulas is not None and self.formulas > limits.max_formulas:
             out.append("formulas")
         return tuple(out)
-
-
-def _local(tag: str) -> str:
-    return tag.rsplit("}", 1)[-1]
 
 
 def _vba_facts(path: str) -> tuple[bool, int, int, int, int, str | None]:
@@ -111,6 +108,16 @@ def scan_sizes(
                     f"{limits.max_uncompressed_bytes // (1024 * 1024)} MB"
                 )
             else:
+                def on_start(tag: str) -> None:
+                    nonlocal cells, formulas
+                    name = local_name(tag)
+                    if name == "c":
+                        cells += 1
+                        if cells % 20000 == 0:
+                            deadline.check()
+                    elif name == "f":
+                        formulas += 1
+
                 try:
                     for info in infos:
                         deadline.check()
@@ -118,16 +125,7 @@ def scan_sizes(
                         if not (name.startswith("xl/worksheets/") and name.endswith(".xml")):
                             continue
                         with zf.open(info) as fh:
-                            for n, (_, elem) in enumerate(DET.iterparse(fh, events=("end",))):
-                                tag = _local(elem.tag)
-                                if tag == "c":
-                                    cells += 1
-                                elif tag == "f":
-                                    formulas += 1
-                                if tag in ("c", "row"):
-                                    elem.clear()
-                                if n % 20000 == 0:
-                                    deadline.check()
+                            scan_xml(fh, on_start)
                 except ProcessingTimeout:
                     counted = False
                     reason = (

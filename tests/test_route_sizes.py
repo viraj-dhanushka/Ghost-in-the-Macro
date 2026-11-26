@@ -65,7 +65,7 @@ def test_an_over_limit_workbook_without_big_vba_gets_its_own_route_and_says_form
     assert r.route == "Over Ghost's limits"
     text = "\n".join(r.reasons)
     assert f"{MAX_CELLS + 5:,} cells" in text and "30,000 formulas" in text
-    assert "Formulas: 30,000, not sent, not converted by Ghost (over the limit)" in r.parts
+    assert "Formulas: 30,000, not converted by Ghost (over the limit); a kit for this workbook has no rules.md, so they are not in it" in r.parts
     assert "VBA: none" in r.parts
     assert r.atx_command is None
 
@@ -74,7 +74,7 @@ def test_an_over_limit_workbook_with_big_vba_routes_the_vba_to_aws_and_not_the_f
     r = route_for_sizes(profile(cells=MAX_CELLS + 1, vba_present=True, vba_lines=5000, vba_modules=4), DEFAULT_THRESHOLDS)
     assert r.route == "AWS Transform custom"
     assert "VBA: 5000 lines, goes to AWS Transform custom (suggested command, not run)" in r.parts
-    assert any(p.startswith("Formulas: 10, not sent, not converted by Ghost") for p in r.parts)
+    assert any(p.startswith("Formulas: 10, not converted by Ghost (over the limit)") for p in r.parts)
     assert "5000 VBA lines exceed" in " ".join(r.reasons) and "cells" in " ".join(r.reasons)
 
 
@@ -110,7 +110,7 @@ def test_the_old_path_is_unchanged_and_now_carries_part_sentences():
         "batch size 1 is below 10",
     ]
     assert "VBA: 10 lines, read statically, not converted by Ghost" in r.parts
-    assert any(p.startswith("Formulas: 3, not sent, converted by Ghost") for p in r.parts)
+    assert any(p.startswith("Formulas: 3, converted by Ghost") for p in r.parts)
     big = recommend_route(Metrics(formula_count=5, vba_line_count=3000))
     assert big.route == "Split"
     assert "VBA: 3000 lines, goes to AWS Transform custom (suggested command, not run)" in big.parts
@@ -162,3 +162,23 @@ def test_property_2_exactly_one_route_and_every_limit_exceeded_is_in_the_reasons
     over = s.file_bytes > mb or (s.cells or 0) > mc or (s.formulas or 0) > mf
     if over:
         assert r.route in ("AWS Transform custom", "Over Ghost's limits")
+
+
+def test_over_limit_with_no_vba_and_a_big_batch_is_over_limits_and_has_no_command():
+    """A batch at the threshold alone must not send a workbook with no VBA to AWS Transform."""
+    from ghost.router import with_atx_command
+    r = route_for_sizes(profile(cells=MAX_CELLS + 1), DEFAULT_THRESHOLDS, batch_size=10)
+    assert r.route == "Over Ghost's limits"
+    assert with_atx_command(r).atx_command is None
+    assert "VBA: none" in r.parts
+
+
+def test_over_limit_with_vba_and_a_big_batch_still_goes_to_aws_for_the_vba():
+    r = route_for_sizes(profile(cells=MAX_CELLS + 1, vba_present=True, vba_lines=30, vba_modules=1), DEFAULT_THRESHOLDS, batch_size=10)
+    assert r.route == "AWS Transform custom"
+
+
+def test_a_within_limit_aws_route_says_the_kit_restates_the_formulas_in_english():
+    r = recommend_route(Metrics(formula_count=5, vba_line_count=3000))
+    f = [p for p in r.parts if p.startswith("Formulas")][0]
+    assert "rules.md" in f and "in English" in f and "uploaded" in f and "not sent" not in f

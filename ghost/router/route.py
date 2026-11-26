@@ -95,10 +95,16 @@ def recommend_route(
     route = _recommend(metrics, batch_size, thresholds)
     parts = [
         _vba_part(route.route, metrics),
-        f"Formulas: {metrics.formula_count:,}, not sent, converted by Ghost "
-        "(supported functions only; the rest are listed as not converted)",
+        _formulas_part(route.route, metrics.formula_count),
     ]
     return route.model_copy(update={"parts": parts})
+
+
+def _formulas_part(route_name: str, n: int) -> str:
+    if route_name in ("AWS Transform custom", "Split"):
+        return (f"Formulas: {n:,}, converted by Ghost where it can; the kit's rules.md restates them in English "
+                "and is uploaded with the kit")
+    return f"Formulas: {n:,}, converted by Ghost (supported functions only; the rest are listed as not converted)"
 
 
 def _limit_reasons(s: SizeProfile, t: RoutingThresholds) -> list[str]:
@@ -163,13 +169,14 @@ def route_for_sizes(s: SizeProfile, thresholds: RoutingThresholds | None = None,
         base = recommend_route(metrics, batch_size, t)
         return base.model_copy(update={"parts": [_vba_part(base.route, metrics, s.vba_error, s.vba_present), base.parts[1]]})
     core = _recommend(metrics, batch_size, t)
-    vba_goes = core.route in ("AWS Transform custom", "Split")
+    # The VBA goes to AWS Transform only if there is VBA: a batch size alone must not send a workbook with none.
+    vba_goes = core.route in ("AWS Transform custom", "Split") and (s.vba_lines > 0 or s.vba_modules > 0)
     if vba_goes:
         route = "AWS Transform custom"
         reasons = list(core.reasons) if core.route == "AWS Transform custom" else [core.reasons[0]]
         reasons = [r for r in reasons if "can be converted by Ghost" not in r and "no formulas" not in r]
         reasons += size_reasons
-        reasons.append("the formulas are not sent to AWS Transform and Ghost does not convert them at this size")
+        reasons.append("Ghost does not convert the formulas at this size, and a kit for this workbook has no rules.md")
     else:
         route = "Over Ghost's limits"
         reasons = size_reasons or ["the workbook could not be measured within Ghost's limits"]
@@ -179,7 +186,8 @@ def route_for_sizes(s: SizeProfile, thresholds: RoutingThresholds | None = None,
     elif not s.counted:
         formulas = f"Formulas: not counted (at least {s.formulas:,} seen)"
     else:
-        formulas = f"Formulas: {s.formulas:,}, not sent, not converted by Ghost (over the limit)"
+        formulas = (f"Formulas: {s.formulas:,}, not converted by Ghost (over the limit); a kit for this workbook has no "
+                    "rules.md, so they are not in it")
     parts = [
         _vba_part(route, metrics, s.vba_error, s.vba_present),
         formulas,

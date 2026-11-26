@@ -89,7 +89,7 @@ def test_route_for_gives_the_three_routes_and_a_command_without_a_server_path(m,
     assert v["route"] == name and v["reasons"]
     from ghost.router import atx_dry_run_command
     assert v["command"] == atx_dry_run_command(None)  # the fixed placeholder: no server path can be in it
-    assert "<workbook-directory>" in v["command"]
+    assert "<kit-folder>" in v["command"]
 
 
 def test_route_for_falls_back_to_the_built_in_thresholds_when_the_steering_file_is_missing(monkeypatch):
@@ -164,6 +164,6 @@ def test_route_view_adds_the_vba_note_only_when_ghost_converts_a_workbook_with_v
     from ghost.router import recommend_route
     assert route_view(recommend_route(metrics()))["vba_note"] == (
         "Ghost converts the formulas it supports. It does not translate the VBA: a cell that calls a VBA function "
-        "is listed above as not converted.")
+        "is listed above as not converted. Such a cell is not verifiable by the Referee, so it cannot be chosen as an output.")
     assert route_view(recommend_route(metrics(vba_line_count=0, module_count=0)))["vba_note"] is None
     assert route_view(recommend_route(metrics(vba_line_count=2500)))["vba_note"] is None  # Split names the VBA path itself

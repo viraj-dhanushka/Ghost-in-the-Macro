@@ -113,3 +113,60 @@ def test_an_unreadable_vba_project_is_reported_not_raised(tmp_path):
 def test_a_workbook_without_vba_has_no_vba_figures(tmp_path):
     s = scan_sizes(make_book(tmp_path / "a.xlsx"))
     assert (s.vba_present, s.vba_lines, s.vba_modules, s.userforms, s.declares, s.vba_error) == (False, 0, 0, 0, 0, None)
+
+
+# -- memory (large-workbook-lane correction 9) --------------------------------------------------
+def _big_book(path: Path, rows: int) -> Path:
+    """A valid .xlsx whose one sheet has `rows` rows of one formula cell: tens of MB of XML, a few hundred KB zipped."""
+    import io
+
+    base = make_book(path.with_suffix(".base.xlsx"), rows=1, formulas=1)
+    with zipfile.ZipFile(base) as src, zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as dst:
+        for item in src.infolist():
+            if item.filename == "xl/worksheets/sheet1.xml":
+                continue
+            dst.writestr(item.filename, src.read(item.filename))
+        head = ('<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                "<sheetData>")
+        with dst.open("xl/worksheets/sheet1.xml", "w") as fh:
+            fh.write(head.encode())
+            for start in range(1, rows + 1, 50_000):
+                chunk = "".join(f'<row r="{r}"><c r="A{r}"><f>1+1</f><v>2</v></c></row>'
+                                for r in range(start, min(start + 50_000, rows + 1)))
+                fh.write(chunk.encode())
+            fh.write(b"</sheetData></worksheet>")
+    return path
+
+
+def test_scan_sizes_and_the_loader_precheck_build_no_tree(tmp_path):
+    """A file with a million rows is scanned in bounded memory, in a fresh process so the high-water mark is its own."""
+    import subprocess
+    import sys
+    p = _big_book(tmp_path / "big.xlsx", 1_000_000)
+    assert p.stat().st_size < 5 * 1024 * 1024
+    code = (
+        "import resource, sys\n"
+        "from pathlib import Path\n"
+        "from ghost.ingest.limits import Limits\n"
+        "from ghost.ingest.triage import scan_sizes\n"
+        "unit = 1 if sys.platform == 'darwin' else 1024\n"
+        "before = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * unit\n"
+        "s = scan_sizes(sys.argv[1], Limits(timeout_s=300))\n"
+        "after = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * unit\n"
+        "print(s.cells, s.formulas, s.counted, (after - before) // (1024 * 1024))\n"
+    )
+    out = subprocess.run([sys.executable, "-c", code, str(p)], capture_output=True, text=True, timeout=600,
+                         cwd=Path(__file__).resolve().parent.parent)
+    assert out.returncode == 0, out.stderr
+    cells, formulas, counted, grown_mb = out.stdout.split()
+    assert (cells, formulas, counted) == ("1000002", "1000001", "True")  # the 1M-row sheet plus the base book's second sheet (2 cells, 1 formula)
+    assert int(grown_mb) < 60, f"memory grew by {grown_mb} MB"
+
+
+def test_the_loader_precheck_still_rejects_by_count_and_by_entity(tmp_path):
+    from ghost.ingest.limits import TooManyCells
+    from ghost.ingest.workbook import load_workbook
+    p = make_book(tmp_path / "a.xlsx", rows=30, formulas=2)
+    import pytest as _pt
+    with _pt.raises(TooManyCells):
+        load_workbook(str(p), Limits(max_cells=10))

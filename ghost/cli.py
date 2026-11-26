@@ -870,10 +870,7 @@ def cmd_route(args: argparse.Namespace) -> int:
     if route.atx_command:
         print("Suggested command, not run:")
         print(f"  {route.atx_command}")
-        from ghost.router.explain import is_git_repository
-        target_dir = Path(args.target).parent
-        if not is_git_repository(target_dir):
-            print("  (the target folder is not a Git repository: run 'git init' there first)")
+        print("  (run 'ghost handoff <workbook> --out <kit-folder>' first: the kit folder is the Git repository to pass to -p)")
     if args.migration_dir:
         print(f"Wrote route explanation to {write_route_explanation(args.migration_dir, route)}")
     return 0

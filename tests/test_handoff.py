@@ -81,6 +81,7 @@ def test_the_contract_names_the_inputs_outputs_tolerance_and_rounding(tmp_path):
     assert "#DIV/0!" in text and "compared by error type" in text.lower()
     assert "Decimal(repr(x))" in text
     assert "derived from the workbook" in text.lower() and "not confirmed by a person" in text.lower()
+    assert "the check covers only outputs calculated by worksheet formulas" in text.lower()
     assert "correct" not in text.lower() and "proven" not in text.lower()
 
 
@@ -92,7 +93,7 @@ def test_run_md_starts_with_the_warning_and_gives_the_steps(tmp_path):
     assert "passwords" in head and "connection strings" in head and "file paths" in head
     assert "service improvement" in text and "https://docs.aws.amazon.com/transform/latest/userguide/service-improvement.html" in text
     assert "ai services opt-out polic" in text.lower()
-    for needle in ("git init", "git add .", "git commit", "Suggested command, not run", "atx custom def exec",
+    for needle in ("Review vba/, rules.md and mapping.yaml before you upload anything", "git init", "git add .", "git commit", "Suggested command, not run", "atx custom def exec",
                    "$0.035", "agent minute", "ghost challenge", "--mapping", "exits 0", "Node.js 22"):
         assert needle in text, needle
     assert text.index("git init") < text.index("atx custom def exec") < text.index("ghost challenge")
@@ -100,6 +101,16 @@ def test_run_md_starts_with_the_warning_and_gives_the_steps(tmp_path):
     low = text.lower()
     assert "aws transform converts formulas" not in low and "handles workbook size" not in low
     assert "nothing in this folder has been run against aws" in low
+    assert ("The workbook file and its cell values are not in this kit. rules.md restates the worksheet formulas in "
+            "English so the agent can meet the contract; it is uploaded with the rest.") in text
+    assert "formulas are not part of what you send" not in low
+    assert "the check covers only outputs calculated by worksheet formulas" in low
+    assert "values produced by the vba itself are not refereed, so a pass says nothing about the migrated vba" in low
+    assert "file://atx-config.yaml" in text and "-g atx-config.yaml" in text
+    assert "git diff" in text and "mapping.yaml GHOST_CONTRACT.md" in text and "must be empty" in text
+    assert text.index("must be empty") < text.index("ghost challenge <workbook>")
+    assert "documented by aws; not installed or tested with ghost" in low
+    assert "Execution was not successful" in text and "not in the aws user guide" in low and "not observed by ghost" in low
 
 
 def test_the_kit_is_byte_identical_across_runs_and_has_no_absolute_path(tmp_path):
@@ -225,4 +236,25 @@ def test_the_macro_sample_kit_holds_its_module_once_and_git_init_works(tmp_path)
     assert subprocess.run(["git", "init", "-q"], cwd=out, capture_output=True).returncode == 0
     run = (out / "RUN.md").read_text(encoding="utf-8")
     assert "VBA: " in run and "Module1.bas" not in run
-    assert "not verifiable by the Referee" in (out / "GHOST_CONTRACT.md").read_text(encoding="utf-8")
+    contract = (out / "GHOST_CONTRACT.md").read_text(encoding="utf-8")
+    assert "not verifiable by the Referee" in contract
+    assert ("On Ghost's generated macro sample a cell that calls a VBA function reads #MACRO? with macros off and with "
+            "macros trusted. The cause was not found, an Excel-saved workbook was not tried, and listing the "
+            "procedures works with macros off too.") in contract
+    assert "project loads" not in contract.lower()
+
+
+def test_a_definition_other_than_the_default_is_the_one_you_named(tmp_path):
+    out = tmp_path / "kit"
+    handoff.write_kit(small_book(tmp_path / "a.xlsx"), out, definition="Team/my vba")
+    run = (out / "RUN.md").read_text(encoding="utf-8")
+    assert "the definition you named; Ghost has not checked it exists" in run
+    assert "AWS-managed" not in run.replace("AWS-managed definition", "")
+    assert "-n 'Team/my vba'" in run and "--definition 'Team/my vba'" in run
+
+
+def test_the_default_definition_is_called_aws_managed_early_access(tmp_path):
+    out = tmp_path / "kit"
+    handoff.write_kit(small_book(tmp_path / "a.xlsx"), out)
+    run = (out / "RUN.md").read_text(encoding="utf-8")
+    assert "AWS-managed definition (Early access)" in run and "ghost has not checked it exists" not in run.lower()

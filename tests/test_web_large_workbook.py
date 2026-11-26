@@ -42,7 +42,8 @@ def test_an_over_limit_upload_shows_a_route_card_where_the_error_was(tmp_path, m
     assert 'class="route-card"' in t
     assert "Over Ghost&#39;s limits" in t or "Over Ghost's limits" in t
     assert f"{MAX_FORMULAS + 1:,} formulas; the limit is {MAX_FORMULAS:,} formulas" in t
-    assert f"Formulas: {MAX_FORMULAS + 1:,}, not sent, not converted by Ghost (over the limit)" in t
+    assert f"Formulas: {MAX_FORMULAS + 1:,}, not converted by Ghost (over the limit)" in t
+    assert "not in it" in t and "never" not in t.lower().replace("never executed", "")
     assert "VBA: none" in t
     assert "does not convert" in t.lower()
     assert "atx" not in t  # no VBA to send: no command

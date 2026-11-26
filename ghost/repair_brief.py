@@ -36,8 +36,12 @@ def parse_rules(text: str) -> dict[str, dict]:
 def _cut(actual):
     if not isinstance(actual, dict):
         return actual
-    return {k: (v[:200] + "...") if isinstance(v, str) and v.startswith("<compute raised") and len(v) > 200 else v
-            for k, v in actual.items()}
+    def one(v):
+        if isinstance(v, str) and v.startswith("<compute raised"):
+            v = " ".join(v.split())  # the exception text is the candidate's: one line
+            return v[:200] + "..." if len(v) > 200 else v
+        return v
+    return {k: one(v) for k, v in actual.items()}
 def pick(mismatches: list) -> dict | None:
     ms = [m for m in mismatches if isinstance(m, dict)]
     unexplained = [m for m in ms if m.get("class") != EXPLAINED] or ms
