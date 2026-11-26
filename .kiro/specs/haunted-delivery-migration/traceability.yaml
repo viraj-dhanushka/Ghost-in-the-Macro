@@ -1,0 +1,57 @@
+version: 1
+rules:
+- rule_id: R-02486486
+  cells:
+  - Calculator!B6
+  - Calculator!B2
+  - Calculator!B3
+  macro_lines: []
+  conditions: []
+- rule_id: R-805f7c28
+  cells:
+  - Calculator!B7
+  - Calculator!B2
+  - Calculator!E2
+  - Calculator!B6
+  - Calculator!E3
+  macro_lines: []
+  conditions:
+  - condition_id: R-805f7c28-C1
+    text: Quantity [Calculator!B2] is at least Bulk threshold (units) [Calculator!E2]
+    cell: Calculator!B2
+- rule_id: R-f140cd0d
+  cells:
+  - Calculator!B8
+  - Calculator!B6
+  - Calculator!B7
+  macro_lines: []
+  conditions: []
+- rule_id: R-5f32fa17
+  cells:
+  - Calculator!B9
+  - Calculator!B2
+  - Calculator!E4
+  - Calculator!B4
+  - Calculator!E5
+  - Calculator!E6
+  macro_lines: []
+  conditions:
+  - condition_id: R-5f32fa17-C1
+    text: Quantity [Calculator!B2] is greater than 50
+    cell: Calculator!B2
+- rule_id: R-a7324324
+  cells:
+  - Calculator!B10
+  - Calculator!B8
+  - Calculator!B9
+  - Calculator!E7
+  macro_lines: []
+  conditions: []
+- rule_id: R-794f519c
+  cells:
+  - Calculator!B11
+  - Calculator!B8
+  - Calculator!B9
+  - Calculator!B10
+  macro_lines: []
+  conditions: []

@@ -1,0 +1,92 @@
+{
+  "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+  "seed": 20261204,
+  "suspects": [
+    {
+      "cases_generated": 0,
+      "cases_targeted": 2,
+      "cases_tested": 2,
+      "counterexample": {
+        "candidate": 1084.26,
+        "cell": "Calculator!B11",
+        "inputs": {
+          "delivery_distance_km": "12",
+          "quantity": "50",
+          "unit_price": "19.95"
+        },
+        "output": "total",
+        "referee": 1077.3,
+        "rule_id": "R-794f519c"
+      },
+      "distinct_cases": 2,
+      "exit_code": 1,
+      "how_found": "targeted boundary case, not shrunk",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "dropped_branch",
+      "verdict": "difference found"
+    },
+    {
+      "cases_generated": 150,
+      "cases_targeted": 8,
+      "cases_tested": 158,
+      "counterexample": {
+        "candidate": 38.51,
+        "cell": "Calculator!B11",
+        "inputs": {
+          "delivery_distance_km": "0",
+          "quantity": "3565",
+          "unit_price": "0.01"
+        },
+        "output": "total",
+        "referee": 38.5,
+        "rule_id": "R-794f519c"
+      },
+      "distinct_cases": 115,
+      "exit_code": 1,
+      "how_found": "shrunk",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "float_rounding",
+      "verdict": "difference found"
+    },
+    {
+      "cases_generated": 0,
+      "cases_targeted": 2,
+      "cases_tested": 2,
+      "counterexample": {
+        "candidate": 1197.0,
+        "cell": "Calculator!B11",
+        "inputs": {
+          "delivery_distance_km": "12",
+          "quantity": "50",
+          "unit_price": "19.95"
+        },
+        "output": "total",
+        "referee": 1077.3,
+        "rule_id": "R-794f519c"
+      },
+      "distinct_cases": 2,
+      "exit_code": 1,
+      "how_found": "targeted boundary case, not shrunk",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "gt_slip",
+      "verdict": "difference found"
+    },
+    {
+      "cases_generated": 300,
+      "cases_targeted": 8,
+      "cases_tested": 308,
+      "counterexample": null,
+      "distinct_cases": 197,
+      "exit_code": 0,
+      "how_found": null,
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "honest",
+      "verdict": "no difference found on 308 cases"
+    }
+  ],
+  "workbook": "discount"
+}

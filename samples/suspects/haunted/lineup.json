@@ -1,0 +1,92 @@
+{
+  "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+  "seed": 20261204,
+  "suspects": [
+    {
+      "cases_generated": 0,
+      "cases_targeted": 3,
+      "cases_tested": 3,
+      "counterexample": {
+        "candidate": 1105.8,
+        "cell": "Calculator!B11",
+        "inputs": {
+          "delivery_distance_km": "12",
+          "quantity": "51",
+          "unit_price": "19.95"
+        },
+        "output": "total",
+        "referee": 1098.84,
+        "rule_id": "R-794f519c"
+      },
+      "distinct_cases": 3,
+      "exit_code": 1,
+      "how_found": "targeted boundary case, not shrunk",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "dropped_branch",
+      "verdict": "difference found"
+    },
+    {
+      "cases_generated": 150,
+      "cases_targeted": 11,
+      "cases_tested": 161,
+      "counterexample": {
+        "candidate": 38.51,
+        "cell": "Calculator!B11",
+        "inputs": {
+          "delivery_distance_km": "0",
+          "quantity": "3565",
+          "unit_price": "0.01"
+        },
+        "output": "total",
+        "referee": 38.5,
+        "rule_id": "R-794f519c"
+      },
+      "distinct_cases": 118,
+      "exit_code": 1,
+      "how_found": "shrunk",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "float_rounding",
+      "verdict": "difference found"
+    },
+    {
+      "cases_generated": 300,
+      "cases_targeted": 11,
+      "cases_tested": 311,
+      "counterexample": null,
+      "distinct_cases": 200,
+      "exit_code": 0,
+      "how_found": null,
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "honest",
+      "verdict": "no difference found on 311 cases"
+    },
+    {
+      "cases_generated": 0,
+      "cases_targeted": 2,
+      "cases_tested": 2,
+      "counterexample": {
+        "candidate": 1077.3,
+        "cell": "Calculator!B11",
+        "inputs": {
+          "delivery_distance_km": "12",
+          "quantity": "50",
+          "unit_price": "19.95"
+        },
+        "output": "total",
+        "referee": 1084.26,
+        "rule_id": "R-794f519c"
+      },
+      "distinct_cases": 2,
+      "exit_code": 1,
+      "how_found": "targeted boundary case, not shrunk",
+      "libreoffice": "LibreOffice 26.8.3.1 861effc5289d539f15c4c18d1ba8579ffd78728b",
+      "seed": 20261204,
+      "suspect": "tidied",
+      "verdict": "difference found"
+    }
+  ],
+  "workbook": "haunted"
+}
