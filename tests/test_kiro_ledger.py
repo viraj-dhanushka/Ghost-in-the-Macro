@@ -58,8 +58,10 @@ def test_the_story_has_one_section_per_topic_and_an_owner_placeholder_each():
     placeholders = len(re.findall(r"^\[OWNER: .+\]$", story, re.M))
     owner_texts = len(re.findall(r"^\*\*Owner's words\*\*", story, re.M))
     assert placeholders + owner_texts == 8
+    # only the machine-written text is checked: the Owner's own words (after "**Owner's words**", up to the next heading) are theirs
+    machine = re.sub(r"^\*\*Owner's words\*\*.*?(?=^## |\Z)", "", story, flags=re.M | re.S)
     for forbidden in ("I loved", "I felt", "my favourite", "amazing"):
-        assert forbidden not in story
+        assert forbidden not in machine
 
 
 def test_every_counted_fact_names_its_source_path():
@@ -237,3 +239,13 @@ def test_the_notes_file_exists_as_a_template_with_eight_sections_and_changes_not
     text = (ROOT / "docs/KIRO_OWNER_NOTES.md").read_text(encoding="utf-8")
     assert [int(n) for n in re.findall(r"^## (\d)\.", text, re.M)] == list(range(1, 9))
     assert kiro_ledger.owner_notes(text) == {}
+
+def test_a_story_with_all_eight_notes_has_no_owner_marker_and_one_without_has_it(monkeypatch):
+    notes = "\n".join(f"## {n}. Section\nMy words for {n}." for n in range(1, 9))
+    _with_log(monkeypatch, FAKE_LOG, notes)
+    full = kiro_ledger.render_story(kiro_ledger.collect())
+    assert "[OWNER" not in full
+    assert "The Owner's own words close each section" in full
+    _with_log(monkeypatch, FAKE_LOG, "## 1. Surfaces\nOne note only.")
+    part = kiro_ledger.render_story(kiro_ledger.collect())
+    assert "[OWNER: ...]" in part.split("## 1. ")[0]
