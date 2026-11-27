@@ -36,8 +36,9 @@ def haunted_dir(tmp_path_factory) -> Path:
     return out / "haunted"
 
 
-def _run(code: str, cwd: Path, env: dict) -> dict:
-    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=cwd, env=env)
+def _run(code: str, cwd: Path, env: dict, isolated: bool = False) -> dict:
+    flags = ["-I", "-S"] if isolated else []
+    r = subprocess.run([sys.executable, *flags, "-c", code], capture_output=True, text=True, cwd=cwd, env=env)
     assert r.returncode == 0, r.stderr
     return json.loads(r.stdout)
 
@@ -47,13 +48,17 @@ def test_logic_imports_from_its_folder_without_ghost(haunted_dir, tmp_path):
     work.mkdir()
     for name in ("logic.py", "excel.py"):
         shutil.copy(haunted_dir / name, work / name)
-    # Clean environment: no PYTHONPATH, no venv, ghost is not importable.
+    # Clean interpreter: -I (isolated: no PYTHONPATH, no user site, no cwd on sys.path) and -S (no site, so the
+    # venv's installed packages, including an editable `pip install -e .` of ghost, are not visible). The module
+    # folder is the working directory and the only extra entry on sys.path.
     env = {"PATH": "/usr/bin:/bin"}
+    head = "import sys; sys.path.insert(0, %r); " % str(work)
     probe = subprocess.run(
-        [sys.executable, "-c", "import ghost"], capture_output=True, text=True, cwd=work, env=env
+        [sys.executable, "-I", "-S", "-c", head + "import ghost"], capture_output=True, text=True, cwd=work, env=env
     )
     assert probe.returncode != 0, "ghost must not be importable in the standalone check"
-    standalone = _run(_STANDALONE, work, env)
+    assert "No module named 'ghost'" in probe.stderr, probe.stderr
+    standalone = _run(head + _STANDALONE, work, env, isolated=True)
 
     # Same module through the package path (ghost importable, run from the repo).
     pkg_code = (

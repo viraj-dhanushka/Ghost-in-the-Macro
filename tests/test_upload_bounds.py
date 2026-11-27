@@ -32,7 +32,16 @@ CHILD = (
     "    w = load_workbook(sys.argv[1]); out = 'loaded %d' % len(w.cells)\n"
     "except IngestError as e:\n"
     "    out = 'refused ' + str(e)\n"
-    "print(out, '|', round(time.monotonic() - t0, 2), '|', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * u // 1048576)\n"
+    "def peak_mb():\n"
+    "    # The child's own peak. On Linux ru_maxrss can carry the parent's peak across fork and exec, so read\n"
+    "    # VmHWM (this process's high-water resident set) from /proc/self/status instead.\n"
+    "    if sys.platform.startswith('linux'):\n"
+    "        for line in open('/proc/self/status'):\n"
+    "            if line.startswith('VmHWM:'):\n"
+    "                return int(line.split()[1]) // 1024\n"
+    "        raise SystemExit('VmHWM not found')\n"
+    "    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * u // 1048576\n"
+    "print(out, '|', round(time.monotonic() - t0, 2), '|', peak_mb())\n"
 )
 
 
@@ -64,6 +73,7 @@ def patch_part(src: Path, dst: Path, part: str, edit) -> Path:
 
 def assert_bounded(path: Path) -> str:
     what, secs, mb = run_child(path)
+    print(f"[bounds] {path.name}: {what[:60]} | {secs} s | {mb} MB peak ({sys.platform})")
     assert secs < 7, (what, secs)
     assert mb < 400, (what, mb)
     return what
