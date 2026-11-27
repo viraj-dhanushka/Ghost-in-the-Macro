@@ -9,11 +9,13 @@ Usage by the Owner, in a terminal outside the session:
 Exit 0 lets the tool call run. Exit 2 blocks it and the reason goes to the agent on standard error (Kiro documents
 Pre Tool Use as able to block; exit code 2 is the code its pages agree on).
 
-What it does: it reads the command text of a shell tool call and splits it with a quote-aware tokeniser (shlex with
-punctuation characters, so quotes, escapes, redirects and separators are understood). It blocks the call when atx or aws
-is named as a program: after a separator, a keyword (if, while, !, a brace), a redirect prefix, a variable assignment,
-a wrapper (sudo, env, timeout, nice, nohup, xargs, command, exec and similar, with their options), inside bash -c or
--ec, inside eval or a command substitution, or as the program an npx-style launcher runs. A command that only mentions
+What it does: it reads the command text of a shell tool call, removes shell comments, and splits it with a quote-aware
+tokeniser (shlex with punctuation characters, so quotes, escapes, redirects and separators are understood). It blocks
+the call when atx or aws is named as a program: after a separator, a keyword (if, while, !, a brace), a redirect prefix,
+a variable assignment, a wrapper (sudo, env, timeout, nice, nohup, xargs, command, exec and similar, with their
+options), inside bash -c or -ec, inside eval or a command substitution, as the program an npx-style launcher runs,
+as the command a find -exec, -execdir, -ok or -okdir runs, as the AWS CLI run as a Python module (python -m awscli),
+or as the repository's own scripts/deploy_ecs_express.sh, run directly, through a shell, or sourced. A command that only mentions
 the words (a grep, a commit message, a file name) is not blocked. If the text cannot be parsed it falls back to a raw
 case-insensitive match; a tool call with no command field whose payload mentions atx or aws is blocked; and any
 exception in the guard blocks. It reads text and writes one marker file per approved session under
@@ -37,6 +39,9 @@ import sys
 from pathlib import Path
 
 BLOCKED_PROGRAMS = {"atx", "aws"}
+DEPLOY_SCRIPT = "deploy_ecs_express.sh"  # the repository's deploy script: it runs aws and docker against a real account
+PYTHON_RE = re.compile(r"^python[0-9.]*$")
+FIND_EXEC = {"-exec", "-execdir", "-ok", "-okdir"}
 SESSION_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 # A raw mention: atx or aws as a whole word, not part of a path, a file name or a longer identifier.
 RAW_RE = re.compile(r"(^|[^A-Za-z0-9_./-])(atx|aws)($|[^A-Za-z0-9_-])", re.IGNORECASE)
@@ -82,6 +87,40 @@ SHELL_BEFORE_HEREDOC_RE = re.compile(r"(^|[\s;&|(])(?:\S*/)?(?:ba|z|da|k|c)?sh(\
 
 def approvals_dir() -> Path:
     return Path(os.environ.get("GHOST_APPROVALS_DIR") or (Path.home() / ".ghost" / "approvals"))
+
+
+# --------------------------------------------------------------------------------------------- comments
+def _strip_comments(text: str) -> str:
+    """Remove shell comments (a `#` that starts a word, outside quotes), keeping the newline that ends each one. An
+    apostrophe inside a comment ("# it's") would otherwise open a quote that runs to the end of the command and hide
+    every line after it from the tokeniser."""
+    out: list[str] = []
+    i, n = 0, len(text)
+    single = double = False
+    while i < n:
+        c = text[i]
+        if single:
+            out.append(c)
+            single = c != "'"
+            i += 1
+            continue
+        if c == "\\" and i + 1 < n:
+            out.append(text[i:i + 2])
+            i += 2
+            continue
+        if c == "'" and not double:
+            single = True
+        elif c == '"':
+            double = not double
+        elif c == "#" and not double and (i == 0 or text[i - 1] in " \t\n;&|()"):
+            j = text.find("\n", i)
+            if j == -1:
+                break
+            i = j  # the newline itself is kept
+            continue
+        out.append(c)
+        i += 1
+    return "".join(out)
 
 
 # --------------------------------------------------------------------------------------------- tokens
@@ -193,11 +232,12 @@ def runs_blocked_program(command: str, depth: int = 0) -> bool:
             return True
         if not literal and any(runs_blocked_program(s, depth + 1) for s in _substitutions(body)):
             return True
+    stripped = _strip_comments(text)
     try:
-        toks = _tokens(text)
+        toks = _tokens(stripped)
     except ValueError:
-        return bool(RAW_RE.search(text))
-    if any(runs_blocked_program(s, depth + 1) for s in _substitutions(text)):
+        return bool(RAW_RE.search(text)) or DEPLOY_SCRIPT in text  # cannot parse it: a raw, conservative match
+    if any(runs_blocked_program(s, depth + 1) for s in _substitutions(stripped)):
         return True
     return _scan(toks, depth)
 
@@ -261,7 +301,7 @@ def _scan(toks: list[str], depth: int) -> bool:
             i += 1  # VAR=value prefix; its value was checked as a substitution
             continue
         name = _prog(t)
-        if name in BLOCKED_PROGRAMS:
+        if name in BLOCKED_PROGRAMS or name == DEPLOY_SCRIPT:
             return True
         if name in KEYWORDS:
             i += 1
@@ -273,6 +313,17 @@ def _scan(toks: list[str], depth: int) -> bool:
                     if runs_blocked_program(args[k + 1], depth + 1):
                         return True
                     break
+            if any(_prog(w) == DEPLOY_SCRIPT for w in args):  # bash scripts/deploy_ecs_express.sh
+                return True
+        elif name in ("source", "."):
+            if any(_prog(w) == DEPLOY_SCRIPT for w in args):
+                return True
+        elif PYTHON_RE.match(name):
+            if _runs_awscli_module(args):
+                return True
+        elif name == "find":
+            if _find_runs_blocked(toks, i + 1, depth):
+                return True
         elif name == "eval":
             if runs_blocked_program(" ".join(args), depth + 1):
                 return True
@@ -294,6 +345,37 @@ def _scan(toks: list[str], depth: int) -> bool:
     return False
 
 
+def _runs_awscli_module(args: list[str]) -> bool:
+    """python -m awscli ... (or -mawscli): the AWS CLI as a module."""
+    for k, w in enumerate(args):
+        if w == "-m" and k + 1 < len(args):
+            return args[k + 1].split(".")[0] == "awscli"
+        if w.startswith("-m") and len(w) > 2:
+            return w[2:].split(".")[0] == "awscli"
+        if not w.startswith("-"):
+            return False  # the script name: what follows belongs to the script
+    return False
+
+
+def _find_runs_blocked(toks: list[str], start: int, depth: int) -> bool:
+    """find ... -exec CMD ... ; | + : CMD is a command in command position. An escaped `\\;` and a real `;` are the same
+    token, so the whole rest of the line is searched for -exec, -execdir, -ok and -okdir."""
+    n = len(toks)
+    j = start
+    while j < n:
+        if toks[j] in FIND_EXEC:
+            sub: list[str] = []
+            k = j + 1
+            while k < n and toks[k] not in (";", "+") and not (_punct(toks[k]) and toks[k] not in ("(", ")")):
+                sub.append(toks[k])
+                k += 1
+            if sub and _scan(sub, depth + 1):
+                return True
+            j = k
+        j += 1
+    return False
+
+
 def _launcher_runs_blocked(name: str, args: list[str]) -> bool:
     subs = LAUNCHERS[name]
     k = 0
@@ -311,7 +393,7 @@ def _launcher_runs_blocked(name: str, args: list[str]) -> bool:
         if w.startswith("-"):
             k += 2 if w in LAUNCHER_ARG_OPTIONS else 1
             continue
-        return _prog(w) in BLOCKED_PROGRAMS
+        return _prog(w) in BLOCKED_PROGRAMS or _prog(w) == "awscli" or _prog(w) == DEPLOY_SCRIPT
     return False
 
 
