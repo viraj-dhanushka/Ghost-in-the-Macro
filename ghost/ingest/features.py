@@ -47,13 +47,15 @@ def _function_names(formula: str) -> list[str]:
 
 def _array_cells(path: str) -> set[CellRef]:
     """Cells stored as legacy array (CSE) formulas. Empty set if file unreadable."""
+    from ghost.ingest.workbook import _rows  # the walk over the cells a sheet has, not its bounding box
+
     out: set[CellRef] = set()
     try:
         wb = _opx_load(path, data_only=False)
     except Exception:
         return out
     for ws in wb.worksheets:
-        for row in ws.iter_rows():
+        for row in _rows(ws):
             for c in row:
                 if isinstance(c.value, ArrayFormula):
                     out.add(f"{ws.title}!{c.coordinate}")

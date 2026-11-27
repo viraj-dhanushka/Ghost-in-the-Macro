@@ -164,16 +164,24 @@ def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
                 )
             cells = 0
             elements = 0
-            in_sheet = False
+            # openpyxl reads a sheet by the name the relationships give it, whatever that name or extension is, and
+            # reads cells only inside rows. So cells are counted by structure: a `c` element after a `row` element,
+            # in any part.
+            seen_row = False
+            ranged = {"mergeCell": 0, "hyperlink": 0, "comment": 0}
+            ranged_area = 0
+            too_many_ranged = "Workbook has too many merged, hyperlinked or commented cells; rejected."
 
             def on_start(tag: str) -> None:
-                nonlocal cells, elements
+                nonlocal cells, elements, seen_row
                 elements += 1
                 if elements > limits.max_xml_elements:
                     raise TooLarge("Workbook has too many XML elements; rejected.")
                 if elements % DEADLINE_EVERY_TAGS == 0:
                     deadline.check()  # every start tag counts, not only cells: non-cell tags cost time too
-                if in_sheet and (tag == "c" or tag.endswith("}c")):
+                if tag == "row" or tag.endswith("}row"):
+                    seen_row = True
+                if seen_row and (tag == "c" or tag.endswith("}c")):
                     cells += 1
                     if cells > limits.max_cells:
                         raise TooManyCells(
@@ -181,21 +189,60 @@ def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
                             f"the limit is {limits.max_cells:,} cells."
                         )
 
+            def on_attrs(tag: str, attrib: dict) -> None:
+                """openpyxl creates a cell for every position of a merged range, a ranged hyperlink and a ranged comment."""
+                nonlocal ranged_area
+                kind = tag.rsplit("}", 1)[-1]
+                if kind in ranged and "ref" in attrib:
+                    ranged[kind] += 1
+                    if ranged[kind] > limits.max_ranged_elements:
+                        raise TooLarge(too_many_ranged)
+                    ranged_area += _range_area(attrib["ref"], limits.max_cells)
+                if ranged_area > limits.max_cells:
+                    raise TooLarge(too_many_ranged)
+
             for info in infos:
                 deadline.check()
-                if not info.filename.lower().endswith((".xml", ".rels", ".vml")):
-                    continue
-                in_sheet = info.filename.startswith("xl/worksheets/") and info.filename.endswith(".xml")
+                xml_name = info.filename.lower().endswith((".xml", ".rels", ".vml"))
+                seen_row = False
                 with zf.open(info) as fh:
-                    # No tree is built: every part is parsed for safety and well-formedness and its start tags
-                    # are counted as they stream by; only sheet parts count cells.
-                    scan_xml(fh, on_start)
+                    # No tree is built: every part is parsed for safety and well-formedness and its start tags are
+                    # counted as they stream by, whatever the part is called. A part that is not XML at all
+                    # (vbaProject.bin, an image) cannot be read by openpyxl as a sheet either, so it is skipped.
+                    try:
+                        scan_xml(fh, on_start, on_attrs)
+                    except DET.ParseError:
+                        if xml_name:
+                            raise
     except DefusedXmlException as exc:
         raise UnsupportedFormat(f"Workbook XML rejected as unsafe: {exc}") from exc
     except (zipfile.BadZipFile, DET.ParseError) as exc:
         raise UnsupportedFormat(
             f"Corrupt workbook archive ({exc}). Accepted formats: .xlsx and .xlsm."
         ) from exc
+
+
+def _range_area(ref: str, fallback: int) -> int:
+    """Positions covered by a range reference such as ``A1:C3``; a reference openpyxl cannot parse counts as one more
+    than ``fallback`` so that it is refused."""
+    try:
+        c1, r1, c2, r2 = range_boundaries(ref)
+        if None in (c1, r1, c2, r2):
+            return fallback + 1
+        return (c2 - c1 + 1) * (r2 - r1 + 1)
+    except (ValueError, TypeError):
+        return fallback + 1
+
+
+def _rows(ws):
+    """The cells the sheet has, row by row, in column order. ``ws.iter_rows()`` would create every position of the
+    bounding box: two cells at A1 and OJ10000 make four million of them. The loader stores only cells that have a value
+    or a formula, so the positions ``iter_rows`` would have created empty were never stored and are not needed."""
+    by_row: dict[int, list] = {}
+    for (r, c), cell in ws._cells.items():
+        by_row.setdefault(r, []).append((c, cell))
+    for r in sorted(by_row):
+        yield [cell for _, cell in sorted(by_row[r], key=lambda rc: rc[0])]
 
 
 def _formula_text(value: object) -> str | None:
@@ -265,7 +312,7 @@ def load_workbook(
     # Formula limit first, cheaply, before building anything.
     formula_count = 0
     for ws in wb_f.worksheets:
-        for row in ws.iter_rows():
+        for row in _rows(ws):
             deadline.check()
             for c in row:
                 if _formula_text(c.value) is not None:
@@ -320,7 +367,7 @@ def load_workbook(
                 for r in range(r1, r2 + 1):
                     for c in range(c1, c2 + 1):
                         validations[f"{get_column_letter(c)}{r}"] = desc
-        for row in ws.iter_rows():
+        for row in _rows(ws):
             for c in row:
                 n += 1
                 if n % 500 == 0:

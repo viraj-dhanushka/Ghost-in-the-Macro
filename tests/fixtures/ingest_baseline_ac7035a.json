@@ -1,0 +1,61 @@
+{
+ "discount.xlsx": {
+  "cells": 636,
+  "deps_sha256": "dce0665bcc629ce48bdf37b23f909033bcfe4ef7d09dcd8b876469cfdcd47135",
+  "order_and_content_sha256": "afb048a692ba538390fec5831fdb2ab9f5cec36edc69429c6227be1d98d2394d",
+  "sheets": [
+   "Calculator",
+   "Tests"
+  ],
+  "validations": 3
+ },
+ "discount_vba.xlsm": {
+  "cells": 642,
+  "deps_sha256": "4ef4a5d13f0df30a4f2247aa40ce2f4c97fcd6ec3683adfb46c37c213c9c4b36",
+  "order_and_content_sha256": "f61356f6f643cac70a2e3164b17e45b227ff14228fcb88be5ad2533e62806c86",
+  "sheets": [
+   "Calculator",
+   "Tests"
+  ],
+  "validations": 3
+ },
+ "graveyard_haunted.xlsx": {
+  "cells": 636,
+  "deps_sha256": "92cf731e939f511351515e61139cbc70d94d4bf07296e2acda8767b451728fe5",
+  "order_and_content_sha256": "b4826cee6218178f409575562cb456a22b5eca8da41fd0b1c8be5dc65f998207",
+  "sheets": [
+   "Calculator",
+   "Tests"
+  ],
+  "validations": 3
+ },
+ "haunted.xlsx": {
+  "cells": 636,
+  "deps_sha256": "92cf731e939f511351515e61139cbc70d94d4bf07296e2acda8767b451728fe5",
+  "order_and_content_sha256": "b4826cee6218178f409575562cb456a22b5eca8da41fd0b1c8be5dc65f998207",
+  "sheets": [
+   "Calculator",
+   "Tests"
+  ],
+  "validations": 3
+ },
+ "scenarios.xlsx": {
+  "cells": 93,
+  "deps_sha256": "2ae8964631e0103ae37d41e04198d608ca5d7e7b118a7e443bb347babbefbc03",
+  "order_and_content_sha256": "69cdf35379008c5f4fcb9fc1e508f68a665fc33ff95a7449dbfe19184c20be4a",
+  "sheets": [
+   "Model"
+  ],
+  "validations": 0
+ },
+ "traps.xlsx": {
+  "cells": 63,
+  "deps_sha256": "a13441623b823b33523f0730820f00afd69503fe94b788b1da44bd70e279a27c",
+  "order_and_content_sha256": "a76d8e1592dcdcc7b0129868d606142076827a07a9284e17ace2aad5ee8223d8",
+  "sheets": [
+   "Traps",
+   "About"
+  ],
+  "validations": 0
+ }
+}

@@ -109,26 +109,32 @@ def scan_sizes(
                 )
             else:
                 tags = 0
+                seen_row = False  # cells are counted by structure (a `c` after a `row`), in any part, as the loader does
 
                 def on_start(tag: str) -> None:
-                    nonlocal cells, formulas, tags
+                    nonlocal cells, formulas, tags, seen_row
                     tags += 1
                     if tags % DEADLINE_EVERY_TAGS == 0:
                         deadline.check()  # every start tag counts, not only cells
                     name = local_name(tag)
-                    if name == "c":
+                    if name == "row":
+                        seen_row = True
+                    elif name == "c" and seen_row:
                         cells += 1
-                    elif name == "f":
+                    elif name == "f" and seen_row:
                         formulas += 1
 
                 try:
                     for info in infos:
                         deadline.check()
-                        name = info.filename
-                        if not (name.startswith("xl/worksheets/") and name.endswith(".xml")):
-                            continue
+                        seen_row = False
                         with zf.open(info) as fh:
-                            scan_xml(fh, on_start)
+                            try:
+                                scan_xml(fh, on_start)
+                            except DET.ParseError:
+                                if info.filename.lower().endswith((".xml", ".rels", ".vml")):
+                                    raise
+                                # not XML (vbaProject.bin, an image): never a sheet
                 except ProcessingTimeout:
                     counted = False
                     reason = (

@@ -82,6 +82,8 @@ def _definition_of(command: str | None) -> str | None:
 
 def explain_route(route: Route) -> str:
     """Deterministic plain-English explanation (markdown, no timestamps)."""
+    from ghost.router.route import UNREADABLE_VBA_REASON, has_vba
+
     m = route.metrics
     lines = ["## Migration route", "", f"**Recommended route: {route.route}.**", ""]
     if route.route == "Ghost converts":
@@ -89,6 +91,18 @@ def explain_route(route: Route) -> str:
             "Ghost converts this workbook itself and checks the result against the "
             "original workbook."
         )
+    elif route.route == "AWS Transform custom" and not has_vba(m):
+        # The route name comes from the batch rule (or a UserForm count) and this workbook has no readable VBA.
+        if UNREADABLE_VBA_REASON in route.reasons:
+            lines.append(
+                "The route is AWS Transform custom because of the batch rule, but VBA is present but could not be read, "
+                "so no command is suggested and nothing is handed to AWS Transform custom."
+            )
+        else:
+            lines.append(
+                "The route is AWS Transform custom because of the batch rule, but this workbook has no VBA to hand to "
+                "AWS Transform custom, so no command is suggested. Its formulas are converted by Ghost where it can."
+            )
     elif route.route == "AWS Transform custom":
         lines.append(
             "The VBA of this workbook is better suited to AWS Transform custom. Its documentation "

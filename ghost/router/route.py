@@ -7,12 +7,13 @@ from ghost.ingest.triage import SizeProfile
 from ghost.models import Metrics, Route
 from ghost.router.thresholds import RoutingThresholds, load_thresholds
 
-__all__ = ["NO_VBA_REASON", "has_vba", "over_limits", "recommend_route", "route_for_sizes", "route_workbook"]
+__all__ = ["NO_VBA_REASON", "UNREADABLE_VBA_REASON", "has_vba", "over_limits", "recommend_route", "route_for_sizes", "route_workbook"]
 
 _AWS_NOW = "goes to AWS Transform custom (suggested command, not run)"
 
 
 NO_VBA_REASON = "no VBA in this workbook: nothing to hand to AWS Transform custom"
+UNREADABLE_VBA_REASON = "VBA is present but could not be read: no command is suggested"
 
 
 def has_vba(m: Metrics) -> bool:
@@ -159,8 +160,12 @@ def route_workbook(path, batch_size: int = 1, thresholds: RoutingThresholds | No
     wb = load(str(path))
     route = recommend_route(compute_metrics(wb), batch_size, t)
     # The loaded workbook knows whether its VBA could be read: never say "none" for VBA that is there but unreadable.
+    unreadable = bool(getattr(wb, "vba_error", None))
     parts = [_vba_part(route.route, route.metrics, getattr(wb, "vba_error", None), getattr(wb, "vba_present", None))]
-    return route.model_copy(update={"parts": parts + route.parts[1:]})
+    update: dict = {"parts": parts + route.parts[1:]}
+    if unreadable and NO_VBA_REASON in route.reasons:
+        update["reasons"] = [UNREADABLE_VBA_REASON if r == NO_VBA_REASON else r for r in route.reasons]
+    return route.model_copy(update=update)
 
 
 def route_for_sizes(s: SizeProfile, thresholds: RoutingThresholds | None = None, batch_size: int = 1) -> Route:
