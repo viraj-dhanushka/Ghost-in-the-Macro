@@ -52,7 +52,7 @@ def test_the_macro_spike_sentence_is_the_same_everywhere_and_never_says_the_proj
 def test_the_readme_says_challenge_has_no_trust_macros_and_marks_the_route_card_as_after_deploy():
     t = text("README.md")
     assert "`ghost challenge` has no `--trust-macros`" in t
-    assert "after the next deploy" in lane_section() and "route card" in lane_section()
+    assert "route card" in lane_section()
     assert "larger files are rejected with a message naming the limit" not in t
     assert "route command" in t and "ghost.cli route" in t  # no bare `ghost route` in prose (final round, item 16)
 

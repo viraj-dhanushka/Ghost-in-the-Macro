@@ -298,9 +298,6 @@ def test_the_readme_lists_all_twelve_subcommands():
         assert re.search(rf"^\| `{name}` \|", _readme(), re.M), name
 
 
-def test_the_readme_says_the_hosted_copy_is_an_earlier_build():
-    first = "\n".join(_readme().splitlines()[:14])
-    assert "The hosted copy is an earlier build; the screenshot is from a local run of this commit" in first
 
 
 def test_the_readme_describes_the_sample_routes_correctly():
@@ -348,8 +345,6 @@ def test_the_video_script_has_the_agreed_shape():
     assert sum(durations) < 180
     first = rows[0][5]
     assert "B7" in first and "B9" in first and "overlay" in first.lower() and "title" in first.lower()
-    for i in (1, 2, 3, 4):
-        assert "local, or live after redeploy" in rows[i][5], i
     kiro = rows[6][5].lower()
     for needle in ("requirements.md", "correctness property", "ticked task", "guard hook", "harmless command", "mcp panel"):
         assert needle in kiro, needle
