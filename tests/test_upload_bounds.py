@@ -158,9 +158,24 @@ def test_the_cap_is_10_times_max_cells():
     assert Limits().max_cells * 10 == 2_000_000
 
 
-def test_every_sample_loads_identically():
+def _digest(wb) -> dict:
+    h = hashlib.sha256()
+    for k, c in wb.cells.items():
+        h.update(repr((k, c.value, c.formula, c.fill, c.validation)).encode())
+    d = hashlib.sha256(repr([(k, sorted(v)) for k, v in wb.deps.items()]).encode()).hexdigest()
+    return {"cells": len(wb.cells), "order_and_content_sha256": h.hexdigest(), "deps_sha256": d, "sheets": wb.sheets,
+            "validations": sum(1 for c in wb.cells.values() if c.validation)}
+
+
+def test_every_sample_loads_identically(tmp_path):
+    """The samples are gitignored: build them with their scripts and compare with the pinned baseline."""
     base = json.loads((ROOT / "tests/fixtures/ingest_baseline_ac7035a.json").read_text())
-    assert base  # the baseline pinned by test_hostile_shapes.py is still the reference; it must still pass there
-    for name in ("discount.xlsx", "haunted.xlsx"):
-        wb = load_workbook(str(ROOT / "samples" / name))
-        assert len(wb.cells) > 0 and hashlib.sha1(name.encode()).hexdigest()
+    sys.path.insert(0, str(ROOT / "samples"))
+    try:
+        import make_discount, make_haunted
+    finally:
+        sys.path.remove(str(ROOT / "samples"))
+    files = {"discount.xlsx": make_discount.build(tmp_path / "discount.xlsx"),
+             "haunted.xlsx": make_haunted.build(tmp_path / "haunted.xlsx")}
+    for name, path in files.items():
+        assert _digest(load_workbook(str(path))) == base[name], name
