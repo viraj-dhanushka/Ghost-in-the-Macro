@@ -73,7 +73,7 @@ What I would not have attempted without Kiro: [OWNER: one sentence in your own w
 ## Accomplishments
 
 - The demo invariants hold and are tested (`scripts/demo.sh`, `tests/test_demo_invariants.py`).
-- A full suite that runs the real Referee when LibreOffice is installed (2142 passed, 4 skipped on 2026-11-27, `docs/KIRO_USAGE.md`).
+- A full suite that runs the real Referee when LibreOffice is installed (2155 passed, 4 skipped on 2026-11-27, `docs/KIRO_USAGE.md`).
 - Limits stated in the product, not buried (README, "Limits, stated honestly").
 
 ## What is next
