@@ -54,7 +54,7 @@ def test_the_readme_says_challenge_has_no_trust_macros_and_marks_the_route_card_
     assert "`ghost challenge` has no `--trust-macros`" in t
     assert "after the next deploy" in lane_section() and "route card" in lane_section()
     assert "larger files are rejected with a message naming the limit" not in t
-    assert "`ghost route` measures" in t or "ghost route" in t
+    assert "route command" in t and "ghost.cli route" in t  # no bare `ghost route` in prose (final round, item 16)
 
 
 def test_the_checklist_has_the_pythonpath_command_and_a_row_for_which_g_form_worked():
