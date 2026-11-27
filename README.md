@@ -25,6 +25,8 @@ flowchart LR
 
 ## Built with Kiro
 
+This repository was built with Kiro [specs](.kiro/specs/), [agent hooks](.kiro/hooks/), [steering files](.kiro/steering/), an [MCP server](mcp_server/), [Power skills](plugin/skills/), [custom agents](.kiro/agents/) and [property tests](tests/); the counts below come from those folders.
+
 <!-- kiro-table:begin -->
 | What | Count | Counted from |
 |---|---|---|

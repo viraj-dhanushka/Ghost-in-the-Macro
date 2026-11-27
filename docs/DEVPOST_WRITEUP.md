@@ -29,10 +29,21 @@ The demo that shows what is different: the bundled "haunted discount calculator"
 - Trial by Workbook: `ghost challenge` lets the workbook referee anyone's rewrite, including code an AI agent wrote. In the repository an agent migration was corrected by the loop (`.kiro/specs/haunted-delivery-migration/README.md`); that round was not blind and one round's input domains were confirmed by the Owner afterwards (same README).
 
 ## How it was built
+**Built with:** Kiro (specs, hooks, steering, MCP, skills, custom agents), Python 3.11+, openpyxl, oletools, defusedxml, pydantic, PyYAML, jsonschema, Hypothesis, pytest, FastAPI, uvicorn, Jinja2, HTMX, the `mcp` Python SDK, headless LibreOffice on Debian slim, Docker.
+
 
 Python 3.11+, openpyxl, oletools (static VBA read), FastAPI with HTMX, Hypothesis, pytest, headless LibreOffice, Docker, deployed on AWS ECS Express Mode (`docs/DEPLOY_ECS_EXPRESS.md`). The web app has no login, no LLM calls and no API keys.
 
 ## How Kiro was used
+Kiro features used: [specs](.kiro/specs/), [agent hooks](.kiro/hooks/), [steering files](.kiro/steering/), an [MCP server](mcp_server/), [Power skills](plugin/skills/), [custom agents](.kiro/agents/) and [property tests](tests/). One concrete example of each, from `docs/KIRO_USAGE.md` and the repository:
+- **Specs:** `.kiro/specs/haunted-delivery-migration/repair-log.md` records an agent migration of the haunted sample. Round 3 failed (planted by us, not blind) and round 4 passed against the workbook.
+- **Hooks:** the hook-matcher property found that `regenerate-report-on-decision.json` and `reverify-on-logic-save.json` had an unanchored `\.kiro/specs/` matcher, so `x.kiro/specs/0/decisions.yaml` matched too. Both were fixed.
+- **Steering:** `.kiro/steering/ghost-guardrails.md` is loaded by the custom agents as a resource (`.kiro/agents/*.json`), so they start from the same rules as the engine.
+- **MCP server:** 14 tools in `mcp_server/server.py`; the Owner saw the `ghost` server Connected with 13 of them in the Kiro MCP panel on 2026-11-25.
+- **Skills:** `plugin/skills/guardrails/` carries the guardrail text inside the Power, because `plugin/steering/` is not a documented location (`docs/KIRO_SURFACES_FORMATS.md`).
+- **Custom agents:** the `skeptic` agent's review caught a blurb that said Ghost "converts the formulas and routes the macro logic" when `Calculator!B13` is not converted (`docs/KIRO_STORY.md`, section 2).
+- **Property tests:** property 2 of the hook spec caught the two matcher bugs above; the log says three real bugs were caught by properties, and does not claim a unit test would have missed them.
+
 
 The eight topics the rules ask about. Each has generated facts, quotes from the usage log, and what was not verified in `docs/KIRO_STORY.md`; the summary below is short on purpose.
 
@@ -44,6 +55,8 @@ The eight topics the rules ask about. Each has generated facts, quotes from the 
 6. **MCP.** A Python MCP server with 14 tools; the Owner saw it Connected with 13 tools in the Kiro MCP panel (`docs/KIRO_OWNER_CHECKLIST.md`). [OWNER.]
 7. **Property-based testing.** The verifier uses a fixed seed (20261204); the test suite uses Hypothesis, and 19 of its 33 property files are seeded. The ledger (`docs/KIRO_PROPERTY_LEDGER.md`) has one row per spec and property number with the test that covers it or "not covered". The usage log records properties catching three real bugs (two hook matchers, one detector). It does not say unit tests would have missed them, so the write-up does not claim that. [OWNER: whether it changed how you wrote code.]
 8. **Kiro Powers.** The `plugin/` folder is a Power with eight skills. Installing it through the Powers panel is not checked. AWS documents an AWS Transform Kiro Power; it was not installed or tested with Ghost. [OWNER.]
+
+What I would not have attempted without Kiro: [OWNER: one sentence in your own words.]
 
 ## Challenges
 
