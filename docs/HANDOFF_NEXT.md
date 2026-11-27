@@ -1,36 +1,40 @@
-# Where we stopped (2026-11-26, end of day)
+# Handoff: the Owner's ordered list (2026-11-27)
 
-Features are frozen: fixes only. Nothing is pushed. No AWS or `atx` command was run.
+Features are frozen. Nothing is pushed. No AWS or `atx` command was ever run. Submission closes Fri 4 Dec 2026 2:00 PM PT. Do the steps in this order.
 
-## Done and committed earlier today
-- `3f23ef5` engine fixes 1 to 5 (deadline on every start tag, `max_xml_elements`, no atx command without VBA, receipt mapping note).
-- `8002b85` guard hook items 6 to 9 (quote-aware tokeniser, fail closed, hook-level `timeout`, honest limits).
+1. **Write your text, regenerate, check.**
+   - Write your own words under the eight headings of `docs/KIRO_OWNER_NOTES.md` (headings at lines 8, 11, 14, 17, 20, 23, 26, 29). Then run `scripts/ghost-py scripts/kiro_ledger.py` and `scripts/ghost-py scripts/kiro_ledger.py --check`. `docs/KIRO_STORY.md` is generated: do not edit it by hand.
+   - Fill the placeholders in `docs/DEVPOST_WRITEUP.md` (all are `[OWNER ...]` unless noted):
+     - line 1: "(draft)" in the title; line 3: the "Draft for the Owner to edit." paragraph; delete both when done;
+     - line 13: who had this problem, and any real person or case;
+     - lines 56 to 63: one `[OWNER: your experience.]` per Kiro topic (surfaces, agents, hooks, specs, steering, MCP, property tests, Powers);
+     - line 65: "What I would not have attempted without Kiro";
+     - line 81: what you want to say under "What is next";
+     - line 83: the heading ends "(for the Owner to complete)"; remove that phrase;
+     - line 88: confirm the contest start date and that all code was written in the contest period;
+     - line 91: which model or agent wrote which parts.
+   - `scripts/preflight_demo.sh --submit` must pass. It fails on `[OWNER`, "(draft)", "Draft for the Owner" and "for the Owner to complete" in README.md, the write-up, `docs/KIRO_STORY.md` and `docs/DEMO_VIDEO_SCRIPT.md`.
+2. **Commit and push** (`git push`). Nothing has been pushed yet.
+3. **Build and run the container.** `docker build -t ghost-in-the-macro .`, then `docker run --rm -p 8080:8080 ghost-in-the-macro`. Open `http://127.0.0.1:8080/kiro`, then click the macro sample. The Docker build was never run (the daemon was not running in any session), so expect to fix something.
+4. **Redeploy from your own terminal** with `scripts/deploy_ecs_express.sh` (see `docs/DEPLOY_ECS_EXPRESS.md`). The guard hook blocks the agent from running it.
+5. **Preflight and one sample by hand.** `scripts/preflight_demo.sh` against the live URL (it checks `/healthz`, `/` and `/kiro`), then load the haunted sample in a browser and run it to a verdict.
+6. **Only then remove the "earlier build" wording and its test.**
+   - `README.md` line 9: "The hosted copy is an earlier build; the screenshot is from a local run of this commit."
+   - `docs/DEMO_VIDEO_SCRIPT.md` line 5 (the "Which build to film" paragraph) and the "local, or live after redeploy" wording in the shot table.
+   - `tests/test_judge_kit_docs.py` line 303 pins the README sentence. Remove the sentence and that assertion together.
+   - `README.md` also says "after the next deploy" for the route card (the large-workbook section); `tests/test_lane_docs.py` pins "after the next deploy". Change both together, or leave them.
+7. **Record the video** from `docs/DEMO_VIDEO_SCRIPT.md` (173 s). In the Kiro shot, try `aws --version` off camera first and film the guard hook only if it blocks. Do not show an AWS console or run any `atx` or `aws` command.
+8. **Fill the rows** of `docs/KIRO_OWNER_CHECKLIST.md` that have an empty Result (agents load in the IDE, Power install, 14 MCP tools in the panel, the guard hook on a real `aws` command, the AWS Transform rows). Leave a row empty rather than guess.
+9. **Final suite run, commit, push.** `.venv/bin/python -m pytest -q` (about 10 minutes). Put its pass line and the date in `docs/DEVPOST_WRITEUP.md` line 76, in the form "(N passed, M skipped on YYYY-MM-DD". The test pins the form and a floor of 2035 passed.
+10. **Submit on Devpost.**
 
-## In the working tree, committed as "WIP" in the next commit (items 10 to 18)
-- Screenshot: `scripts/make_verdict_screenshot.py` sizes the window to the card (720 x 580, scale 2), no crop. `docs/img/verdict-card.png` re-made and looked at: "Passed", the left edge, 311 cases, 6.0 vs 0 are visible.
-- `scripts/kiro_ledger.py`: skips "not claimed" lines, binds rows on `Feature: <spec>, Property N` comments first, adds the vibe session and Skeptic lines, prints duplicate specIds as prose, reads `docs/KIRO_OWNER_NOTES.md` (new template, 8 sections) in place of placeholders, counts seeded property files (19 of 33).
-- `scripts/preflight_demo.sh`: checks `GET /kiro`; `--submit` fails on `[OWNER` or `(draft)` in README.md, docs/DEVPOST_WRITEUP.md, docs/KIRO_STORY.md.
-- README: first-screen note that the hosted copy is an earlier build; table of all twelve subcommands; `.venv/bin/python -m ghost.cli ...` everywhere; six hooks, "twice" for the guard; `POST /sample/{id}` and `GET /sample/{id}/workbook`; the XML element cap in the limits.
-- `docs/DEMO_VIDEO_SCRIPT.md` rewritten (173 s; shots 2 to 5 "local, or live after redeploy"; Kiro shot 40 s). `docs/DEVPOST_WRITEUP.md` updated.
-- Spec leftovers (item 18) done. New and changed tests: `tests/test_judge_kit_docs.py`, `test_kiro_ledger.py`, `test_guard_hook.py`, `test_xml_element_cap.py`, `test_triage.py`, and others.
+## Not checked (so far)
+- The Docker build and a container serving `/kiro`.
+- The hosted site (an earlier build, without `/kiro` or the route card).
+- The guard hook blocking a real `atx` or `aws` command, and the new `scripts/ghost_guard.sh` wrapper command run inside Kiro. The wrapper's logic is tested from the shell only.
+- Memory of the upload scan on Linux (measured on macOS only).
+- Any Kiro surface other than the IDE; any Kiro custom agent loading in the IDE; Power installation.
 
-## Checked today
-- Demo output byte-identical to commit `6f920d3` (compared in a temporary worktree, since removed). Mutation 31/33 and 33/35.
-- Sample workbook counts identical before and after the XML change (`tests/fixtures/sample_counts_2026-11-26.json`).
-- Memory of the no-tree scan on a one-million-row sheet: 14.0 to 14.7 MB (was 104 MB). The test bound is 16 MB, not 15, because 15 leaves almost no margin.
-
-## Done on 2026-11-27: full suite 2035 passed, 4 skipped; write-up count and usage-log entry written (items 1 to 3 below are finished; only the commit and the Owner's list remain)
-
-## Was not done yet (kept for the record)
-1. Run the full suite: `.venv/bin/python -m pytest -q` (about 9 minutes). The run was interrupted at 7%, so the whole suite has NOT been run on this tree. Fix anything red.
-2. Put the final pass count into `docs/DEVPOST_WRITEUP.md` (it says 1922 passed, 4 skipped, which was the count before today's tests; the real number will be higher) and into the new `docs/KIRO_USAGE.md` entry.
-3. Add the `docs/KIRO_USAGE.md` entry for this round (items 1 to 18), including: the memory figure 14.0 to 14.7 MB; bound 16 not 15; the guard also fired three more times later (old matcher blocked a harmless heredoc; two commands naming its approve command), not counted in "twice"; `timeout` sat inside `action` before today, so Kiro may have used the 60 s default for the 120/180/300 s hooks.
-4. Re-run `scripts/ghost-py scripts/kiro_ledger.py` then `--check`, then commit.
-
-## For the Owner by hand before Fri 4 Dec 2:00 PM PT
-- Push the local commits, build the Docker image, redeploy; then run `scripts/preflight_demo.sh` and try one sample by hand (the hosted copy is an earlier build: no `/kiro`, no route card). The Docker build and `GET /kiro` in a container were never checked.
-- Write your text in `docs/KIRO_OWNER_NOTES.md` (sections 1 to 8) and in the `[OWNER]` places of `docs/DEVPOST_WRITEUP.md`; complete its "pre-existing code and AI assistance" paragraph; remove "(draft)"; re-run the ledger; `scripts/preflight_demo.sh --submit` must pass.
-- Record the video from `docs/DEMO_VIDEO_SCRIPT.md` (film shots 2 to 5 locally unless you redeploy first). Try `aws --version` off camera first to see the guard block.
-- Rows in `docs/KIRO_OWNER_CHECKLIST.md` with an empty Result (agents, Power install, 14 MCP tools, guard hook, the AWS rows). The AWS lane has not been run at all.
-- Decide: duplicate specIds (front-door/kiro-surfaces, live-fixes/review-fixes) were left alone; stale test-first statuses in front-door tasks 1.2 and 1.5 and kiro-surfaces 3.4; main-spec task 19.2 left open.
-- Submit on Devpost.
+## Decisions waiting for you
+- Duplicate specIds (front-door and kiro-surfaces; live-fixes-2026-11-24 and review-fixes-2026-11-24) were left alone.
+- Stale test-first statuses in front-door tasks 1.2 and 1.5 and kiro-surfaces task 3.4 need a decision; main-spec task 19.2 is left open.
