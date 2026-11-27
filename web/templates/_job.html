@@ -2,9 +2,9 @@
   {% with current_step=("resurrection" if terminal else "trial") %}{% include "_stepper.html" %}{% endwith %}
   <h2 id="job-h-{{ job.id }}">{% if terminal %}4. Proof report{% else %}Verification in progress{% endif %}</h2>
   {% if job.status == "queued" %}
-    <p>Queued. Position {{ job.queue_position }}.</p>
+    <p>The Referee is busy with another workbook. Queued, position {{ job.queue_position }}.</p>
   {% elif not terminal %}
-    <p>Running against LibreOffice (the Referee)...</p>
+    <p>Waking the Referee: running the original workbook in LibreOffice to compare answers...</p>
   {% endif %}
   {% include "_progress_rail.html" %}
   {% if terminal %}

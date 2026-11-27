@@ -10,9 +10,20 @@
 } %}
 {% set k = kind if kind in cards else "error" %}
 {% set c = cards[k] %}
+{% set ghost = {
+  "session_expired": "This session has slipped back into the mist.",
+  "job_failed": "The séance did not take.",
+  "job_timed_out": "The spirits took too long to answer.",
+  "referee_unavailable": "The Referee is not answering the summons.",
+  "file_rejected": "This workbook would not come out of its crypt.",
+  "not_found": "Nothing haunts this address.",
+  "error": "Something went bump.",
+} %}
+{% set ghost_line = "This one is too heavy to lift." if (k == "file_rejected" and "larger than" in message) else ghost[k] %}
 <section class="failure-card" data-kind="{{ k }}">
   <p class="failure-severity">{{ c[2] }}</p>
   <h2 class="failure-title">{{ c[0] }}</h2>
+  <p class="failure-ghost">{{ ghost_line }}</p>
   <p class="error" role="alert">{{ message }}</p>
   <p class="failure-next-step">{{ c[1] }}{% if k in ("session_expired", "not_found") %} <a href="/">Back to the start page</a>{% endif %}</p>
 </section>
