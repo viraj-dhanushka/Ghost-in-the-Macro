@@ -284,6 +284,7 @@ details.vba-module summary { list-style: none; }
 details.vba-module summary::-webkit-details-marker { display: none; }
 details.vba-module summary::before { content: "\25B8" / ""; flex: none; margin-right: .5rem; color: var(--accent); }
 details.vba-module[open] summary::before { content: "\25BE" / ""; }
+#loaded-h, #autopsy-h, .job h2, .vc-headline { scroll-margin-top: 1rem; }
 .route-card { max-width: 40rem; margin: 1.5rem 0; padding: 1rem 1.25rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-left: 6px solid var(--focus); border-radius: .25rem .75rem .75rem .25rem; }
 .route-card h2, .route-card h3 { margin: .2rem 0 .4rem; }
 .route-card pre { overflow-x: auto; }
