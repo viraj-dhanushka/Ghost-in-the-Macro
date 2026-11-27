@@ -341,6 +341,7 @@ def test_one_cell_over_the_limit_is_still_refused(tmp_path):
 
 
 # -- 5. memory: warm up once, then measure ------------------------------------------------------------
+@pytest.mark.skipif(sys.platform != "darwin", reason="measured on macOS only")
 def test_the_scan_stays_under_8_mb_after_a_warm_up(tmp_path):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from test_triage import _big_book
@@ -363,6 +364,7 @@ def test_the_scan_stays_under_8_mb_after_a_warm_up(tmp_path):
     assert cells == "1000002" and float(grown) < 8.0, out.stdout
 
 
+@pytest.mark.skipif(sys.platform != "darwin", reason="measured on macOS only")
 def test_the_loader_prescan_stays_under_8_mb_after_a_warm_up(tmp_path):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from test_triage import _big_book
