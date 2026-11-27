@@ -93,6 +93,7 @@ try {
   await evaluate("document.querySelector('form[hx-post=\"/verify\"]').scrollIntoView({block: 'center'})");
   await sleep(300);
   say("4 before Run verification (form centred)", await evaluate(SNAP));
+  const runStart = Date.now();
   await evaluate("document.querySelector('form[hx-post=\"/verify\"] button[type=submit]').click()");
   await until("!!document.querySelector('#job .job h2')", "the job panel");
   await sleep(700);
@@ -104,7 +105,9 @@ try {
   const waited = await until("!document.querySelector('.job[hx-get]') && !!document.querySelector('.vc-headline')", "the verdict");
   await sleep(700);
   say("7 run finished", { ...(await evaluate(SNAP)), waitedMs: waited,
-    verdictText: await evaluate("document.querySelector('.vc-headline').textContent.trim()") });
+    verdictText: await evaluate("document.querySelector('.vc-headline').textContent.trim()"),
+    mutation: await evaluate("(document.querySelector('.mutation-summary') || {textContent: 'not shown'}).textContent.trim()"),
+    secondsFromClickToVerdictSeen: Math.round((Date.now() - runStart) / 100) / 10 });
   say("8 end", { stepRailsAtEnd: await evaluate("[...document.querySelectorAll('.stepper')].map(r => [...r.querySelectorAll('li')].map(l => l.className.split(' ').filter(c => c !== 'step').join('')).join(','))") });
   writeFileSync(join(profile, "report.json"), JSON.stringify(report, null, 2));
 } catch (e) {
