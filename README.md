@@ -85,7 +85,7 @@ python3 -m venv .venv
 .venv/bin/python -m ghost.cli --help
 ```
 
-The last command should list the subcommands `autopsy`, `rules`, `convert`, `verify`, `report`, `decide`, `mutate`, `route` and `demo`.
+The last command should list the twelve subcommands `autopsy`, `rules`, `convert`, `verify`, `report`, `decide`, `mutate`, `route`, `challenge`, `handoff`, `receipt` and `demo`.
 
 ### 3. Run the CLI demo
 
@@ -224,11 +224,13 @@ The workbook, recalculated by LibreOffice, referees a `compute(inputs) -> dict` 
 - It is a command-line tool only: the web app and the MCP server do not offer it. Macros stay off. Generated Ghost code is refused, because the verifier would regenerate it.
 
 ## Large workbooks and the AWS Transform hand-off
+Nothing has been run against AWS Transform: no `atx` command and no AWS Transform call was made (the only AWS use is the Owner's ECS deployment of the web app).
+
 
 AWS Transform custom migrates VBA code. Its documentation says nothing about worksheet formulas, cell counts or workbook size, so Ghost asks it to migrate the VBA only and never says it converts formulas. The kit does restate the formulas, though: rules.md restates the worksheet formulas in English so the agent can meet the contract, and it is uploaded with the rest. The workbook file and its cell values are not in the kit. Two kinds of "large" are kept apart:
 
 - **Large in VBA:** the VBA goes to AWS Transform custom. `ghost handoff` prepares the kit; `ghost challenge` and `ghost receipt` referee the formula-fed outputs of the Python that comes back.
-- **Large in cells or formulas** (over 5 MB, 200,000 cells or 20,000 formulas): Ghost does not load or convert the workbook. `ghost route <file>` measures it by streaming the sheet XML and answers with a route, the measured sizes, the reasons, and what happens to each part (VBA, formulas). A number that could not be counted is shown as "not counted" or "at least N", never guessed. A file under 5 MB over the cell or formula limit gets a route card in the web app where the error text was (after the next deploy; the live site does not have it yet). A file over 5 MB cannot be uploaded to the public demo ("too large for the public demo; run Ghost locally"); the upload cap is unchanged.
+- **Large in cells or formulas** (over 5 MB, 200,000 cells or 20,000 formulas): Ghost does not load or convert the workbook. The route command (`.venv/bin/python -m ghost.cli route <file>`) measures it by streaming the sheet XML and answers with a route, the measured sizes, the reasons, and what happens to each part (VBA, formulas). A number that could not be counted is shown as "not counted" or "at least N", never guessed. A file under 5 MB over the cell or formula limit gets a route card in the web app where the error text was (after the next deploy; the live site does not have it yet). A file over 5 MB cannot be uploaded to the public demo ("too large for the public demo; run Ghost locally"); the upload cap is unchanged.
 
 ```
 .venv/bin/python -m ghost.cli route big.xlsx                       # route and sizes; the workbook is not loaded if it is over a limit
@@ -290,7 +292,7 @@ The cross-check reads the saved values with openpyxl (`data_only=True`) and comp
 
 ## Limits, stated honestly
 
-- Upload limits: 5 MB per file, 20,000 formulas, 200,000 cells (`MAX_CELLS`) and 2,000,000 XML start tags in all parts of the file (`MAX_XML_ELEMENTS`, "Workbook has too many XML elements; rejected."), both counted while streaming the XML, before the workbook is loaded, and checked against the processing deadline every 20,000 tags; the upload is not accepted: a file under 5 MB over the cell or formula limit gets a route card after the next deploy, a file over 5 MB gets "too large for the public demo; run Ghost locally", and locally `ghost route` measures any size), and a processing timeout (60 s by default). Only `.xlsx` and `.xlsm` are accepted. The uncompressed size is capped at 200 MB. A workbook with very heavy rich text can exceed the XML element cap inside the cell limit. A session may have one queued or running verification at a time (a second gets 429), and `GHOST_MAX_JOBS` caps jobs across sessions.
+- Upload limits: 5 MB per file, 20,000 formulas, 200,000 cells (`MAX_CELLS`) and 2,000,000 XML start tags in all parts of the file (`MAX_XML_ELEMENTS`, "Workbook has too many XML elements; rejected."), both counted while streaming the XML, before the workbook is loaded, and checked against the processing deadline every 20,000 tags; the upload is not accepted: a file under 5 MB over the cell or formula limit gets a route card after the next deploy, a file over 5 MB gets "too large for the public demo; run Ghost locally", and locally the route command measures any size), and a processing timeout (60 s by default). Only `.xlsx` and `.xlsm` are accepted. The uncompressed size is capped at 200 MB. A workbook with very heavy rich text can exceed the XML element cap inside the cell limit. A session may have one queued or running verification at a time (a second gets 429), and `GHOST_MAX_JOBS` caps jobs across sessions.
 - Named ranges that point at one cell or one rectangular range are converted, and rule text uses the name. Names defined by `OFFSET`, `INDIRECT` or other dynamic formulas are listed as "not converted" with the cell and reason.
 - Volatile or external constructs (`NOW`, `TODAY`, `RAND`, `RANDBETWEEN`, `OFFSET`, `INDIRECT`, external links) are reported as "not verifiable as-is" and left out of the comparison.
 - Anything Ghost cannot convert is listed as "not converted" with the cell and the reason. It does not guess.
@@ -302,7 +304,7 @@ The cross-check reads the saved values with openpyxl (`data_only=True`) and comp
 - Outputs that are "not converted" or "not verifiable" are not offered as outputs in the web app. If you choose one explicitly, the request is rejected with the cell and the reason.
 - Worksheet `ROUND` is half away from zero on 15 significant digits. Its behaviour on numbers with more than 15 significant digits has not been checked against Excel. Unverified example: `=ROUND(123456789012345.67,1)` gives `123456789012345.7` in the Referee (LibreOffice 26.8.3.1 and 7.4.7.2) and `123456789012346.0` in Ghost's generated code. The owner will confirm Excel's result in Excel for the web; until then, treat a match or mismatch on such values as unverified (see `.kiro/steering/excel-semantics.md`).
 - The mutation self-check, which injects bugs to see whether the verifier notices, runs on request with `ghost mutate` or `ghost verify --mutation-cases N`, and in the web app with `GHOST_MUTATION_CASES` cases per mutant. When it did not run, the report says "not checked".
-- VBA is read statically. Conversion of VBA to Python is a stretch goal; portfolios with a lot of VBA are routed to AWS Transform custom with `ghost route` (dry run only, nothing is executed).
+- VBA is read statically. Conversion of VBA to Python is a stretch goal; portfolios with a lot of VBA are routed to AWS Transform custom by the route command (dry run only, nothing is executed).
 - A known-issues list from the latest review is in `docs/TEST_REPORT_2026-11-24.md`.
 
 ## About the feasibility test bench

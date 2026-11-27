@@ -458,8 +458,9 @@ def render_story(f: dict) -> str:
         excerpts(r"custom agents|`skeptic`|sub-agent", 2, where="agents") + excerpts(r"^- Skeptic \(real", 3),
         ["Whether each agent loads and answers in the Kiro IDE is a row in docs/KIRO_OWNER_CHECKLIST.md with an empty Result "
          "cell: not checked in Kiro.",
-         "The Skeptic reviews named in the usage log were run by a sub-agent that could read files but not run commands; "
-         "what a review could not check is stated in each entry."],
+         "Later Skeptic reviews named in the usage log were run by a read-only sub-agent that could read files but not run "
+         "commands; some earlier ones were done in role by the main agent, and one invocation returned nothing. "
+         "What a review could not check is stated in each entry."],
         ["[OWNER: which agent you found most useful, and what you would change.]"])
     # 3 hooks
     hk = f["hooks"]

@@ -37,7 +37,7 @@ Python 3.11+, openpyxl, oletools (static VBA read), FastAPI with HTMX, Hypothesi
 The eight topics the rules ask about. Each has generated facts, quotes from the usage log, and what was not verified in `docs/KIRO_STORY.md`; the summary below is short on purpose.
 
 1. **Surfaces (IDE, CLI, Web, Crew).** The usage log names the Kiro IDE; it does not name the CLI, Web or Crew, so none of those is claimed. [OWNER: the surfaces you used and how they differed; your preference.]
-2. **Custom agents.** Four agents in `.kiro/agents/` (clerk, coroner, medium, skeptic). The Skeptic was used throughout as a read-only reviewer; each review states what it could not run. Loading them in the Kiro IDE is not checked (`docs/KIRO_OWNER_CHECKLIST.md`). [OWNER: your experience.]
+2. **Custom agents.** Four agents in `.kiro/agents/` (clerk, coroner, medium, skeptic). Later Skeptic reviews were run by a read-only sub-agent; some earlier ones were done in role by the main agent, and one invocation returned nothing. Each review states what it could not run. Loading them in the Kiro IDE is not checked (`docs/KIRO_OWNER_CHECKLIST.md`). [OWNER: your experience.]
 3. **Agent hooks.** Six hooks in `.kiro/hooks/`: autopsy on a workbook added to `graveyard/`, golden tests on a converter change, report regeneration on a Decision, re-verification on a `logic.py` save, an agent-action hook on new findings, and a PreToolUse guard that blocks `atx` and `aws` shell commands without the Owner's approval. Four of the five file hooks were seen to fire in the IDE. The guard blocked the agent's own shell commands twice, during its own build; a real `atx` or `aws` block was not tried, and the guard stops accidents, not a determined agent (`docs/KIRO_SURFACES_FORMATS.md`). [OWNER: what hooks changed.]
 4. **Spec-driven development compared with vibe coding.** Nine Kiro specs (seven feature, two bugfix) with requirements, design, correctness properties and tasks (`docs/KIRO_STORY.md`, section 4). The log holds no vibe-coded run of the same work, so it has no measured comparison. [OWNER: how the two felt.]
 5. **Steering documents.** Six files in `.kiro/steering/`: product, tech, structure and guardrails always on, the Excel semantics table when converter files are touched, and the routing thresholds on demand. [OWNER: which one mattered most.]
@@ -59,7 +59,7 @@ The eight topics the rules ask about. Each has generated facts, quotes from the 
 
 ## What is next
 
-Formulas beyond the 18 supported functions, TypeScript export, a real run of the AWS Transform hand-off (rows are waiting in `docs/KIRO_OWNER_CHECKLIST.md`). [OWNER: what you want to say.]
+Formulas beyond the 18 supported functions, TypeScript export, a real run of the AWS Transform hand-off. Nothing has been run against AWS Transform: no `atx` command and no AWS Transform call was made (the only AWS use is the Owner's ECS deployment of the web app); the rows are waiting in `docs/KIRO_OWNER_CHECKLIST.md`. [OWNER: what you want to say.]
 
 ## Pre-existing code and outside tools (for the Owner to complete)
 

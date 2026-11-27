@@ -125,7 +125,7 @@ Observed: installing the Power in the Kiro Powers panel has not been done (Requi
 
 ### What the repository has
 
-The five command hooks in `.kiro/hooks/` use `version: "v1"`, one hook each, `trigger`, `description`, `matcher`, `action.type: "command"`, `action.command` and a hook-level `timeout`. Correction, 2026-11-26: until then `timeout` sat inside `action`, but Kiro's hooks page (https://kiro.dev/docs/hooks/, read 2026-11-26) documents `hooks[].timeout` at hook level and `hooks[].action` as `type`, `command` and `prompt` only. If Kiro ignored the misplaced field, the 120, 180 and 300 second timeouts were the 60 second default; that was not observed either way. A test now asserts the hook-level form.
+The six hook files in `.kiro/hooks/` (five command, one agent) use `version: "v1"`, one hook each, `trigger`, `description`, `matcher`, `action.type: "command"`, `action.command` and a hook-level `timeout`. Correction, 2026-11-26: until then `timeout` sat inside `action`, but Kiro's hooks page (https://kiro.dev/docs/hooks/, read 2026-11-26) documents `hooks[].timeout` at hook level and `hooks[].action` as `type`, `command` and `prompt` only. If Kiro ignored the misplaced field, the 120, 180 and 300 second timeouts were the 60 second default; that was not observed either way. A test now asserts the hook-level form.
 
 | File | trigger | matcher | timeout | Match |
 |---|---|---|---|---|
@@ -133,12 +133,13 @@ The five command hooks in `.kiro/hooks/` use `version: "v1"`, one hook each, `tr
 | `golden-tests-on-converter-save.json` | `PostFileSave` | `(^|/)ghost/converter/.*\.py$` | 180 | Yes |
 | `regenerate-report-on-decision.json` | `PostFileSave` | `(^|/)\.kiro/specs/[^/]+/decisions\.yaml$` | 300 | Yes |
 | `reverify-on-logic-save.json` | `PostFileSave` | `(^|/)\.kiro/specs/[^/]+/(logic\.py|mapping\.yaml)$` | 300 | Yes |
+| `guard-atx-aws.json` | `PreToolUse` | `shell` | 10 | Yes |
 | `review-findings-on-create.json` (`agent` action, no timeout) | `PostFileCreate` | `(^|/)\.kiro/specs/[^/]+/findings\.yaml$` | n/a | Yes |
 
 - Observed (2026-11-25, `docs/KIRO_USAGE.md` last entries): the four hooks fired in this Kiro IDE, shown by side effects (file times, a pytest cache update, a process watcher). The autopsy hook was seen to start; the result of that run was not visible. Pass/fail counts of the golden run were not visible.
 - Not used by the four hooks: the `agent` action type, `enabled`, `confirm`, and every trigger other than `PostFileCreate` and `PostFileSave`. Task 8 added one `agent` hook, `review-findings-on-create.json`, on `PostFileCreate` for a migration's `findings.yaml`. Its prompt asks the agent to list the findings and ask the human; it forbids deciding, editing `decisions.yaml`, running macros or modifying a workbook. A second hook on `graveyard/` was not added because the autopsy command hook already owns that trigger and matcher. The matchers of the decisions and logic hooks gained a `(^|/)` prefix (an unanchored `\.kiro/specs/` matched `x.kiro/specs/...`). Not checked: that the agent hook fires in the Kiro IDE.
 
-### Verdict: **confirmed.** The five files match the documented v1 schema. The matchers of two of them were corrected in task 8 (see above).
+### Verdict: **confirmed.** The six files match the documented v1 schema. The matchers of two of them were corrected in task 8 (see above).
 
 ## 3. Custom agents
 
