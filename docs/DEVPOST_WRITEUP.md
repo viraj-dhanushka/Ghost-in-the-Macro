@@ -41,7 +41,7 @@ The demo that shows what is different: the bundled "haunted discount calculator"
 Python 3.11+, openpyxl, oletools (static VBA read), FastAPI with HTMX, Hypothesis, pytest, headless LibreOffice, Docker, deployed on AWS ECS Express Mode (`docs/DEPLOY_ECS_EXPRESS.md`). The web app has no login, no LLM calls and no API keys.
 
 ## How Kiro was used
-Kiro features used: [specs](.kiro/specs/), [agent hooks](.kiro/hooks/), [steering files](.kiro/steering/), an [MCP server](mcp_server/), [Power skills](plugin/skills/), [custom agents](.kiro/agents/) and [property tests](tests/). One concrete example of each, from `docs/KIRO_USAGE.md` and the repository:
+Kiro features used: [specs](../.kiro/specs/), [agent hooks](../.kiro/hooks/), [steering files](../.kiro/steering/), an [MCP server](../mcp_server/), [Power skills](../plugin/skills/), [custom agents](../.kiro/agents/) and [property tests](../tests/). One concrete example of each, from `docs/KIRO_USAGE.md` and the repository:
 - **Specs:** `.kiro/specs/haunted-delivery-migration/repair-log.md` records an agent migration of the haunted sample. Round 3 failed (planted by us, not blind) and round 4 passed against the workbook.
 - **Hooks:** the hook-matcher property found that `regenerate-report-on-decision.json` and `reverify-on-logic-save.json` had an unanchored `\.kiro/specs/` matcher, so `x.kiro/specs/0/decisions.yaml` matched too. Both were fixed.
 - **Steering:** `.kiro/steering/ghost-guardrails.md` is loaded by the custom agents as a resource (`.kiro/agents/*.json`), so they start from the same rules as the engine.
