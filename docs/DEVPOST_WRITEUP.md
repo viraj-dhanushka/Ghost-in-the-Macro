@@ -54,7 +54,7 @@ The eight topics the rules ask about. Each has generated facts, quotes from the 
 ## Accomplishments
 
 - The demo invariants hold and are tested (`scripts/demo.sh`, `tests/test_demo_invariants.py`).
-- A full suite that runs the real Referee when LibreOffice is installed (1922 passed, 4 skipped on 2026-11-26, `docs/KIRO_USAGE.md`).
+- A full suite that runs the real Referee when LibreOffice is installed (2035 passed, 4 skipped on 2026-11-27, `docs/KIRO_USAGE.md`).
 - Limits stated in the product, not buried (README, "Limits, stated honestly").
 
 ## What is next

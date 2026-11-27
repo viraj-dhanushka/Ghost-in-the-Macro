@@ -319,8 +319,8 @@ def test_the_readme_does_not_claim_correct_or_proven():
 
 def test_the_writeup_numbers_and_wording_are_the_ones_the_repository_backs():
     text = (ROOT / "docs/DEVPOST_WRITEUP.md").read_text(encoding="utf-8")
-    m = re.search(r"\((\d+) passed, (\d+) skipped on 2026-11-26", text)
-    assert m and int(m.group(2)) == 4 and int(m.group(1)) >= 1922
+    m = re.search(r"\((\d+) passed, (\d+) skipped on 2026-11-2\d", text)
+    assert m and int(m.group(2)) == 4 and int(m.group(1)) >= 2035
     assert "Hypothesis with a fixed seed" not in text
     sys.path.insert(0, str(ROOT / "scripts"))
     import kiro_ledger

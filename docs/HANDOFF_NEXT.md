@@ -19,7 +19,9 @@ Features are frozen: fixes only. Nothing is pushed. No AWS or `atx` command was 
 - Sample workbook counts identical before and after the XML change (`tests/fixtures/sample_counts_2026-11-26.json`).
 - Memory of the no-tree scan on a one-million-row sheet: 14.0 to 14.7 MB (was 104 MB). The test bound is 16 MB, not 15, because 15 leaves almost no margin.
 
-## NOT done yet (do these first tomorrow)
+## Done on 2026-11-27: full suite 2035 passed, 4 skipped; write-up count and usage-log entry written (items 1 to 3 below are finished; only the commit and the Owner's list remain)
+
+## Was not done yet (kept for the record)
 1. Run the full suite: `.venv/bin/python -m pytest -q` (about 9 minutes). The run was interrupted at 7%, so the whole suite has NOT been run on this tree. Fix anything red.
 2. Put the final pass count into `docs/DEVPOST_WRITEUP.md` (it says 1922 passed, 4 skipped, which was the count before today's tests; the real number will be higher) and into the new `docs/KIRO_USAGE.md` entry.
 3. Add the `docs/KIRO_USAGE.md` entry for this round (items 1 to 18), including: the memory figure 14.0 to 14.7 MB; bound 16 not 15; the guard also fired three more times later (old matcher blocked a harmless heredoc; two commands naming its approve command), not counted in "twice"; `timeout` sat inside `action` before today, so Kiro may have used the 60 s default for the 120/180/300 s hooks.
