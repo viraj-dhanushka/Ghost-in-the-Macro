@@ -155,6 +155,28 @@ The formula-fuzzing property test (Hypothesis, fixed seed) and the CLI end-to-en
 
 There are six hooks in `.kiro/hooks/`. Four run `scripts/ghost-py scripts/ghost_hook.py <name>` (autopsy on a new file in `graveyard/`, golden tests on a converter save, re-verify on a `logic.py` save, regenerate the report on a decision). One is an agent hook (`review-findings-on-create`, a prompt on a new `findings.yaml`). One is a PreToolUse guard (`guard-atx-aws`, `scripts/ghost_guard.py`) that blocks a shell command naming `atx` or `aws` as a program unless the Owner approved the session; it stops accidents, not a determined agent, and one approval covers every `atx` or `aws` command, read-only included. In the hooks that run `ghost_hook.py`, `scripts/ghost-py` runs `.venv/bin/python` from the repository root whatever the caller's working directory or `PATH`, so create the venv first (step 2). Run one by hand to check it, for example `scripts/ghost-py scripts/ghost_hook.py golden`.
 
+## Use it on your own workbook
+
+From a fresh clone, with the install steps above done, these commands work on a copy of your workbook (the file is read, never changed). Replace `mine.xlsx` and `my-migration` with your own names.
+
+```
+.venv/bin/python -m ghost.cli autopsy mine.xlsx
+.venv/bin/python -m ghost.cli rules   mine.xlsx --migration my-migration
+.venv/bin/python -m ghost.cli convert mine.xlsx --migration my-migration
+.venv/bin/python -m ghost.cli verify  my-migration --mode faithful
+```
+
+`autopsy` lists the sheets, formulas, guessed inputs and outputs, and any Finding. `rules` writes `rules.md`, `traceability.yaml` and `findings.yaml`. `convert` writes `mapping.yaml` and `logic.py`. `verify` compares `logic.py` with the workbook recalculated by LibreOffice and writes a proof report (`my-migration/proof-report.html`). If a Finding is raised, record your answer with `decide` (see above) and verify again with `--mode both`. This sequence was run on a copy of the haunted sample outside the repository.
+
+Not supported:
+- Worksheet functions outside the 18 Ghost converts. They are listed as "not converted" with the cell and the reason.
+- Volatile or external constructs (`NOW`, `TODAY`, `RAND`, `OFFSET`, `INDIRECT`, external links). They are left out of the comparison.
+- Converting VBA to Python. VBA is read statically and never run unless you pass `--trust-macros` on a file you trust.
+- Files over 5 MB, 20,000 formulas or 200,000 cells. Use the route command for those: `.venv/bin/python -m ghost.cli route mine.xlsx`.
+- Checking against Excel itself. The Referee is LibreOffice; a pass means a match with LibreOffice on the cases that were run.
+
+To add a sample, a suspect or a test, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Run the web app locally
 
 ```

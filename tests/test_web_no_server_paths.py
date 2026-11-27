@@ -25,7 +25,7 @@ def test_scrub_run_dir_and_other_paths():
     assert scrub_paths(f"Wrote {run}/logic_intended.py (intended)", run) == "Wrote ./logic_intended.py (intended)"
     assert scrub_paths(f"Proof report: {run}", run) == "Proof report: ."
     assert scrub_paths("cwd /app/ghost/cli.py failed", run) == "cwd cli.py failed"
-    assert scrub_paths("in /Users/viraj/x/y.xlsx.", run) == "in y.xlsx."
+    assert scrub_paths("in /Users/someone/x/y.xlsx.", run) == "in y.xlsx."
     assert scrub_paths(r"C:\Users\me\file.xlsx broke") == "file.xlsx broke"
 
 

@@ -12,6 +12,12 @@ Many companies run a business rule that nobody can read any more. It lives in an
 
 People who own one such workbook, in finance, sales operations, logistics or engineering, and who are not a large enterprise with a VBA portfolio to migrate. [OWNER: who you had in mind, and any real person or case you want to name.]
 
+## Who can use this after the hackathon
+- Anyone with Python 3.11 and LibreOffice can run Ghost on one of their own workbooks from a clone: the README section "Use it on your own workbook" lists the four commands and what is not supported.
+- The proof report is a file (HTML and JSON), so it can be attached to a review or a ticket. It states what was not checked.
+- `ghost challenge` takes any rewrite, human or AI, and runs it against the workbook; the line-up in `samples/suspects/MEASURED.md` shows what it finds.
+- `CONTRIBUTING.md` explains how to run the tests, add a sample workbook, add a suspect and keep the honesty rule. Nothing has been used by anyone outside this project yet.
+
 ## What Ghost does
 
 Ghost takes one workbook (formulas first, VBA read statically and never run) and produces three things (README, "What it does"):
