@@ -229,11 +229,13 @@ def test_preflight_header_says_that_get_slash_starts_an_empty_session_and_nothin
     assert "no upload, no POST, no session" not in head  # the old header claimed there was no session
 
 
-def _submit_root(tmp_path, readme="# Ghost\nclean\n", writeup="# Write-up\nclean\n", story="# Story\nclean\n"):
+def _submit_root(tmp_path, readme="# Ghost\nclean\n", writeup="# Write-up\nclean\n", story="# Story\nclean\n",
+                 video="# Video\nclean\n"):
     (tmp_path / "docs").mkdir(exist_ok=True)
     (tmp_path / "README.md").write_text(readme, encoding="utf-8")
     (tmp_path / "docs/DEVPOST_WRITEUP.md").write_text(writeup, encoding="utf-8")
     (tmp_path / "docs/KIRO_STORY.md").write_text(story, encoding="utf-8")
+    (tmp_path / "docs/DEMO_VIDEO_SCRIPT.md").write_text(video, encoding="utf-8")
     return {"GHOST_SUBMIT_ROOT": str(tmp_path)}
 
 
@@ -245,7 +247,10 @@ def test_the_submit_check_passes_clean_files_and_needs_no_network(tmp_path):
 def test_the_submit_check_fails_on_an_owner_placeholder_or_a_draft_marker(tmp_path):
     for kwargs, where in (({"readme": "x [OWNER: fill me in] y"}, "README.md"),
                           ({"writeup": "# Write-up (draft)\n"}, "DEVPOST_WRITEUP.md"),
-                          ({"story": "[OWNER: how it felt]"}, "KIRO_STORY.md")):
+                          ({"story": "[OWNER: how it felt]"}, "KIRO_STORY.md"),
+                          ({"writeup": "Draft for the Owner to edit.\n"}, "DEVPOST_WRITEUP.md"),
+                          ({"video": "x for the Owner to complete"}, "DEMO_VIDEO_SCRIPT.md"),
+                          ({"video": "[OWNER: shots]"}, "DEMO_VIDEO_SCRIPT.md")):
         r = _run_preflight("--submit", env_extra=_submit_root(tmp_path, **kwargs))
         assert r.returncode == 1, kwargs
         assert "FAIL" in r.stdout and where in r.stdout
@@ -262,7 +267,7 @@ def test_the_submit_check_never_touches_the_network_or_writes(tmp_path):
     before = sorted(p.name for p in tmp_path.rglob("*"))
     _run_preflight("--submit", env_extra=_submit_root(tmp_path))
     names = sorted(p.name for p in tmp_path.rglob("*"))
-    assert names == sorted(set(before) | {"README.md", "DEVPOST_WRITEUP.md", "KIRO_STORY.md", "docs"})
+    assert names == sorted(set(before) | {"README.md", "DEVPOST_WRITEUP.md", "KIRO_STORY.md", "DEMO_VIDEO_SCRIPT.md", "docs"})
     text = PREFLIGHT.read_text(encoding="utf-8")
     sub = text[text.index("submit_check()"):text.index("submit_check()") + 900]
     assert "curl" not in sub

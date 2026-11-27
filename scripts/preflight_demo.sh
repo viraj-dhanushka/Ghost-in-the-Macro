@@ -1,8 +1,8 @@
 #!/bin/sh
 # Preflight for the demo video and for submitting.
 #   scripts/preflight_demo.sh [base-url]   GET-only checks of /healthz, / and /kiro on the live URL (default: the README's).
-#   scripts/preflight_demo.sh --submit     no network: fails if README.md, docs/DEVPOST_WRITEUP.md or docs/KIRO_STORY.md
-#                                          still contains an Owner placeholder or a draft marker.
+#   scripts/preflight_demo.sh --submit     no network: fails if README.md, docs/DEVPOST_WRITEUP.md, docs/KIRO_STORY.md
+#                                          or docs/DEMO_VIDEO_SCRIPT.md still contains an Owner placeholder or a draft marker.
 # The URL mode makes three GET requests and nothing else: no upload, no verification, no write.
 # Note: GET / starts an empty session on the server (a cookie is set and an empty session folder is created; the idle
 # sweeper removes it). GET /kiro fails on a build older than the Built with Kiro page, so a stale deploy is caught.
@@ -11,18 +11,18 @@ ROOT="${GHOST_SUBMIT_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 fail=0
 
 submit_check() {  # file, marker pattern (fixed strings), description
-  for f in README.md docs/DEVPOST_WRITEUP.md docs/KIRO_STORY.md; do
+  for f in README.md docs/DEVPOST_WRITEUP.md docs/KIRO_STORY.md docs/DEMO_VIDEO_SCRIPT.md; do
     if [ ! -f "$ROOT/$f" ]; then
       echo "FAIL  $f is missing"
       fail=1
       continue
     fi
-    if grep -n --fixed-strings -e '[OWNER' -e '(draft)' "$ROOT/$f" >/dev/null 2>&1; then
-      echo "FAIL  $f still contains [OWNER or (draft):"
-      grep -n --fixed-strings -e '[OWNER' -e '(draft)' "$ROOT/$f" | head -5 | cut -c1-140
+    if grep -n --fixed-strings -e '[OWNER' -e '(draft)' -e 'Draft for the Owner' -e 'for the Owner to complete' "$ROOT/$f" >/dev/null 2>&1; then
+      echo "FAIL  $f still contains [OWNER, (draft), "Draft for the Owner" or "for the Owner to complete":"
+      grep -n --fixed-strings -e '[OWNER' -e '(draft)' -e 'Draft for the Owner' -e 'for the Owner to complete' "$ROOT/$f" | head -5 | cut -c1-140
       fail=1
     else
-      echo "ok    $f has no [OWNER and no (draft)"
+      echo "ok    $f has no Owner placeholder and no draft marker"
     fi
   done
 }
@@ -60,5 +60,5 @@ if [ "$fail" = "0" ]; then
   echo "All three checks passed. This says the site answers and is a recent build; it does not say the Referee will start a verification, the samples will load, or a run will finish: try one sample by hand before recording."
   exit 0
 fi
-echo "At least one check failed. Do not record against this site; shoot locally with: uvicorn web.app:app"
+echo "At least one check failed. Do not record against this site; shoot locally with: .venv/bin/python -m uvicorn web.app:app --port 8080"
 exit 1
