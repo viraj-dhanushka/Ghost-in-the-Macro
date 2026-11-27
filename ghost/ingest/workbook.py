@@ -57,7 +57,8 @@ def _norm(a1: str) -> str:
     return a1.replace("$", "").upper()
 
 
-def _expand(sheet: str, a: str, b: str | None, existing: set[CellRef]) -> list[CellRef]:
+def _expand(sheet: str, a: str, b: str | None, existing: set[CellRef],
+            memo: dict | None = None, tick: Callable[[], None] | None = None) -> list[CellRef]:
     a, b_ = _norm(a), (_norm(b) if b else None)
     if b_ is None:
         return [f"{sheet}!{a}"]
@@ -71,16 +72,24 @@ def _expand(sheet: str, a: str, b: str | None, existing: set[CellRef]) -> list[C
             for r in range(r1, r2 + 1)
             for c in range(c1, c2 + 1)
         ]
-    # Very large range: only cells that actually exist.
+    # Very large range: only cells that actually exist. The same range in many formulas is scanned once per load.
+    key = (sheet, c1, r1, c2, r2)
+    if memo is not None and key in memo:
+        return memo[key]
     out = []
-    for ref in existing:
+    for i, ref in enumerate(existing):
+        if tick is not None and i % 20_000 == 0:
+            tick()
         sh, _, addr = ref.rpartition("!")
         if sh != sheet:
             continue
         col, row = _split(addr)
         if c1 <= col <= c2 and r1 <= row <= r2:
             out.append(ref)
-    return sorted(out)
+    out = sorted(out)
+    if memo is not None:
+        memo[key] = out
+    return out
 
 
 def _split(addr: str) -> tuple[int, int]:
@@ -96,6 +105,8 @@ def extract_references(
     current_sheet: str,
     named_ranges: dict[str, str] | None = None,
     existing: set[CellRef] | None = None,
+    tick: Callable[[], None] | None = None,
+    memo: dict | None = None,
 ) -> set[CellRef]:
     """Cell references (ranges expanded, names resolved) read by `formula`."""
     existing = existing or set()
@@ -104,8 +115,10 @@ def extract_references(
     refs: set[CellRef] = set()
     consumed: list[tuple[int, int]] = []
     for m in _REF_RE.finditer(text):
+        if tick is not None:
+            tick()
         sheet = _unquote_sheet(m.group("sheet")) if m.group("sheet") else current_sheet
-        refs.update(_expand(sheet, m.group("a"), m.group("b"), existing))
+        refs.update(_expand(sheet, m.group("a"), m.group("b"), existing, memo, tick))
         consumed.append(m.span())
     if named_ranges:
         upper = {k.upper(): v for k, v in named_ranges.items()}
@@ -114,7 +127,7 @@ def extract_references(
                 continue
             target = upper.get(m.group(0).upper())
             if target:
-                refs.update(extract_references(target, current_sheet, None, existing))
+                refs.update(extract_references(target, current_sheet, None, existing, tick, memo))
     return refs
 
 
@@ -169,6 +182,7 @@ def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
             # in any part.
             seen_row = False
             ranged = {"mergeCell": 0, "hyperlink": 0, "comment": 0}
+            heavy = {"row": 0, "col": 0, "brk": 0, "dataValidation": 0, "conditionalFormatting": 0, "cfRule": 0, "definedName": 0}
             ranged_area = 0
             too_many_ranged = "Workbook has too many merged, hyperlinked or commented cells; rejected."
 
@@ -179,6 +193,11 @@ def _check_archive(path: str, limits: Limits, deadline: Deadline) -> None:
                     raise TooLarge("Workbook has too many XML elements; rejected.")
                 if elements % DEADLINE_EVERY_TAGS == 0:
                     deadline.check()  # every start tag counts, not only cells: non-cell tags cost time too
+                kind = tag.rsplit("}", 1)[-1]
+                if kind in heavy:
+                    heavy[kind] += 1
+                    if heavy[kind] > (limits.max_cells if kind == "row" else limits.max_ranged_elements):
+                        raise TooLarge("Workbook has too many rows, columns, validations, formats or names; rejected.")
                 if tag == "row" or tag.endswith("}row"):
                     seen_row = True
                 if seen_row and (tag == "c" or tag.endswith("}c")):
@@ -349,7 +368,7 @@ def load_workbook(
         result.name_targets.pop(name, None)
         result.name_issues[name] = "sheet-scoped name is not resolved"
 
-    n = 0
+    n = dv_area = 0
     for ws in wb_f.worksheets:
         ws_v = wb_v[ws.title]
         validations: dict[str, str] = {}
@@ -362,7 +381,9 @@ def load_workbook(
                     c1, r1, c2, r2 = range_boundaries(rng)
                 except ValueError:
                     continue
-                if (c2 - c1 + 1) * (r2 - r1 + 1) > _EXPAND_LIMIT:
+                deadline.check()
+                dv_area += (c2 - c1 + 1) * (r2 - r1 + 1)
+                if (c2 - c1 + 1) * (r2 - r1 + 1) > _EXPAND_LIMIT or dv_area > limits.max_cells:
                     continue
                 for r in range(r1, r2 + 1):
                     for c in range(c1, c2 + 1):
@@ -393,6 +414,8 @@ def load_workbook(
                 # Styled-but-empty cells carry no logic and are not stored.
 
     existing = set(result.cells)
+    dep_total = 0
+    dep_memo: dict = {}
     for ref, cell in result.cells.items():
         if cell.formula is None:
             continue
@@ -401,8 +424,11 @@ def load_workbook(
             deadline.check()
         sheet = ref.rpartition("!")[0]
         result.deps[ref] = extract_references(
-            cell.formula, sheet, result.named_ranges, existing
+            cell.formula, sheet, result.named_ranges, existing, deadline.check, dep_memo
         )
+        dep_total += len(result.deps[ref])
+        if dep_total > 10 * limits.max_cells:
+            raise TooLarge("Workbook formulas read too many cells in total; rejected.")
     # VBA is detected by content (xl/vbaProject.bin), never by extension, and read
     # statically. Every front end gets the same result from here.
     from ghost.ingest.vba import extract_vba, has_vba_project

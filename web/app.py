@@ -387,6 +387,10 @@ def create_app(
         except IngestError as exc:
             dest.unlink(missing_ok=True)
             return respond(request, session, is_new, False, {"error": str(exc)}, 422)
+        except Exception:  # noqa: BLE001 - a malformed file must never become a 500 or leak internals
+            dest.unlink(missing_ok=True)
+            return respond(request, session, is_new, False,
+                           {"error": "The file could not be read as a workbook; rejected."}, 422)
         reset_state(session)
         session.workbook = {"path": str(dest), "name": display, "source": "upload"}
         return respond(request, session, is_new, True, {"workbook": _summary(wb, display, "upload")}, 200)
