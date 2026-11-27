@@ -25,7 +25,7 @@ Features are frozen. Nothing is pushed. No AWS or `atx` command was ever run. Su
    - `README.md` also says "after the next deploy" for the route card (the large-workbook section); `tests/test_lane_docs.py` pins "after the next deploy". Change both together, or leave them.
 7. **Record the video** from `docs/DEMO_VIDEO_SCRIPT.md` (173 s). In the Kiro shot, try `aws --version` off camera first and film the guard hook only if it blocks. Do not show an AWS console or run any `atx` or `aws` command.
 8. **Fill the rows** of `docs/KIRO_OWNER_CHECKLIST.md` that have an empty Result (agents load in the IDE, Power install, 14 MCP tools in the panel, the guard hook on a real `aws` command, the AWS Transform rows). Leave a row empty rather than guess.
-9. **Final suite run, commit, push.** `.venv/bin/python -m pytest -q` (about 10 minutes). Put its pass line and the date in `docs/DEVPOST_WRITEUP.md` line 76, in the form "(N passed, M skipped on YYYY-MM-DD". The test pins the form and a floor of 2035 passed.
+9. **Final suite run, commit, push.** `.venv/bin/python -m pytest -q` (about 10 minutes). Put its pass line and the date in `docs/DEVPOST_WRITEUP.md` line 76 (now 2142 passed, 4 skipped on 2026-11-27, from the run after the last code change), in the form "(N passed, M skipped on YYYY-MM-DD". The test pins the form and a floor of 2035 passed.
 10. **Submit on Devpost.**
 
 ## Not checked (so far)
