@@ -1,7 +1,5 @@
 # Ghost in the Macro: live test report, 24 November 2026
 
-Reviewer: Claude (Claude Code), at the owner's request.
-
 - **Target:** https://gh-180dc96b077a480c8aba859ff54261f2.ecs.us-east-1.on.aws
 - **Test window:** 13:03 to 13:30 UTC, which is 18:33 to 19:00 IST.
 - **What was checked:** whether the deployed site behaves like commit `aa49828`.

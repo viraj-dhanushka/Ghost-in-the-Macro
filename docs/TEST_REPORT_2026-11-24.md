@@ -1,7 +1,5 @@
 # Ghost in the Macro: test report, 24 November 2026
 
-Reviewer: Claude (Claude Code), at the owner's request. Scope: find bugs, gaps and false claims, and back each one with evidence. No engine, web or deploy code was changed. Three test files were added under `tests/`, and nothing was committed or pushed.
-
 ## Environment
 
 - Repository at commit `8a3cca8`. The suite was **159 passed** before this review and is **192 passed, 19 xfailed** after it, because of the 52 tests added here.
